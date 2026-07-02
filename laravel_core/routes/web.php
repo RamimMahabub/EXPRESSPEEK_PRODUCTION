@@ -97,6 +97,10 @@ Route::get('/ajax/integration-test-execute', function (\App\Services\FlightServi
     }
 });
 
+// Google OAuth Routes
+Route::get('/auth/google/{role}/redirect', [\App\Http\Controllers\Auth\GoogleLoginController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleLoginController::class, 'callback'])->name('google.callback');
+
 require __DIR__.'/auth.php';
 
 /* ================================================================
@@ -132,6 +136,13 @@ Route::get('/setup', function (\Illuminate\Http\Request $request) {
                 case 'migrate':
                     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
                     $logs[] = '✅ migrate — pending migrations run.';
+                    break;
+
+                case 'clear-cache':
+                    \Illuminate\Support\Facades\Artisan::call('config:clear');
+                    \Illuminate\Support\Facades\Artisan::call('route:clear');
+                    \Illuminate\Support\Facades\Artisan::call('view:clear');
+                    $logs[] = '✅ Cache cleared successfully (Config, Route, View).';
                     break;
 
                 case 'seed-demo':

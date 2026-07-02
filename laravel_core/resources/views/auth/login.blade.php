@@ -28,6 +28,15 @@
             </div>
         @endif
 
+        @if (session('error'))
+            <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm animate-fade-in">
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                    <span class="font-bold">{{ session('error') }}</span>
+                </div>
+            </div>
+        @endif
+
         <!-- Email or Phone -->
         <div class="mb-5">
             <label for="login" class="block font-medium text-sm text-gray-700 mb-1">{{ __('Email or Phone') }}</label>
@@ -68,6 +77,24 @@
             <button type="submit" class="w-full flex justify-center items-center px-4 py-3.5 bg-brand-primary border border-transparent rounded-xl font-bold text-sm text-white uppercase tracking-wider hover:bg-brand-secondary focus:bg-brand-secondary active:bg-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 transition ease-in-out duration-150 shadow-lg shadow-brand-primary/30 transform hover:-translate-y-0.5">
                 {{ __('Log in') }} <i class="fas fa-arrow-right ml-2"></i>
             </button>
+        </div>
+
+        <div class="mt-6">
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <a href="{{ route('google.redirect', ['role' => 'customer']) }}" class="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary transition duration-150">
+                    <img class="h-5 w-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo">
+                    Sign in with Google
+                </a>
+            </div>
         </div>
         
         <div class="mt-8 text-center text-sm">

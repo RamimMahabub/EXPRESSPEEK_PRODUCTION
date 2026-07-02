@@ -126,6 +126,24 @@
                 </button>
             </div>
 
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Or sign up with</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a :href="'/auth/google/' + role + '/redirect'" class="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary transition duration-150">
+                        <img class="h-5 w-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo">
+                        Sign up with Google
+                    </a>
+                </div>
+            </div>
+
             <div class="mt-6 text-center text-sm">
                 <span class="text-gray-500">Already have an account?</span>
                 <a class="font-bold text-brand-primary hover:text-brand-secondary transition duration-150 ease-in-out ml-1" href="{{ route('login') }}">

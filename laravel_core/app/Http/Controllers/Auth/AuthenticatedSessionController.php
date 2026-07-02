@@ -40,7 +40,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if ($request->user()?->isInternalUser()) {
+        $user = $request->user();
+
+        if ($user?->isInternalUser()) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -50,7 +52,7 @@ class AuthenticatedSessionController extends Controller
             ])->onlyInput('login');
         }
 
-        if (! $request->user()?->hasVerifiedEmail()) {
+        if (! $user?->hasVerifiedEmail()) {
             return redirect()->route('verification.notice');
         }
 
