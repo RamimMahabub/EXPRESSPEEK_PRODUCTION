@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Laravel's front controller and public assets live in /public. This
+    # fallback is for shared hosts where the domain document root cannot be
+    # changed to the public directory.
+    RewriteCond %{REQUEST_URI} !^/public(?:/|$) [NC]
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+</IfModule>
+
+# Never expose the Laravel project as a browsable directory tree.
+Options -Indexes

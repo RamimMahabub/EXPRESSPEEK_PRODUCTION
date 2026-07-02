@@ -1,0 +1,279 @@
+@import "tailwindcss" source(none);
+
+@source "../views/**/*.blade.php";
+@source "../js/**/*.js";
+@source not "../views/resources/**";
+@source not "../views/app/**";
+@source not "../views/database/**";
+@source not "../views/routes/**";
+
+@theme {
+  --color-slate-950: #0f172a;
+}
+
+@layer utilities {
+  .neon-card {
+    @apply bg-white border border-slate-200/80 shadow-sm transition-all duration-300;
+  }
+  .neon-card:hover {
+    @apply border-violet-200 shadow-lg shadow-slate-200/60;
+  }
+  .neon-button {
+    @apply bg-gradient-to-r from-violet-600 to-indigo-600 border border-violet-600 text-white font-semibold transition-all duration-200 shadow-md shadow-violet-200;
+  }
+  .neon-button:hover {
+    @apply from-violet-700 to-indigo-700 shadow-lg shadow-violet-200;
+  }
+  .neon-text {
+    @apply text-violet-700;
+  }
+  .glass-panel {
+    @apply bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-sm;
+  }
+}
+
+/* Authenticated role panels share a deliberate daylight design system. */
+.role-panel {
+  color: #334155;
+  background: #f4f7fb;
+}
+
+.role-panel .panel-canvas {
+  background:
+    radial-gradient(circle at 82% 0%, rgba(237, 233, 254, 0.72), transparent 26rem),
+    linear-gradient(180deg, #f8fafc 0%, #f4f7fb 100%);
+}
+
+.role-panel .panel-sidebar {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: #e2e8f0;
+  box-shadow: 12px 0 32px rgba(15, 23, 42, 0.045);
+}
+
+.role-panel .panel-topbar {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02);
+}
+
+.role-panel .neon-button {
+  color: #ffffff !important;
+  background: linear-gradient(90deg, #7c3aed, #4f46e5) !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.16) !important;
+}
+
+.role-panel .neon-button:hover {
+  background: linear-gradient(90deg, #6d28d9, #4338ca) !important;
+}
+
+.role-panel .panel-content .neon-card {
+  color: #334155;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(226, 232, 240, 0.95) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035), 0 10px 28px rgba(15, 23, 42, 0.045) !important;
+}
+
+.role-panel .panel-content .neon-card:hover {
+  border-color: #ddd6fe !important;
+  box-shadow: 0 16px 38px rgba(79, 70, 229, 0.09) !important;
+}
+
+/* Translate legacy dark utility tokens inside role views into accessible light surfaces. */
+.role-panel .panel-content [class~="text-white"],
+.role-panel .panel-content [class~="text-gray-100"],
+.role-panel .panel-content [class~="text-gray-200"],
+.role-panel .panel-content [class~="text-slate-100"] {
+  color: #0f172a !important;
+}
+
+.role-panel .panel-content [class~="text-gray-300"],
+.role-panel .panel-content [class~="text-slate-300"] {
+  color: #334155 !important;
+}
+
+.role-panel .panel-content [class~="text-gray-400"],
+.role-panel .panel-content [class~="text-slate-400"] {
+  color: #64748b !important;
+}
+
+.role-panel .panel-content [class~="text-violet-300"],
+.role-panel .panel-content [class~="text-violet-400"] { color: #6d28d9 !important; }
+.role-panel .panel-content [class~="text-blue-300"],
+.role-panel .panel-content [class~="text-blue-400"] { color: #1d4ed8 !important; }
+.role-panel .panel-content [class~="text-emerald-300"],
+.role-panel .panel-content [class~="text-emerald-400"] { color: #047857 !important; }
+.role-panel .panel-content [class~="text-amber-300"],
+.role-panel .panel-content [class~="text-amber-400"],
+.role-panel .panel-content [class~="text-yellow-300"],
+.role-panel .panel-content [class~="text-yellow-400"] { color: #b45309 !important; }
+.role-panel .panel-content [class~="text-red-300"],
+.role-panel .panel-content [class~="text-red-400"] { color: #b91c1c !important; }
+.role-panel .panel-content [class~="text-purple-300"],
+.role-panel .panel-content [class~="text-purple-400"] { color: #7e22ce !important; }
+
+.role-panel .panel-content [class~="bg-gray-950"],
+.role-panel .panel-content [class~="bg-gray-950/50"],
+.role-panel .panel-content [class~="bg-gray-900"],
+.role-panel .panel-content [class~="bg-gray-900/40"],
+.role-panel .panel-content [class~="bg-gray-900/50"],
+.role-panel .panel-content [class~="bg-gray-900/60"],
+.role-panel .panel-content [class~="bg-gray-800"],
+.role-panel .panel-content [class~="bg-gray-800/20"],
+.role-panel .panel-content [class~="bg-gray-800/30"],
+.role-panel .panel-content [class~="bg-gray-800/40"],
+.role-panel .panel-content [class~="bg-gray-800/50"],
+.role-panel .panel-content [class~="bg-gray-800/60"],
+.role-panel .panel-content [class~="bg-gray-800/80"],
+.role-panel .panel-content [class~="bg-slate-950"],
+.role-panel .panel-content [class~="bg-slate-900"],
+.role-panel .panel-content [class~="bg-slate-900/40"],
+.role-panel .panel-content [class~="bg-slate-900/50"],
+.role-panel .panel-content [class~="bg-slate-900/60"] {
+  background-color: #f8fafc !important;
+}
+
+.role-panel .panel-content [class~="dark:bg-gray-700"],
+.role-panel .panel-content [class~="dark:bg-gray-800"],
+.role-panel .panel-content [class~="dark:bg-gray-900"] {
+  background-color: #ffffff !important;
+}
+
+.role-panel .panel-content [class~="dark:text-gray-100"],
+.role-panel .panel-content [class~="dark:text-gray-200"],
+.role-panel .panel-content [class~="dark:text-gray-800"],
+.role-panel .panel-content [class~="dark:text-slate-300"] {
+  color: #0f172a !important;
+}
+
+.role-panel .panel-content [class~="dark:text-slate-400"] {
+  color: #64748b !important;
+}
+
+.role-panel .panel-content [class~="bg-white/5"],
+.role-panel .panel-content [class~="bg-white/10"] {
+  background-color: #f1f5f9 !important;
+}
+
+.role-panel .panel-content [class~="bg-violet-900/20"],
+.role-panel .panel-content [class~="bg-violet-900/30"],
+.role-panel .panel-content [class~="bg-violet-900/40"],
+.role-panel .panel-content [class~="bg-violet-900/50"] { background-color: #f5f3ff !important; }
+.role-panel .panel-content [class~="bg-blue-900/20"],
+.role-panel .panel-content [class~="bg-blue-900/30"],
+.role-panel .panel-content [class~="bg-blue-900/40"],
+.role-panel .panel-content [class~="bg-blue-900/50"] { background-color: #eff6ff !important; }
+.role-panel .panel-content [class~="bg-emerald-900/20"],
+.role-panel .panel-content [class~="bg-emerald-900/30"],
+.role-panel .panel-content [class~="bg-emerald-900/40"],
+.role-panel .panel-content [class~="bg-emerald-900/50"] { background-color: #ecfdf5 !important; }
+.role-panel .panel-content [class~="bg-amber-900/20"],
+.role-panel .panel-content [class~="bg-amber-900/30"],
+.role-panel .panel-content [class~="bg-amber-900/40"],
+.role-panel .panel-content [class~="bg-yellow-900/20"] { background-color: #fffbeb !important; }
+.role-panel .panel-content [class~="bg-red-900/20"],
+.role-panel .panel-content [class~="bg-red-900/30"],
+.role-panel .panel-content [class~="bg-red-900/40"],
+.role-panel .panel-content [class~="bg-red-900/60"] { background-color: #fef2f2 !important; }
+
+.role-panel .panel-content [class~="border-white/5"],
+.role-panel .panel-content [class~="border-white/10"],
+.role-panel .panel-content [class~="border-white/20"],
+.role-panel .panel-content [class~="border-gray-800"] {
+  border-color: #e2e8f0 !important;
+}
+
+.role-panel .panel-content [class~="border-gray-700"] {
+  border-color: #cbd5e1 !important;
+}
+
+.role-panel .panel-content [class~="dark:border-gray-500"],
+.role-panel .panel-content [class~="dark:border-gray-700"] {
+  border-color: #cbd5e1 !important;
+}
+
+.role-panel .panel-content [class~="divide-gray-800"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0 !important;
+}
+
+.role-panel .panel-content [class~="hover:bg-gray-800"]:hover,
+.role-panel .panel-content [class~="hover:bg-gray-800/40"]:hover,
+.role-panel .panel-content [class~="hover:bg-gray-800/50"]:hover,
+.role-panel .panel-content [class~="hover:bg-gray-700"]:hover,
+.role-panel .panel-content [class~="hover:bg-gray-700/80"]:hover,
+.role-panel .panel-content [class~="hover:bg-white/5"]:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.role-panel .panel-content input[type="text"],
+.role-panel .panel-content input[type="email"],
+.role-panel .panel-content input[type="tel"],
+.role-panel .panel-content input[type="number"],
+.role-panel .panel-content input[type="password"],
+.role-panel .panel-content input[type="date"],
+.role-panel .panel-content input[type="search"],
+.role-panel .panel-content select,
+.role-panel .panel-content textarea {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035);
+}
+
+.role-panel .panel-content input::placeholder,
+.role-panel .panel-content textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.role-panel .panel-content input:focus,
+.role-panel .panel-content select:focus,
+.role-panel .panel-content textarea:focus {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12) !important;
+  outline: none;
+}
+
+/* White copy remains white on intentionally saturated controls. */
+.role-panel .panel-content .neon-button,
+.role-panel .panel-content [class~="text-white"][class~="bg-violet-600"],
+.role-panel .panel-content [class~="text-white"][class~="bg-violet-700"],
+.role-panel .panel-content [class~="text-white"][class~="bg-indigo-600"],
+.role-panel .panel-content [class~="text-white"][class~="bg-blue-600"],
+.role-panel .panel-content [class~="text-white"][class~="bg-emerald-600"],
+.role-panel .panel-content [class~="text-white"][class~="bg-emerald-700"],
+.role-panel .panel-content [class~="text-white"][class~="bg-red-600"],
+.role-panel .panel-content [class~="text-white"][class*="from-violet-"],
+.role-panel .panel-content [class~="text-white"][class*="from-blue-"] {
+  color: #ffffff !important;
+}
+
+.role-panel .panel-content .neon-button,
+.role-panel .panel-content button[class~="bg-gray-800"][class~="text-white"] {
+  color: #ffffff !important;
+  background: linear-gradient(90deg, #7c3aed, #4f46e5) !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.16) !important;
+}
+
+.role-panel .panel-content .neon-button:hover,
+.role-panel .panel-content button[class~="bg-gray-800"][class~="text-white"]:hover {
+  background: linear-gradient(90deg, #6d28d9, #4338ca) !important;
+}
+
+.role-panel .panel-content [class~="bg-violet-600"] [class~="text-white"],
+.role-panel .panel-content [class~="bg-indigo-600"] [class~="text-white"],
+.role-panel .panel-content [class~="bg-blue-600"] [class~="text-white"],
+.role-panel .panel-content [class~="bg-emerald-600"] [class~="text-white"],
+.role-panel .panel-content [class~="bg-red-600"] [class~="text-white"] {
+  color: #ffffff !important;
+}
+
+.role-panel .panel-content [class*="shadow-[0_0_"] {
+  box-shadow: none !important;
+}
+
+@media (max-width: 640px) {
+  .role-panel .panel-content .neon-card {
+    border-radius: 1rem;
+  }
+}

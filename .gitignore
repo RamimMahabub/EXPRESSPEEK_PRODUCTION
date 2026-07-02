@@ -1,3 +1,7 @@
-laravel_core.zip
-*.zip
+node_modules/
+vendor/
 .env
+.idea/
+.vscode/
+storage/*.key
+cpanel_python_runtime.zip

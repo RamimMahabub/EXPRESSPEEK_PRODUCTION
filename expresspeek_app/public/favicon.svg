@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="express-peek-blue" x1="20" y1="18" x2="104" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1e3a8a"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="64" cy="64" r="57" fill="#ffffff"/>
+  <circle cx="64" cy="64" r="47" fill="none" stroke="url(#express-peek-blue)" stroke-width="7"/>
+
+  <path d="M29 69 102 36 78 101 61 75 29 69Z" fill="url(#express-peek-blue)"/>
+  <path d="m61 75 41-39-53 32 12 7Z" fill="#ffffff"/>
+  <path d="M61 75 47 101l6-31 8 5Z" fill="#10276d"/>
+
+  <path d="M18 94 38 84M16 104l23-12" fill="none" stroke="#2563eb" stroke-linecap="round" stroke-width="4"/>
+</svg>

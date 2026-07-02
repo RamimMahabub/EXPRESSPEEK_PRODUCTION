@@ -1,8 +1,0 @@
-/vendor
-/node_modules
-/tests
-/.git
-/.github
-.env
-phpunit.xml
-.phpunit.cache
