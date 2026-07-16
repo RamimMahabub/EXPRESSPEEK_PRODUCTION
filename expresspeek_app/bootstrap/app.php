@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->validateCsrfTokens(except: [
             '/quote',
+            'logout',
         ]);
 
         $middleware->alias([
@@ -25,5 +27,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // A login page left open before logout contains the previous session's
+        // CSRF token. Recover with a fresh form instead of showing a raw 419 page.
+        $exceptions->respond(function ($response, $exception, Request $request) {
+            if ($response->getStatusCode() === 419
+                && $request->isMethod('post')
+                && $request->is('login')) {
+                return redirect()->route('login', $request->only('next'))->with(
+                    'status',
+                    'Your login page expired. Please sign in again.'
+                );
+            }
+
+            return $response;
+        });
     })->create();

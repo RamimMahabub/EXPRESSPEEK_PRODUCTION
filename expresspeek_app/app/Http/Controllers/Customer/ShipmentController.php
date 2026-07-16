@@ -332,10 +332,13 @@ class ShipmentController extends Controller
 
         $isAdmin = $user?->isAdmin() ?? false;
 
-        // Only admins should get a waybill URL. Agents and customers receive no waybill link.
-        $waybillUrl = $isAdmin
-            ? route('admin.shipments.waybill', $shipment->id)
-            : null;
+        if ($isAdmin) {
+            $waybillUrl = route('admin.shipments.waybill', $shipment->id);
+        } elseif ($isAgent) {
+            $waybillUrl = route('agent.shipments.waybill', $shipment->id);
+        } else {
+            $waybillUrl = route('customer.shipments.waybill', $shipment->id);
+        }
 
         // Invoice links: admin -> admin invoice, agent -> agent invoice, customer/guest -> customer invoice
         if ($isAdmin) {

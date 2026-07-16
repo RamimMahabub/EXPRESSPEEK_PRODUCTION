@@ -29,4 +29,13 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact('shipmentStats', 'userStats', 'recentShipments', 'newSourcingCount', 'totalSourcingCount'));
     }
+
+    public function analyticsData(Request $request)
+    {
+        $filters = $request->only(['start_date', 'end_date', 'carriers', 'agents', 'statuses', 'grouping']);
+        
+        $data = $this->shipmentService->getAnalytics($filters);
+        
+        return response()->json($data);
+    }
 }

@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="ExpressPeak — Your intelligent logistics aggregation platform. Fast, reliable, trackable.">
+    <meta name="description" content="ExpressPeek — Your intelligent logistics aggregation platform. Fast, reliable, trackable.">
 
-    <title>{{ config('app.name', 'ExpressPeak') }} — @yield('title', 'Dashboard')</title>
+    <title>{{ config('app.name', 'ExpressPeek') }} — @yield('title', 'Dashboard')</title>
 
     @include('partials.favicon')
 
@@ -17,6 +17,8 @@
 
     <!-- Scripts & Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @stack('styles')
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -69,16 +71,15 @@
 </div>
 
 @stack('scripts')
-</div>
 
 @else
 
 <div class="min-h-screen bg-slate-50 text-slate-800">
     <header class="flex items-center justify-between px-6 py-4 bg-white/90 backdrop-blur border-b border-slate-200">
         <div class="flex items-center gap-3">
-            <img src="/images/express-peek-logo.webp" alt="ExpressPeak" class="h-10 w-auto rounded-lg bg-white/95 p-1">
+            <img src="/images/express-peek-logo.webp" alt="ExpressPeek" class="h-10 w-auto rounded-lg bg-white/95 p-1">
             <div>
-                <p class="text-sm font-semibold text-slate-900">ExpressPeak</p>
+                <p class="text-sm font-semibold text-slate-900">ExpressPeek</p>
                 <p class="text-xs text-slate-500">Continue without login</p>
             </div>
         </div>

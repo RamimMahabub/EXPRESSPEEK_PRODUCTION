@@ -1,5 +1,6 @@
 @extends('layouts.customer')
-@section('title', 'Instant Shipping Quote — ExpressPeek')
+@section('seo_title', 'Get a Shipping Quote from Bangladesh | ExpressPeek')
+@section('seo_description', 'Compare instant shipping rates from Bangladesh to 220+ countries. Get transparent quotes from multiple carriers — no sign-up required. Ship documents, parcels, and cargo.')
 
 @push('head')
 <style>

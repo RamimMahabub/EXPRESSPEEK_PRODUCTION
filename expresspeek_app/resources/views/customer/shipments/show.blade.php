@@ -11,10 +11,20 @@
             <h1 class="text-3xl md:text-4xl font-black text-white">{{ $shipment->tracking_number }}</h1>
         </div>
 
-        <a href="{{ route('customer.shipments.index') }}"
-           class="inline-flex items-center justify-center px-5 py-3 rounded-xl border border-gray-700 text-sm font-semibold text-gray-300 hover:border-violet-500 hover:text-violet-400 hover:bg-violet-900/20 transition-colors">
-            Back to Shipments
-        </a>
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="{{ route('customer.shipments.waybill', $shipment) }}" target="_blank"
+               class="inline-flex items-center justify-center px-5 py-3 rounded-xl neon-button text-sm font-semibold text-white transition-colors">
+                Print Waybill
+            </a>
+            <a href="{{ route('customer.shipments.invoice', $shipment) }}" target="_blank"
+               class="inline-flex items-center justify-center px-5 py-3 rounded-xl border border-violet-500/50 text-sm font-semibold text-violet-300 hover:bg-violet-900/20 transition-colors">
+                Print Invoice
+            </a>
+            <a href="{{ route('customer.shipments.index') }}"
+               class="inline-flex items-center justify-center px-5 py-3 rounded-xl border border-gray-700 text-sm font-semibold text-gray-300 hover:border-violet-500 hover:text-violet-400 hover:bg-violet-900/20 transition-colors">
+                Back to Shipments
+            </a>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

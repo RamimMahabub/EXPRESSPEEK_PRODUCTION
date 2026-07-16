@@ -1,9 +1,9 @@
 @extends('layouts.customer')
 
-@section('title', 'Shop from Bangladesh — Sourcing Request')
+@section('seo_title', 'Shop from Bangladesh | Sourcing & Shipping for Bangladeshi Expats Abroad')
+@section('seo_description', 'Living in the UK, USA, Australia, or Europe? We source any product from Bangladesh — traditional clothing, dry foods, local goods — and ship it to your door worldwide.')
 
 @push('head')
-<meta name="description" content="Living abroad and want to buy products from Bangladesh? Submit a sourcing request and ExpressPeak will find, buy, and ship it directly to you.">
 <style>
     .sourcing-hero {
         background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%);
@@ -334,73 +334,102 @@
                     Delivery Destination
                 </h3>
 
-                <div
-                    x-data="{
-                        open: false, q: '', hi: -1,
-                        selectedCode: '{{ old('destination_country_code', '') }}',
-                        selectedName: '{{ old('destination_country', '') }}',
-                        get opts() {
-                            const all = window.SOURCING_COUNTRIES || [];
-                            if (!this.q) return all;
-                            const s = this.q.toLowerCase();
-                            const byStart = [], byContains = [];
-                            for (const c of all) {
-                                const name = c.name.toLowerCase();
-                                if (name.startsWith(s)) { byStart.push(c); continue; }
-                                if (name.includes(s) || c.code.toLowerCase().startsWith(s)) byContains.push(c);
+                <div class="space-y-5">
+                    <div
+                        x-data="{
+                            open: false, q: '', hi: -1,
+                            selectedCode: '{{ old('destination_country_code', '') }}',
+                            selectedName: '{{ old('destination_country', '') }}',
+                            get opts() {
+                                const all = window.SOURCING_COUNTRIES || [];
+                                if (!this.q) return all;
+                                const s = this.q.toLowerCase();
+                                const byStart = [], byContains = [];
+                                for (const c of all) {
+                                    const name = c.name.toLowerCase();
+                                    if (name.startsWith(s)) { byStart.push(c); continue; }
+                                    if (name.includes(s) || c.code.toLowerCase().startsWith(s)) byContains.push(c);
+                                }
+                                return [...byStart, ...byContains];
+                            },
+                            pick(c) { this.selectedCode = c.code; this.selectedName = c.name; this.q = c.name; this.open = false; this.hi = -1; },
+                            clear() { this.selectedCode = ''; this.selectedName = ''; this.q = ''; },
+                            onFocus() { this.open = true; if (this.selectedCode) this.q = ''; },
+                            onKey(e) {
+                                if (!this.open) return;
+                                if (e.key === 'ArrowDown') { e.preventDefault(); this.hi = Math.min(this.hi + 1, this.opts.length - 1); }
+                                else if (e.key === 'ArrowUp') { e.preventDefault(); this.hi = Math.max(this.hi - 1, 0); }
+                                else if (e.key === 'Enter') { e.preventDefault(); if (this.hi >= 0) this.pick(this.opts[this.hi]); }
+                                else if (e.key === 'Escape') { this.open = false; }
                             }
-                            return [...byStart, ...byContains];
-                        },
-                        pick(c) { this.selectedCode = c.code; this.selectedName = c.name; this.q = c.name; this.open = false; this.hi = -1; },
-                        clear() { this.selectedCode = ''; this.selectedName = ''; this.q = ''; },
-                        onFocus() { this.open = true; if (this.selectedCode) this.q = ''; },
-                        onKey(e) {
-                            if (!this.open) return;
-                            if (e.key === 'ArrowDown') { e.preventDefault(); this.hi = Math.min(this.hi + 1, this.opts.length - 1); }
-                            else if (e.key === 'ArrowUp') { e.preventDefault(); this.hi = Math.max(this.hi - 1, 0); }
-                            else if (e.key === 'Enter') { e.preventDefault(); if (this.hi >= 0) this.pick(this.opts[this.hi]); }
-                            else if (e.key === 'Escape') { this.open = false; }
-                        }
-                    }"
-                    @click.away="open = false; if (!selectedCode) q = ''; else q = selectedName;"
-                    class="relative"
-                    :class="open ? 'z-50' : 'z-10'"
-                >
-                    <label class="form-label">Destination Country *</label>
-                    <div class="relative">
-                        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input
-                            type="text"
-                            x-model="q"
-                            :placeholder="selectedName || 'Search your country...'"
-                            @focus="onFocus()"
-                            @keydown="onKey($event)"
-                            autocomplete="off"
-                            class="input-field input-with-icon-left input-with-icon-right"
-                            id="destination_country_search"
-                        >
-                        <button x-show="selectedCode" type="button" @click="clear()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-500 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                    <div x-show="open" x-transition class="absolute top-full left-0 right-0 mt-1 bg-white border border-white/10 rounded-2xl shadow-2xl z-30 max-h-56 overflow-y-auto">
-                        <template x-for="(c, i) in opts" :key="c.code">
-                            <div @click="pick(c)" :class="hi === i ? 'bg-violet-50 text-violet-700' : 'text-gray-700 hover:bg-gray-50'"
-                                class="flex items-center justify-between px-4 py-3 text-sm cursor-pointer transition-colors min-h-[44px]">
-                                <span x-text="c.name"></span>
-                                <span x-text="c.code" class="text-xs font-mono text-slate-400 ml-2 shrink-0"></span>
-                            </div>
-                        </template>
-                        <div x-show="opts.length === 0" class="px-4 py-3 text-sm text-slate-400 italic">No countries found</div>
+                        }"
+                        @click.away="open = false; if (!selectedCode) q = ''; else q = selectedName;"
+                        class="relative"
+                        :class="open ? 'z-50' : 'z-10'"
+                    >
+                        <label class="form-label">Destination Country *</label>
+                        <div class="relative">
+                            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input
+                                type="text"
+                                x-model="q"
+                                :placeholder="selectedName || 'Search your country...'"
+                                @focus="onFocus()"
+                                @keydown="onKey($event)"
+                                autocomplete="off"
+                                class="input-field input-with-icon-left input-with-icon-right @error('destination_country') border-red-400 @enderror"
+                                id="destination_country_search"
+                                required
+                            >
+                            <button x-show="selectedCode" type="button" @click="clear()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-500 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        <div x-show="open" x-transition class="absolute top-full left-0 right-0 mt-1 bg-white border border-white/10 rounded-2xl shadow-2xl z-30 max-h-56 overflow-y-auto">
+                            <template x-for="(c, i) in opts" :key="c.code">
+                                <div @click="pick(c)" :class="hi === i ? 'bg-violet-50 text-violet-700' : 'text-gray-700 hover:bg-gray-50'"
+                                    class="flex items-center justify-between px-4 py-3 text-sm cursor-pointer transition-colors min-h-[44px]">
+                                    <span x-text="c.name"></span>
+                                    <span x-text="c.code" class="text-xs font-mono text-slate-400 ml-2 shrink-0"></span>
+                                </div>
+                            </template>
+                            <div x-show="opts.length === 0" class="px-4 py-3 text-sm text-slate-400 italic">No countries found</div>
+                        </div>
+
+                        {{-- Hidden inputs for form submission --}}
+                        <input type="hidden" name="destination_country" :value="selectedName">
+                        <input type="hidden" name="destination_country_code" :value="selectedCode">
+                        
+                        @error('destination_country')
+                            <p class="error-msg mt-1.5">{{ $message }}</p>
+                        @enderror
                     </div>
 
-                    {{-- Hidden inputs for form submission --}}
-                    <input type="hidden" name="destination_country" :value="selectedName">
-                    <input type="hidden" name="destination_country_code" :value="selectedCode">
+                    {{-- Address Details --}}
+                    <div>
+                        <label for="destination_address" class="form-label">Street Address *</label>
+                        <input type="text" id="destination_address" name="destination_address" value="{{ old('destination_address') }}" placeholder="Apartment, suite, street address" class="input-field @error('destination_address') border-red-400 @enderror" required>
+                        @error('destination_address') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label for="destination_city" class="form-label">City *</label>
+                            <input type="text" id="destination_city" name="destination_city" value="{{ old('destination_city') }}" placeholder="City" class="input-field @error('destination_city') border-red-400 @enderror" required>
+                            @error('destination_city') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="destination_state" class="form-label">State / Province</label>
+                            <input type="text" id="destination_state" name="destination_state" value="{{ old('destination_state') }}" placeholder="State (optional)" class="input-field @error('destination_state') border-red-400 @enderror">
+                            @error('destination_state') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="destination_postal_code" class="form-label">ZIP / Postal Code</label>
+                            <input type="text" id="destination_postal_code" name="destination_postal_code" value="{{ old('destination_postal_code') }}" placeholder="ZIP (optional)" class="input-field @error('destination_postal_code') border-red-400 @enderror">
+                            @error('destination_postal_code') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
                 </div>
-                @error('destination_country')
-                    <p class="error-msg mt-1.5">{{ $message }}</p>
-                @enderror
             </div>
 
             <hr class="border-white/10">
@@ -538,7 +567,7 @@
                     Submit Sourcing Request
                 </button>
                 <p class="text-center text-xs text-slate-400 mt-3">
-                    By submitting, you agree that ExpressPeak may contact you on WhatsApp to discuss your order.
+                    By submitting, you agree that ExpressPeek may contact you on WhatsApp to discuss your order.
                 </p>
             </div>
         </form>

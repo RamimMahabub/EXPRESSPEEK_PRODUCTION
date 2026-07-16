@@ -279,13 +279,105 @@ class ShipmentController extends Controller
         } while (Shipment::where('tracking_number', $number)->exists());
         return $number;
     }
-    public function index()
+    public function index(Request $request)
     {
-        $shipments = Shipment::with(['sender', 'agent'])
-            ->latest()
-            ->paginate(20);
+        $recordType = $request->get('record_type', 'shipment');
+        
+        if ($recordType === 'sourcing' || $recordType === 'all') {
+            $query = \App\Models\SourcingRequest::with(['user', 'carrier'])->latest();
 
-        return view('admin.shipments.index', compact('shipments'));
+            if ($request->filled('start_date')) {
+                $query->whereDate('sourcing_requests.created_at', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $query->whereDate('sourcing_requests.created_at', '<=', $request->end_date);
+            }
+            if ($request->filled('carriers')) {
+                $query->whereIn('carrier_id', $request->carriers);
+            }
+            if ($request->filled('statuses')) {
+                $query->whereIn('status', $request->statuses);
+            }
+
+            $sourcingRequests = $recordType === 'all' ? $query->get() : $query->paginate(20)->withQueryString();
+            
+            $collection = $recordType === 'all' ? $sourcingRequests : $sourcingRequests->getCollection();
+            $collection->transform(function ($req) {
+                $req->is_sourcing = true;
+                $req->awb_number = $req->awb_number;
+                $req->tracking_number = $req->tracking_number;
+                $req->agent = (object) ['name' => $req->user?->name ?? '—'];
+                $req->receiver_name = $req->customer_name;
+                $req->receiver_city = $req->destination_country;
+                $req->receiver_country = null;
+                $req->carrier_tracking_number = $req->awb_number;
+                return $req;
+            });
+
+            if ($recordType === 'sourcing') {
+                $shipments = $sourcingRequests;
+            }
+        }
+
+        if ($recordType === 'shipment' || $recordType === 'all') {
+            $query = \App\Models\Shipment::with(['sender', 'agent'])->latest();
+
+            if ($request->filled('start_date')) {
+                $query->whereDate('shipments.created_at', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $query->whereDate('shipments.created_at', '<=', $request->end_date);
+            }
+            if ($request->filled('carriers')) {
+                $query->whereIn('carrier_id', $request->carriers);
+            }
+            if ($request->filled('agents')) {
+                $query->whereIn('agent_id', $request->agents);
+            }
+            if ($request->filled('statuses')) {
+                $query->whereIn('status', $request->statuses);
+            }
+
+            $standardShipments = $recordType === 'all' ? $query->get() : $query->paginate(20)->withQueryString();
+            
+            $collection = $recordType === 'all' ? $standardShipments : $standardShipments->getCollection();
+            $collection->transform(function ($shipment) {
+                $shipment->is_sourcing = false;
+                return $shipment;
+            });
+
+            if ($recordType === 'shipment') {
+                $shipments = $standardShipments;
+            }
+        }
+
+        if ($recordType === 'all') {
+            $all = collect();
+            if (isset($sourcingRequests)) {
+                $all = $all->concat($sourcingRequests);
+            }
+            if (isset($standardShipments)) {
+                $all = $all->concat($standardShipments);
+            }
+            
+            $all = $all->sortByDesc('created_at')->values();
+            
+            $page = \Illuminate\Pagination\Paginator::resolveCurrentPage() ?: 1;
+            $perPage = 20;
+            $shipments = new \Illuminate\Pagination\LengthAwarePaginator(
+                $all->forPage($page, $perPage),
+                $all->count(),
+                $perPage,
+                $page,
+                ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
+            );
+        }
+
+        $carriers = Carrier::all();
+        $agents = \App\Models\User::role('agent')->get();
+        $statuses = $recordType === 'sourcing' ? \App\Models\SourcingRequest::statuses() : Shipment::statuses();
+
+        return view('admin.shipments.index', compact('shipments', 'carriers', 'agents', 'statuses', 'recordType'));
     }
 
     public function edit(Shipment $shipment)
@@ -472,21 +564,56 @@ class ShipmentController extends Controller
             ->with('success', 'Shipment updated successfully.');
     }
 
+    public function updateInline(Request $request, Shipment $shipment)
+    {
+        $data = $request->validate([
+            'status' => ['nullable', Rule::in(array_keys(Shipment::statuses()))],
+            'carrier_tracking_number' => 'nullable|string|max:100',
+            'carrier_id' => 'nullable|exists:carriers,id',
+        ]);
+
+        if (empty($data)) {
+            return response()->json(['success' => false, 'message' => 'No data provided.'], 422);
+        }
+
+        if (array_key_exists('carrier_id', $data)) {
+             $carrier = \App\Models\Carrier::find($data['carrier_id']);
+             $data['carrier_name'] = $carrier?->name;
+        }
+
+        $originalStatus = $shipment->status;
+        $shipment->update($data);
+
+        if (isset($data['status']) && $originalStatus !== $shipment->status) {
+            $shipment->trackingEvents()->create([
+                'location' => ($shipment->receiver_city ?: 'Destination') . ', ' . ($shipment->receiver_country ?: ''),
+                'status' => $shipment->status,
+                'notes' => 'Status updated inline by admin from ' . ($originalStatus ?: 'unknown') . ' to ' . $shipment->status . '.',
+                'occurred_at' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'shipment' => [
+                'id' => $shipment->id,
+                'status' => $shipment->status,
+                'carrier_tracking_number' => $shipment->carrier_tracking_number,
+                'status_label' => $shipment->status_label
+            ]
+        ]);
+    }
+
     public function printWaybill(Shipment $shipment)
     {
-        $qrPayload = implode('|', [
-            'tracking:' . ($shipment->tracking_number ?? ''),
-            'awb:' . ($shipment->awb_number ?? ''),
-            'to:' . ($shipment->receiver_name ?? ''),
-            'country:' . ($shipment->receiver_country_code ?? $shipment->receiver_country ?? ''),
-            'pieces:' . (string) ($shipment->total_packages ?? 0),
-            'weight:' . (string) ($shipment->total_weight ?? 0),
+        $qrPayload = route('track', [
+            'tracking' => (string) $shipment->tracking_number,
         ]);
 
         $qrSvg = $this->generateQrSvg($qrPayload);
 
         $pdf = app('dompdf.wrapper')
-            ->setPaper([0, 0, 288, 432], 'portrait')
+            ->setPaper('a4', 'portrait')
             ->loadView('agent.shipments.waybill', compact('shipment', 'qrSvg'));
 
         return $pdf->stream('waybill-' . $shipment->awb_number . '.pdf');

@@ -24,9 +24,6 @@ Route::middleware(['auth', 'verified'])
         Route::delete('/address-book/{addressBook}', [AgentShipment::class, 'deleteAddress'])->name('address-book.destroy');
     });
 
-// Note: waybill printing is admin-only. We do not forward or expose agent waybill
-// routes to non-admins. Invoice printing remains available to agents.
-
 Route::middleware(['auth', 'verified', 'role:agent'])
     ->prefix('agent')
     ->name('agent.')
@@ -38,6 +35,7 @@ Route::middleware(['auth', 'verified', 'role:agent'])
         Route::get('/shipments/{shipment}/edit', [AgentShipment::class, 'edit'])->name('shipments.edit');
         Route::put('/shipments/{shipment}', [AgentShipment::class, 'update'])->name('shipments.update');
 
-        // PDF documents: agents may print invoices only; waybills are admin-only.
+        // PDF documents for shipments owned or created by the agent.
+        Route::get('/shipments/{shipment}/waybill', [AgentShipment::class, 'printWaybill'])->name('shipments.waybill');
         Route::get('/shipments/{shipment}/invoice', [AgentShipment::class, 'printInvoice'])->name('shipments.invoice');
     });

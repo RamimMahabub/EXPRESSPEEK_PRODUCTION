@@ -22,6 +22,12 @@ Route::middleware(['auth', 'verified', 'role:customer'])
             return view('customer.shipments.index', compact('shipments'));
         })->name('shipments.index');
 
+        // Sourcing Requests
+        Route::get('/sourcing-requests', function () {
+            $sourcingRequests = \App\Models\SourcingRequest::with(['items', 'invoices'])->where('user_id', auth()->id())->latest()->paginate(15);
+            return view('customer.sourcing-requests.index', compact('sourcingRequests'));
+        })->name('sourcing-requests.index');
+
         Route::get('/shipments/create', [\App\Http\Controllers\Customer\ShipmentController::class, 'create'])->name('shipments.create');
         Route::post('/shipments', [\App\Http\Controllers\Customer\ShipmentController::class, 'store'])->name('shipments.store');
         Route::get('/api/carriers', [\App\Http\Controllers\Customer\ShipmentController::class, 'getCarriers'])->name('carriers.api.index');
@@ -32,5 +38,9 @@ Route::middleware(['auth', 'verified', 'role:customer'])
         })->name('shipments.show');
 
         // Allow customers to print their own documents
+        Route::get('/shipments/{shipment}/waybill', [\App\Http\Controllers\Customer\ShipmentPrintController::class, 'printWaybill'])->name('shipments.waybill');
         Route::get('/shipments/{shipment}/invoice', [\App\Http\Controllers\Customer\ShipmentPrintController::class, 'printInvoice'])->name('shipments.invoice');
+
+        // Sourcing Invoices
+        Route::get('/sourcing-invoices/{sourcingInvoice}/download', [\App\Http\Controllers\Customer\SourcingInvoiceController::class, 'downloadPdf'])->name('sourcing-invoices.download');
     });

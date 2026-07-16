@@ -1,6 +1,7 @@
 @extends('layouts.customer')
 
-@section('title', 'Track Your Shipment')
+@section('seo_title', 'Track Your Parcel | ExpressPeek Bangladesh Courier Tracking')
+@section('seo_description', 'Track your international parcel shipped from Bangladesh in real-time. Enter your ExpressPeek tracking number for live status updates, delivery milestones, and estimated arrival.')
 
 @push('head')
 <style>

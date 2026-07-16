@@ -35,16 +35,17 @@
                         <li><a href="{{ route('quote') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Get a Quote</a></li>
                         <li><a href="{{ route('track') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Track a Shipment</a></li>
                         <li><a href="{{ route('sourcing.create') }}" class="text-amber-500 hover:text-amber-400 transition-colors font-semibold flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-amber-500/50"></span>Shop from Bangladesh</a></li>
+                        <li><a href="{{ route('blog.index') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Resources</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="text-white text-base font-bold mb-6">Support</h4>
                     <ul class="space-y-3.5 text-sm">
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Customer Service</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Help Center</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Schedule Pickup</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Privacy Policy</a></li>
+                        <li><a href="{{ route('customer-service') }}" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Customer Service</a></li>
+                        <li><a href="{{ route('help') }}" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Help Center</a></li>
+                        <li><a href="{{ route('customer-service') }}#schedule-pickup" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Schedule Pickup</a></li>
+                        <li><a href="{{ route('terms') }}" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Terms of Service</a></li>
+                        <li><a href="{{ route('privacy') }}" class="hover:text-white transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Privacy Policy</a></li>
                     </ul>
                 </div>
             </div>
@@ -73,6 +74,21 @@
                         <a href="tel:01400659902" class="hover:text-white transition-colors font-medium text-base">01400-659902</a>
                     </li>
                 </ul>
+            </div>
+        </div>
+
+        {{-- Popular Routes (Internal Linking for SEO) --}}
+        <div class="mb-10">
+            <h4 class="text-white text-base font-bold mb-4">Popular Shipping Routes</h4>
+            <div class="flex flex-wrap gap-2">
+                @foreach(['uk' => 'United Kingdom', 'usa' => 'United States', 'saudi-arabia' => 'Saudi Arabia', 'uae' => 'UAE', 'australia' => 'Australia', 'malaysia' => 'Malaysia', 'canada' => 'Canada'] as $slug => $name)
+                <a href="{{ route('ship-to', $slug) }}" class="bg-gray-800 hover:bg-violet-900/50 text-slate-400 hover:text-violet-300 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors border border-gray-700 hover:border-violet-500/30">🇧🇩 → {{ $name }}</a>
+                @endforeach
+            </div>
+            <div class="flex flex-wrap gap-2 mt-3">
+                @foreach(['dhaka' => 'Dhaka', 'sylhet' => 'Sylhet', 'chittagong' => 'Chittagong'] as $slug => $name)
+                <a href="{{ route('ship-from', $slug) }}" class="bg-gray-800 hover:bg-emerald-900/50 text-slate-400 hover:text-emerald-300 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors border border-gray-700 hover:border-emerald-500/30">Ship from {{ $name }}</a>
+                @endforeach
             </div>
         </div>
 

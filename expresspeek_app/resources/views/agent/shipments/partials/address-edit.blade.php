@@ -1,7 +1,7 @@
 {{-- Business Contact Toggle --}}
 <div class="flex items-center gap-3 mb-4">
     <label class="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" name="{{ $prefix }}_is_business" id="{{ $prefix }}_is_business_check"
+        <input type="checkbox" name="{{ $prefix }}_is_business" value="1" id="{{ $prefix }}_is_business_check"
             class="w-4 h-4 rounded border-gray-600 text-violet-600 bg-gray-800 focus:ring-violet-500"
             @checked((int) old($prefix . '_is_business', data_get($source, $prefix . '_is_business')) === 1)
             onchange="document.getElementById('{{ $prefix }}_business_section').classList.toggle('hidden', !this.checked)">

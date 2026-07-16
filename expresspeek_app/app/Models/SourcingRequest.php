@@ -16,8 +16,16 @@ class SourcingRequest extends Model
         'whatsapp_country_code',
         'destination_country',
         'destination_country_code',
+        'destination_address',
+        'destination_city',
+        'destination_state',
+        'destination_postal_code',
 
         'status',
+        'tracking_number',
+        'awb_number',
+        'carrier_id',
+        'carrier_name',
         'admin_notes',
         'quoted_price',
         'quoted_currency',
@@ -31,6 +39,8 @@ class SourcingRequest extends Model
             'quoted_price' => 'decimal:2',
         ];
     }
+
+
 
     // ─── Status Constants ────────────────────────────────────────────────────────
 
@@ -99,6 +109,48 @@ class SourcingRequest extends Model
         return "https://wa.me/{$phone}?text={$msg}";
     }
 
+    public function getCarrierTrackingProviderNameAttribute(): string
+    {
+        if ($this->carrier) {
+            return $this->carrier->name;
+        }
+
+        if (empty($this->carrier_name)) {
+            return 'DHL'; // Default
+        }
+
+        $name = strtolower($this->carrier_name);
+
+        if (str_contains($name, 'fedex')) return 'FedEx';
+        if (str_contains($name, 'ups')) return 'UPS';
+        if (str_contains($name, 'aramex')) return 'Aramex';
+        if (str_contains($name, 'ocs')) return 'OCS';
+        if (str_contains($name, 'sf')) return 'SF Express';
+        if (str_contains($name, 'tge')) return 'Team Global Express';
+
+        return 'DHL';
+    }
+
+    public function getCarrierTrackingUrlAttribute(): string
+    {
+        if (empty($this->awb_number)) {
+            return '#';
+        }
+
+        $trackingNum = urlencode($this->awb_number);
+        $provider = $this->carrier_tracking_provider_name;
+
+        return match ($provider) {
+            'FedEx' => "https://www.fedex.com/fedextrack/?trknbr={$trackingNum}",
+            'UPS' => "https://www.ups.com/track?tracknum={$trackingNum}",
+            'Aramex' => "https://www.aramex.com/us/en/track/results?mode=0&ShipmentNumber={$trackingNum}",
+            'OCS' => "https://webcsw.ocs.co.jp/csw/ECSWG0201R00003P.do?cwbno={$trackingNum}",
+            'SF Express' => "https://www.sf-international.com/sg/en/support/querySupport/waybill?No={$trackingNum}",
+            'Team Global Express' => "https://teamglobalexp.com/myparcel?shipmentID={$trackingNum}",
+            default => "https://www.dhl.com/bd-en/home/tracking/tracking-express.html?submit=1&tracking-id={$trackingNum}&inputsource=marketingstage",
+        };
+    }
+
     // ─── Reference Number ────────────────────────────────────────────────────────
 
     /**
@@ -125,5 +177,15 @@ class SourcingRequest extends Model
     public function items()
     {
         return $this->hasMany(SourcingRequestItem::class);
+    }
+
+    public function carrier()
+    {
+        return $this->belongsTo(Carrier::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(SourcingInvoice::class);
     }
 }

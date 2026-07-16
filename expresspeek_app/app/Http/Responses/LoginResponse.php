@@ -11,15 +11,17 @@ class LoginResponse implements LoginResponseContract
     {
         $user = auth()->user();
 
+        $request->session()->forget('url.intended');
+
         if ($user->isAdmin()) {
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->route('admin.dashboard');
         }
 
         if ($user->isAgent()) {
-            return redirect()->intended(route('agent.dashboard'));
+            return redirect()->route('agent.dashboard');
         }
 
         // Customers land on their own dashboard
-        return redirect()->intended(route('customer.dashboard'));
+        return redirect()->route('customer.dashboard');
     }
 }

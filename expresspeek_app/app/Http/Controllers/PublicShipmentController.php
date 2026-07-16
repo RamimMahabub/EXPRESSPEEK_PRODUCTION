@@ -212,19 +212,14 @@ class PublicShipmentController extends Controller
     {
         abort_unless($request->hasValidSignature(), 403);
 
-        $qrPayload = implode('|', [
-            'tracking:' . ($shipment->tracking_number ?? ''),
-            'awb:' . ($shipment->awb_number ?? ''),
-            'to:' . ($shipment->receiver_name ?? ''),
-            'country:' . ($shipment->receiver_country_code ?? $shipment->receiver_country ?? ''),
-            'pieces:' . (string) ($shipment->total_packages ?? 0),
-            'weight:' . (string) ($shipment->total_weight ?? 0),
+        $qrPayload = route('track', [
+            'tracking' => (string) $shipment->tracking_number,
         ]);
 
         $qrSvg = $this->generateQrSvg($qrPayload);
 
         $pdf = app('dompdf.wrapper')
-            ->setPaper([0, 0, 288, 432], 'portrait')
+            ->setPaper('a4', 'portrait')
             ->loadView('agent.shipments.waybill', compact('shipment', 'qrSvg'));
 
         return $pdf->stream('waybill-' . $shipment->awb_number . '.pdf');

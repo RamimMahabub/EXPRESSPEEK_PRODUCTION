@@ -551,10 +551,13 @@ class ShipmentController extends Controller
 
         $isAdmin = $user?->isAdmin() ?? false;
 
-        // Only admins should get a waybill URL. Agents and customers receive no waybill link.
-        $waybillUrl = $isAdmin
-            ? route('admin.shipments.waybill', $shipment->id)
-            : null;
+        if ($isAdmin) {
+            $waybillUrl = route('admin.shipments.waybill', $shipment->id);
+        } elseif ($isAgent) {
+            $waybillUrl = route('agent.shipments.waybill', $shipment->id);
+        } else {
+            $waybillUrl = route('customer.shipments.waybill', $shipment->id);
+        }
 
         // Invoice links: admin -> admin invoice, agent -> agent invoice, customer/guest -> customer invoice
         if ($isAdmin) {
@@ -578,19 +581,16 @@ class ShipmentController extends Controller
      */
     public function printWaybill(Shipment $shipment)
     {
-        $qrPayload = implode('|', [
-            'tracking:' . ($shipment->tracking_number ?? ''),
-            'awb:' . ($shipment->awb_number ?? ''),
-            'to:' . ($shipment->receiver_name ?? ''),
-            'country:' . ($shipment->receiver_country_code ?? $shipment->receiver_country ?? ''),
-            'pieces:' . (string) ($shipment->total_packages ?? 0),
-            'weight:' . (string) ($shipment->total_weight ?? 0),
+        $shipment = $this->resolveAgentShipment($shipment);
+
+        $qrPayload = route('track', [
+            'tracking' => (string) $shipment->tracking_number,
         ]);
 
         $qrSvg = $this->generateQrSvg($qrPayload);
 
         $pdf = app('dompdf.wrapper')
-            ->setPaper([0, 0, 288, 432], 'portrait')
+            ->setPaper('a4', 'portrait')
             ->loadView('agent.shipments.waybill', compact('shipment', 'qrSvg'));
 
         return $pdf->stream('waybill-' . $shipment->awb_number . '.pdf');
@@ -601,6 +601,8 @@ class ShipmentController extends Controller
      */
     public function printInvoice(Shipment $shipment)
     {
+        $shipment = $this->resolveAgentShipment($shipment);
+
         $pdf = app('dompdf.wrapper')->loadView('agent.shipments.invoice', compact('shipment'));
         return $pdf->stream('invoice-' . $shipment->invoice_number . '.pdf');
     }

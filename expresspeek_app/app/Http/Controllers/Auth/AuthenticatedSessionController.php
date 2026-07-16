@@ -6,17 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(): Response
     {
-        return view('auth.login');
+        return response(view('auth.login'))
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     /**
@@ -28,12 +31,20 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $next = $this->resolveRedirectTarget($request, (string) $request->query('next', ''));
+        // Never reuse an intended URL saved by the previous account. It may point
+        // to a dashboard that the newly authenticated role cannot access.
+        $request->session()->forget('url.intended');
+
+        $next = $this->resolveRedirectTarget(
+            $request,
+            (string) $request->query('next', ''),
+            auth()->user()
+        );
         if ($next !== null) {
             return redirect()->to($next);
         }
 
-        return redirect()->intended($this->postLoginRedirectFor(auth()->user()));
+        return redirect()->to($this->postLoginRedirectFor(auth()->user()));
     }
 
     private function postLoginRedirectFor(?\App\Models\User $user): string
@@ -53,16 +64,12 @@ class AuthenticatedSessionController extends Controller
         return route('dashboard', absolute: false);
     }
 
-    private function resolveRedirectTarget(Request $request, string $next): ?string
+    private function resolveRedirectTarget(Request $request, string $next, ?\App\Models\User $user): ?string
     {
         $next = trim($next);
 
         if ($next === '') {
             return null;
-        }
-
-        if (str_starts_with($next, '/')) {
-            return $next;
         }
 
         $parts = parse_url($next);
@@ -77,7 +84,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         $host = strtolower((string) ($parts['host'] ?? ''));
-        if ($host === '' || $host !== strtolower($request->getHost())) {
+        if ($host !== '' && $host !== strtolower($request->getHost())) {
             return null;
         }
 
@@ -89,6 +96,12 @@ class AuthenticatedSessionController extends Controller
 
         if (!empty($parts['fragment'])) {
             $target .= '#' . $parts['fragment'];
+        }
+
+        if (($user?->isAdmin() && preg_match('#^/(agent|customer)(/|$)#', $target))
+            || ($user?->isAgent() && preg_match('#^/(admin|customer)(/|$)#', $target))
+            || ($user?->isCustomer() && preg_match('#^/(admin|agent)(/|$)#', $target))) {
+            return null;
         }
 
         return $target;

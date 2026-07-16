@@ -5,7 +5,7 @@
     {{-- Logo --}}
     <div class="px-4 py-4 border-b border-slate-200 bg-slate-50/80">
         <a href="{{ route('home') }}" class="block rounded-2xl bg-white overflow-hidden h-24 border border-slate-200 shadow-sm flex items-center justify-center">
-            <img src="/images/express-peek-logo.webp" alt="ExpressPeak" class="w-full h-full object-contain p-2">
+            <img src="/images/express-peek-logo.webp" alt="ExpressPeek" class="w-full h-full object-contain p-2">
         </a>
     </div>
 
@@ -114,6 +114,13 @@
                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                 </x-slot:icon>
                 My Shipments
+            </x-nav-link>
+            <x-nav-link href="{{ route('customer.sourcing-requests.index') }}" :active="request()->routeIs('customer.sourcing-requests.*')">
+                <x-slot:icon>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </x-slot:icon>
+                Sourcing Requests
             </x-nav-link>
         </div>
         @endif

@@ -66,14 +66,21 @@
                         <span class="text-xs text-emerald-500 font-normal">→ Chat</span>
                     </a>
                 </div>
-                <div>
-                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-1">Destination Country</p>
+                <div class="sm:col-span-2">
+                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-1">Delivery Address</p>
                     <p class="text-white font-semibold">
+                        {{ $sourcingRequest->destination_address ?? 'Not provided' }}
+                    </p>
+                    @if($sourcingRequest->destination_city || $sourcingRequest->destination_state || $sourcingRequest->destination_postal_code || $sourcingRequest->destination_country)
+                    <p class="text-slate-300 text-sm mt-0.5">
+                        {{ collect([$sourcingRequest->destination_city, $sourcingRequest->destination_state, $sourcingRequest->destination_postal_code])->filter()->join(', ') }}
+                        <br>
                         {{ $sourcingRequest->destination_country }}
                         @if($sourcingRequest->destination_country_code)
                             <span class="text-slate-400 font-mono text-xs">({{ $sourcingRequest->destination_country_code }})</span>
                         @endif
                     </p>
+                    @endif
                 </div>
                 <div>
                     <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-1">Submitted</p>
@@ -108,8 +115,8 @@
                             {{-- Image --}}
                             <div class="flex-shrink-0 w-full sm:w-32 h-32 bg-gray-800 rounded-lg border border-gray-700 flex items-center justify-center overflow-hidden relative group">
                                 @if($item->product_image)
-                                    <a href="{{ Storage::url($item->product_image) }}" target="_blank" class="block w-full h-full">
-                                        <img src="{{ Storage::url($item->product_image) }}" alt="Product image" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                                    <a href="{{ asset('storage/' . $item->product_image) }}" target="_blank" class="block w-full h-full">
+                                        <img src="{{ asset('storage/' . $item->product_image) }}" alt="Product image" class="w-full h-full object-cover group-hover:scale-105 transition-transform" onerror="this.onerror=null; this.src='{{ asset('images/placeholder.png') }}';">
                                     </a>
                                 @else
                                     <div class="flex flex-col items-center justify-center text-slate-500">
@@ -188,23 +195,47 @@
                     </select>
                 </div>
 
-                {{-- Quoted Price --}}
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Quoted Price</label>
-                        <input type="number" name="quoted_price" step="0.01" min="0"
-                               value="{{ old('quoted_price', $sourcingRequest->quoted_price) }}"
-                               placeholder="0.00"
-                               class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-500 transition-colors placeholder-gray-600">
+                {{-- Tracking Info --}}
+                <div class="mb-4">
+                    <div class="mb-3">
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wide">Internal Tracking</p>
+                        <p class="font-mono text-lg text-violet-300">{{ $sourcingRequest->tracking_number }}</p>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Currency</label>
-                        <select name="quoted_currency" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-500 transition-colors">
-                            @foreach(['BDT','USD','GBP','EUR','AUD','AED','SGD','CAD'] as $cur)
-                                <option value="{{ $cur }}" {{ ($sourcingRequest->quoted_currency ?? 'BDT') === $cur ? 'selected' : '' }}>{{ $cur }}</option>
+
+                    <label class="block text-xs font-semibold text-amber-400 mb-1 flex items-center gap-1.5 mt-4">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        Carrier AWB Number <span class="text-slate-400 font-normal">(e.g. {{ $sourcingRequest->carrier_tracking_provider_name }} waybill)</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <select name="carrier_id" class="w-1/3 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400 transition-colors">
+                            <option value="">Select carrier</option>
+                            @foreach($carriers as $carrier)
+                                <option value="{{ $carrier->id }}" @selected((string) old('carrier_id', $sourcingRequest->carrier_id) === (string) $carrier->id)>
+                                    {{ $carrier->name }}
+                                </option>
                             @endforeach
                         </select>
+                        <input type="text" name="awb_number"
+                               value="{{ old('awb_number', $sourcingRequest->awb_number) }}"
+                               placeholder="AWB number (e.g. 1Z99...)"
+                               class="flex-1 bg-gray-800 border border-amber-500/40 focus:border-amber-400 rounded-xl px-3 py-2 text-sm text-white focus:outline-none transition-colors placeholder-gray-600">
                     </div>
+                    @if($sourcingRequest->awb_number)
+                        <div class="mt-2 flex items-center gap-2">
+                            <a href="{{ $sourcingRequest->carrier_tracking_url }}" target="_blank"
+                               class="flex items-center gap-1.5 text-xs bg-yellow-500 hover:bg-yellow-400 text-slate-100 font-bold rounded-xl px-3 py-1.5 transition-colors whitespace-nowrap">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                                View on {{ $sourcingRequest->carrier_tracking_provider_name }}
+                            </a>
+                        </div>
+                    @endif
+                    <p class="mt-1.5 text-xs text-slate-500">
+                        When set, searching this tracking number on ExpressPeek will open the carrier's live tracking page.
+                    </p>
                 </div>
 
                 {{-- Admin Notes --}}
@@ -220,16 +251,70 @@
             </form>
         </div>
 
-        {{-- Quick Info --}}
-        @if($sourcingRequest->quoted_price)
-        <div class="bg-amber-900/20 border border-amber-800/40 rounded-2xl p-5">
-            <p class="text-xs font-bold text-amber-500 uppercase tracking-wide mb-1">Quoted to Customer</p>
-            <p class="text-2xl font-black text-amber-400">
-                {{ number_format($sourcingRequest->quoted_price, 2) }}
-                <span class="text-sm font-semibold">{{ $sourcingRequest->quoted_currency }}</span>
-            </p>
+        {{-- Invoices --}}
+        <div class="bg-gray-900 border border-blue-900/40 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Invoices <span class="bg-gray-800 text-slate-300 text-xs px-2 py-0.5 rounded-full ml-1">{{ $sourcingRequest->invoices->count() }}</span>
+                </h3>
+                <a href="{{ route('admin.sourcing-requests.invoice.create', $sourcingRequest) }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-bold transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Invoice
+                </a>
+            </div>
+
+            @if($sourcingRequest->invoices->count() > 0)
+                <div class="space-y-3">
+                    @foreach($sourcingRequest->invoices as $invoice)
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 flex items-center justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <p class="font-mono text-sm text-white font-bold">{{ $invoice->invoice_number }}</p>
+                                @if($invoice->status === 'paid')
+                                    <span class="text-[10px] font-bold uppercase tracking-wide bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-md border border-emerald-500/30">Paid</span>
+                                @elseif($invoice->status === 'cancelled')
+                                    <span class="text-[10px] font-bold uppercase tracking-wide bg-red-500/20 text-red-400 px-2 py-0.5 rounded-md border border-red-500/30">Cancelled</span>
+                                @else
+                                    <span class="text-[10px] font-bold uppercase tracking-wide bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-md border border-amber-500/30">Unpaid</span>
+                                @endif
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                {{ number_format($invoice->total_amount, 2) }} {{ $invoice->currency }} • {{ $invoice->created_at->format('M d, Y') }}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('admin.sourcing-invoices.download', $invoice) }}" target="_blank"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-slate-200 text-xs font-bold rounded-lg transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Download PDF
+                            </a>
+                            @if($invoice->status === 'unpaid')
+                            <form action="{{ route('admin.sourcing-invoices.pay', $invoice) }}" method="POST" onsubmit="return confirm('Mark this invoice as paid?')">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold rounded-lg transition-colors border border-emerald-600/30">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Mark as Paid
+                                </button>
+                            </form>
+                            @endif
+                            <form action="{{ route('admin.sourcing-invoices.destroy', $invoice) }}" method="POST" onsubmit="return confirm('Delete this invoice entirely?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="p-1.5 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-4 bg-gray-800/50 rounded-xl border border-gray-700/50 border-dashed">
+                    <p class="text-xs text-slate-400">No invoices generated yet.</p>
+                </div>
+            @endif
         </div>
-        @endif
 
         {{-- Danger Zone --}}
         @if($sourcingRequest->status !== 'cancelled' && $sourcingRequest->status !== 'completed')

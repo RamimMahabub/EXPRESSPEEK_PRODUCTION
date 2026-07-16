@@ -43,9 +43,10 @@ class SourcingRequestController extends Controller
      */
     public function show(SourcingRequest $sourcingRequest)
     {
-        $sourcingRequest->load('user', 'items');
+        $sourcingRequest->load('user', 'items', 'carrier');
         $statuses = SourcingRequest::statuses();
-        return view('admin.sourcing.show', compact('sourcingRequest', 'statuses'));
+        $carriers = \App\Models\Carrier::orderBy('name')->get();
+        return view('admin.sourcing.show', compact('sourcingRequest', 'statuses', 'carriers'));
     }
 
     /**
@@ -55,9 +56,9 @@ class SourcingRequestController extends Controller
     {
         $data = $request->validate([
             'status'          => ['required', Rule::in(array_keys(SourcingRequest::statuses()))],
-            'admin_notes'     => 'nullable|string|max:5000',
-            'quoted_price'    => 'nullable|numeric|min:0',
-            'quoted_currency' => 'nullable|string|max:10',
+            'admin_notes'     => 'nullable|string|max:2000',
+            'awb_number'      => 'nullable|string|max:191',
+            'carrier_id'      => 'nullable|exists:carriers,id',
             'shipment_id'     => 'nullable|exists:shipments,id',
         ]);
 
@@ -66,6 +67,36 @@ class SourcingRequestController extends Controller
         return redirect()
             ->route('admin.sourcing-requests.show', $sourcingRequest)
             ->with('success', 'Sourcing request updated successfully.');
+    }
+
+    public function updateInline(Request $request, SourcingRequest $sourcingRequest)
+    {
+        $data = $request->validate([
+            'status' => ['nullable', Rule::in(array_keys(SourcingRequest::statuses()))],
+            'carrier_tracking_number' => 'nullable|string|max:191',
+            'carrier_id' => 'nullable|exists:carriers,id',
+        ]);
+
+        if (empty($data)) {
+            return response()->json(['success' => false, 'message' => 'No data provided.'], 422);
+        }
+
+        if (array_key_exists('carrier_tracking_number', $data)) {
+            $data['awb_number'] = $data['carrier_tracking_number'];
+            unset($data['carrier_tracking_number']);
+        }
+
+        $sourcingRequest->update($data);
+
+        return response()->json([
+            'success' => true,
+            'shipment' => [
+                'id' => $sourcingRequest->id,
+                'status' => $sourcingRequest->status,
+                'carrier_tracking_number' => $sourcingRequest->awb_number,
+                'status_label' => $sourcingRequest->status_label
+            ]
+        ]);
     }
 
     /**

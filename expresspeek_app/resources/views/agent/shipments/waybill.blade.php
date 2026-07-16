@@ -1,288 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Waybill {{ $shipment->awb_number }}</title>
-    <style>
-        @page {
-            size: 4in 6in;
-            margin: 0.04in;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            color: #000;
-            background: #fff;
-            font-size: 7px;
-            line-height: 1.1;
-        }
-
-        .label {
-            width: 100%;
-            max-width: 100%;
-            border: 1px solid #000;
-            padding: 2px;
-            overflow: hidden;
-        }
-
-        .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 3px;
-            border-bottom: 1px solid #000;
-            padding-bottom: 2px;
-            margin-bottom: 2px;
-        }
-
-        .title {
-            font-size: 11px;
-            font-weight: 800;
-            line-height: 1;
-        }
-
-        .meta {
-            margin-top: 2px;
-            font-size: 7px;
-            font-weight: 700;
-        }
-
-        .brand {
-            text-align: right;
-            font-size: 9px;
-            font-weight: 800;
-            line-height: 1.1;
-        }
-
-        .wpx {
-            display: inline-block;
-            background: #000;
-            color: #fff;
-            font-size: 15px;
-            font-weight: 800;
-            padding: 0 4px;
-            margin-bottom: 2px;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2px;
-            width: 100%;
-        }
-
-        .box {
-            border: 1px solid #000;
-            padding: 2px;
-            min-height: 60px;
-            overflow: hidden;
-            word-wrap: break-word;
-        }
-
-        .box-title {
-            font-size: 7px;
-            font-weight: 800;
-            margin-bottom: 2px;
-            border-bottom: 1px solid #000;
-            padding-bottom: 1px;
-        }
-
-        .strong {
-            font-weight: 800;
-            font-size: 8px;
-        }
-
-        .divider {
-            border-top: 1px solid #000;
-            margin: 2px 0;
-        }
-
-        .summary {
-            border: 1px solid #000;
-            padding: 2px;
-        }
-
-        .summary-head {
-            font-size: 8px;
-            font-weight: 800;
-            margin-bottom: 3px;
-        }
-
-        .summary-row {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 4px;
-            margin-top: 0;
-            font-size: 7px;
-        }
-
-        .big {
-            font-size: 10px;
-            font-weight: 800;
-        }
-
-        .code-row {
-            display: grid;
-            grid-template-columns: 1fr 68px;
-            gap: 2px;
-            align-items: start;
-            margin-top: 2px;
-            width: 100%;
-        }
-
-        .barcode {
-            height: 36px;
-            width: 100%;
-            border: 1px solid #000;
-            background: repeating-linear-gradient(
-                90deg,
-                #000 0px,
-                #000 2px,
-                #fff 2px,
-                #fff 3px,
-                #000 3px,
-                #000 5px,
-                #fff 5px,
-                #fff 7px,
-                #000 7px,
-                #000 8px,
-                #fff 8px,
-                #fff 10px
-            );
-        }
-
-        .awb {
-            text-align: center;
-            font-size: 8px;
-            font-weight: 800;
-            margin-top: 2px;
-        }
-
-        .contents {
-            margin-top: 1px;
-            font-size: 6px;
-            font-weight: 700;
-            border: 1px solid #000;
-            padding: 1px 2px;
-            word-wrap: break-word;
-            overflow: hidden;
-        }
-
-        .qr {
-            width: 68px;
-            height: 68px;
-            border: 1px solid #000;
-            padding: 1px;
-            text-align: center;
-        }
-
-        .qr img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .license {
-            margin-top: 1px;
-            border: 1px solid #000;
-            padding: 1px 2px;
-        }
-
-        .license-title {
-            font-size: 7px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .license-line {
-            font-size: 7px;
-            line-height: 1.15;
-        }
-    </style>
-</head>
-<body>
+<html lang="en"><head><meta charset="UTF-8"><title>AWB {{ $shipment->tracking_number }}</title>
+<style>
+@page{size:A4 portrait;margin:6mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:DejaVu Sans,Arial,sans-serif;font-size:7.2px;line-height:1.18}.copy{height:136mm;overflow:hidden}.cut{height:5mm;border-top:1px dashed #aaa;margin-top:2.5mm}table{width:100%;border-collapse:collapse;table-layout:fixed}td,th{border:1px solid #777;padding:2.2px 4px;vertical-align:top}.head td{border:0;padding:0 4px 4px}.brand{height:31px;white-space:nowrap}.brand-mark{display:inline-block;vertical-align:middle;width:34px;height:34px}.brand-text{display:inline-block;vertical-align:middle;margin-left:4px;line-height:.9}.brand-express{font-size:8px;color:#64748b;letter-spacing:1px}.brand-peek{font-size:14px;font-weight:bold;color:#0f172a;letter-spacing:.5px}.qr-wrap{text-align:right}.qr{width:48px;height:48px;display:inline-block;vertical-align:middle}.track{display:inline-block;vertical-align:middle;text-align:center;margin-right:8px}.track-no{font-size:11px;font-weight:bold;letter-spacing:2px}.track-label{font-size:6px;font-weight:bold;color:#555}.dark{background:#555;color:#fff;text-align:center;font-weight:bold}.meta th{height:14px;font-size:6px;vertical-align:middle}.meta td{text-align:center;font-size:8px;font-weight:bold;height:14px;vertical-align:middle}.party{height:49px}.rowline{height:15px;vertical-align:middle}.title{font-weight:bold}.goods{height:27px}.terms{height:38px;font-size:5.6px;line-height:1.3}.charges{font-size:6px}.charges td{height:12px;vertical-align:middle}.red{color:#d00;font-weight:bold;text-align:center}.sign{height:21px}.foot{background:#555;color:#fff;text-align:center;font-weight:bold;padding:3px}.muted{color:#666}.nowrap{white-space:nowrap}.center{text-align:center}.logo-svg{width:34px;height:34px}
+</style></head><body>
 @php
-    $docType = strtoupper($shipment->shipment_type === 'document' ? 'DOC' : 'NON-DOC');
-    $carrierLabel = strtoupper(str_replace('-Bangladesh', '', $shipment->carrier_name ?? 'DHL'));
-    $shipperPhone = trim(($shipment->sender_phone_code ?? '') . ($shipment->sender_phone ?? ''));
-    $receiverPhone = trim(($shipment->receiver_phone_code ?? '') . ($shipment->receiver_phone ?? ''));
-    $items = is_array($shipment->items) ? $shipment->items : [];
-    $contentStr = collect($items)->pluck('name')->implode(', ');
-    $licenseBase = 'JD' . str_pad((string) ($shipment->awb_number ?? '0000000000'), 10, '0', STR_PAD_LEFT);
-    $awbSpaced = implode(' ', str_split((string) ($shipment->awb_number ?? '0000000000'), 2));
+$carrier=trim((string)($shipment->carrier_name?:optional($shipment->carrier)->name?:'Carrier'));
+$items=is_array($shipment->items)?$shipment->items:[];$packages=is_array($shipment->packages)?$shipment->packages:[];
+$goods=collect($items)->map(fn($i)=>$i['name']??$i['description']??null)->filter()->implode(', ');$goods=$goods?:($shipment->document_description?:$shipment->description?:'Not specified');
+$package=$packages[0]??[];$l=$package['length']??0;$w=$package['width']??0;$h=$package['height']??0;
+$pieces=max(1,(int)$shipment->total_packages);$weight=(float)($shipment->total_weight?:$shipment->weight);
+$senderAddress=collect([$shipment->sender_address,$shipment->sender_address2,$shipment->sender_address3,$shipment->sender_city,$shipment->sender_postal_code,$shipment->sender_country])->filter()->implode(', ');
+$receiverAddress=collect([$shipment->receiver_address,$shipment->receiver_address2,$shipment->receiver_address3,$shipment->receiver_city,$shipment->receiver_postal_code,$shipment->receiver_country])->filter()->implode(', ');
+$senderPhone=trim(($shipment->sender_phone_code??'').' '.($shipment->sender_phone??''));$receiverPhone=trim(($shipment->receiver_phone_code??'').' '.($shipment->receiver_phone??''));
+$shipperLabel=$shipment->sender_is_business&&filled($shipment->sender_company)?$shipment->sender_company:$shipment->sender_name;
+$consigneeLabel=$shipment->receiver_is_business&&filled($shipment->receiver_company)?$shipment->receiver_company:$shipment->receiver_name;
+$qrData='data:image/svg+xml;base64,'.base64_encode($qrSvg??'');$tracking=(string)($shipment->tracking_number?:$shipment->awb_number);
+$logoSvg='<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="42" fill="none" stroke="#1e3a8a" stroke-width="6"/><path d="M27 70L86 50 27 30l14 20z" fill="#2563eb"/><path d="M41 50L27 70l29-15z" fill="#fff"/><path d="M15 79l13-7M12 87l15-8" stroke="#1e3a8a" stroke-width="3"/></svg>';
+$logoData='data:image/svg+xml;base64,'.base64_encode($logoSvg);
 @endphp
-
-<div class="label">
-    <div class="top">
-        <div>
-            <div class="title">WAYBILL {{ $docType }}</div>
-            <div class="meta">Date: {{ now()->format('Y-m-d') }}</div>
-            <div class="meta">Tracking: {{ $shipment->tracking_number }}</div>
-            <div class="meta">AWB: {{ $shipment->awb_number }}</div>
-        </div>
-        <div class="brand">
-            <div class="wpx">WPX</div>
-            <div>{{ $carrierLabel }}</div>
-        </div>
-    </div>
-
-    <div class="grid-2">
-        <div class="box">
-            <div class="box-title">FROM</div>
-            <div class="strong">{{ $shipment->sender_name }}</div>
-            @if($shipment->sender_company)<div>{{ $shipment->sender_company }}</div>@endif
-            <div>{{ $shipment->sender_address }}</div>
-            @if($shipment->sender_address2)<div>{{ $shipment->sender_address2 }}</div>@endif
-            @if($shipment->sender_address3)<div>{{ $shipment->sender_address3 }}</div>@endif
-            <div>{{ $shipment->sender_city }} {{ $shipment->sender_postal_code }}</div>
-            <div>{{ $shipment->sender_country }}</div>
-            <div>Phone: {{ $shipperPhone ?: '-' }}</div>
-        </div>
-
-        <div class="box">
-            <div class="box-title">TO</div>
-            <div class="strong">{{ $shipment->receiver_name }}</div>
-            @if($shipment->receiver_company)<div>{{ $shipment->receiver_company }}</div>@endif
-            <div>{{ $shipment->receiver_address }}</div>
-            @if($shipment->receiver_address2)<div>{{ $shipment->receiver_address2 }}</div>@endif
-            @if($shipment->receiver_address3)<div>{{ $shipment->receiver_address3 }}</div>@endif
-            <div>{{ $shipment->receiver_city }} {{ $shipment->receiver_postal_code }}</div>
-            <div>{{ $shipment->receiver_country }}</div>
-            <div>Phone: {{ $receiverPhone ?: '-' }}</div>
-        </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="summary">
-        <div class="summary-head">SHIPMENT DETAILS</div>
-        <div class="summary-row"><span>Status</span><strong>{{ $shipment->status_label }}</strong></div>
-        <div class="summary-row"><span>Type</span><strong>{{ ucfirst(str_replace('_', ' ', $shipment->shipment_type ?? '')) }}</strong></div>
-        <div class="summary-row"><span>Total Weight</span><span class="big">{{ number_format((float) $shipment->total_weight, 1) }} kg</span></div>
-        <div class="summary-row"><span>number of packages</span><span class="big">{{ (int) $shipment->total_packages }}</span></div>
-    </div>
-
-    <div class="code-row">
-        <div>
-            <div class="barcode"></div>
-            <div class="awb">WAYBILL {{ $awbSpaced }}</div>
-            <div class="contents">Contents: {{ $contentStr ?: ($shipment->document_description ?: '-') }}</div>
-        </div>
-        <div class="qr">
-            <img src="data:image/svg+xml;base64,{{ base64_encode($qrSvg ?? '') }}" alt="QR">
-        </div>
-    </div>
-
-    <div class="license">
-        <div class="license-title">License Plates</div>
-        @for($i = 1; $i <= min(max((int) $shipment->total_packages, 1), 2); $i++)
-            <div class="license-line">{{ $licenseBase }}{{ str_pad((string) $i, 7, '0', STR_PAD_LEFT) }}</div>
-        @endfor
-    </div>
-</div>
-</body>
-</html>
+@for($copy=0;$copy<2;$copy++)
+<div class="copy">
+<table class="head"><tr><td style="width:45%"><div class="brand"><span class="brand-mark"><img class="logo-svg" src="{{ $logoData }}" alt="ExpressPeek"></span><span class="brand-text"><span class="brand-express">EXPRESS</span><br><span class="brand-peek">PEEK</span></span></div></td><td class="qr-wrap"><span class="track"><span class="track-label">EXPRESSPEEK TRACKING</span><br><span class="track-no">{{ $tracking }}</span></span><img class="qr" src="{{ $qrData }}" alt="QR"></td></tr></table>
+<table class="meta"><tr class="dark"><th>A/C NO.</th><th>ORIGIN</th><th>DESTINATION</th><th>SERVICE</th><th>DOX/SPX</th><th>PIECES</th><th>WEIGHT(KG)</th><th>DATE</th></tr><tr><td>{{ $shipment->awb_number }}</td><td>{{ strtoupper($shipment->sender_country_code?:$shipment->sender_country) }}</td><td>{{ strtoupper($shipment->receiver_country_code?:$shipment->receiver_country) }}</td><td>{{ strtoupper($carrier) }}</td><td>{{ $shipment->shipment_type==='document'?'DOX':'SPX' }}</td><td>{{ $pieces }}</td><td>{{ number_format($weight,2) }}</td><td>{{ optional($shipment->created_at)->format('d-M-Y')?:now()->format('d-M-Y') }}</td></tr></table>
+<table><tr><td class="rowline"><span class="title">SHIPPER:</span> {{ strtoupper($shipperLabel) }}</td><td class="rowline"><span class="title">CONSIGNEE:</span> {{ strtoupper($consigneeLabel) }}</td></tr><tr><td class="rowline"><span class="title">CONTACT PERSON:</span> {{ strtoupper($shipment->sender_name) }}</td><td class="rowline"><span class="title">CONTACT PERSON:</span> {{ strtoupper($shipment->receiver_name) }}</td></tr><tr><td class="party" style="height:34px"><span class="title">ADDRESS:</span> {{ strtoupper($senderAddress) }}</td><td class="party" style="height:34px"><span class="title">ADDRESS:</span> {{ strtoupper($receiverAddress) }}</td></tr><tr><td class="rowline"><span class="title">CONTACT No:</span> {{ $senderPhone?:'—' }}</td><td class="rowline"><span class="title">CONTACT No:</span> {{ $receiverPhone?:'—' }}</td></tr></table>
+<table><tr><td class="goods" style="width:56%"><span class="title">DESCRIPTION OF GOODS:</span> {{ strtoupper($goods) }}</td><td class="goods center" style="width:28%"><span class="title muted">DIMENSIONS (VOLUMETRIC WEIGHT)</span><br><br>{{ $l?:0 }} CM X &nbsp; {{ $w?:0 }} CM X &nbsp; {{ $h?:0 }} CM = &nbsp; {{ number_format($weight,2) }} KGS</td><td style="width:16%;padding:0" rowspan="2"><table class="charges"><tr><td colspan="2" class="red">CHARGES</td></tr><tr><td class="title">VALUE</td><td>$ 0</td></tr><tr><td class="title">CC/PP</td><td>Prepaid</td></tr><tr><td class="title">BILL AMNT</td><td></td></tr><tr><td colspan="2" class="red">COLLECT</td></tr><tr><td colspan="2">$=</td></tr><tr><td colspan="2" class="red">INSURANCE</td></tr><tr><td colspan="2" class="center">Yes □ &nbsp;&nbsp;&nbsp; No □</td></tr></table></td></tr><tr><td class="terms">It is agreed that the goods described herein are accepted in apparent good order and condition (except as noted) for carriage SUBJECT TO THE CONDITIONS OF CONTRACT. ALL GOODS MAY BE CARRIED BY ANY OTHER MEANS INCLUDING ROAD OR ANY OTHER CARRIER UNLESS SPECIFIC CONTRARY INSTRUCTION ARE GIVEN HEREON BY THE SHIPPER. THE SHIPPER'S ATTENTION IS DRAWN TO THE NOTICE CONCERNING CARRIER'S LIMITATION OF LIABILITY.</td><td><span class="title">SPECIAL INSTRUCTION</span> (If any)<br>{{ $shipment->notes }}</td></tr></table>
+<table><tr><td class="sign"><span class="title">SHIPPER:</span><br>DATE/TIME:</td><td class="sign"><span class="title">PICK UP BY:</span><br>DATE/TIME: {{ optional($shipment->created_at)->format('d-M-Y H:i') }}</td><td class="sign"><span class="title">CONSIGNEE:</span><br>DATE/TIME:</td></tr></table>
+<div class="foot">ExpressPeek Logistics &nbsp; | &nbsp; Tracking: {{ $tracking }} &nbsp; | &nbsp; Service: {{ $carrier }}</div>
+</div>@if($copy===0)<div class="cut"></div>@endif
+@endfor
+</body></html>

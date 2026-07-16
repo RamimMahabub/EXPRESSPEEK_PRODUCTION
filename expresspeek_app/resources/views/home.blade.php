@@ -3,8 +3,36 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="ExpressPeak — Fast, reliable international logistics and courier services.">
-    <title>ExpressPeak — Logistics & Shipping</title>
+
+    {{-- SEO Meta Tags — Homepage --}}
+    <title>ExpressPeek | Send Parcels & Courier from Bangladesh to 220+ Countries</title>
+    <meta name="description" content="Ship parcels, documents, and cargo from Bangladesh to the USA, UK, Canada & 220+ countries. Trusted courier service for Bangladeshi expats and businesses. Get an instant quote.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url('/') }}">
+
+    {{-- Open Graph --}}
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ExpressPeek | Send Parcels & Courier from Bangladesh to 220+ Countries">
+    <meta property="og:description" content="Ship parcels, documents, and cargo from Bangladesh to the USA, UK, Canada & 220+ countries. Trusted courier service for Bangladeshi expats and businesses.">
+    <meta property="og:url" content="{{ url('/') }}">
+    <meta property="og:site_name" content="ExpressPeek">
+    <meta property="og:locale" content="{{ app()->getLocale() === 'bn' ? 'bn_BD' : 'en_US' }}">
+    <meta property="og:image" content="{{ asset('images/express-peek-logo.webp') }}">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ExpressPeek | Send Parcels & Courier from Bangladesh to 220+ Countries">
+    <meta name="twitter:description" content="Ship parcels, documents, and cargo from Bangladesh to the USA, UK, Canada & 220+ countries.">
+
+    {{-- Geo Meta for Bangladesh --}}
+    <meta name="geo.region" content="BD">
+    <meta name="geo.placename" content="Dhaka">
+    <meta name="geo.position" content="23.7276;90.4178">
+    <meta name="ICBM" content="23.7276, 90.4178">
+
+    {{-- hreflang --}}
+    <link rel="alternate" hreflang="en" href="{{ url('/') }}">
+    <link rel="alternate" hreflang="x-default" href="{{ url('/') }}">
 
     @include('partials.favicon')
 
@@ -51,13 +79,21 @@
 
 {{-- ===== HERO ===== --}}
 <section class="hero-bg relative min-h-[500px] flex items-center" id="track">
-    <video class="pointer-events-none" autoplay muted loop playsinline preload="metadata" poster="/images/hero-bg.png" aria-hidden="true">
+    <video
+        class="pointer-events-none"
+        muted loop playsinline
+        preload="none"
+        poster="/images/hero-bg.png"
+        aria-hidden="true"
+        width="1920" height="1080"
+        id="hero-video"
+    >
         <source src="/videos/cargo-ship-hero-extended.mp4" type="video/mp4">
     </video>
     <div class="absolute inset-0 pointer-events-none bg-gradient-to-r from-gray-900/88 via-gray-900/55 to-transparent"></div>
     <div class="relative max-w-7xl mx-auto px-6 py-20 w-full">
         <div class="max-w-xl">
-            <p class="text-violet-300 text-xs font-bold uppercase tracking-widest mb-3 fade-up fade-up-1">ExpressPeak Logistics Platform</p>
+            <p class="text-violet-300 text-xs font-bold uppercase tracking-widest mb-3 fade-up fade-up-1">ExpressPeek Logistics Platform</p>
             <h1 class="text-4xl md:text-5xl font-black text-white leading-tight mb-4 fade-up fade-up-1">
                 Track Your<br>
                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400">Shipment</span>
@@ -198,7 +234,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="font-bold text-slate-900 text-base mb-1">ExpressPeak for Business</h3>
+                    <h3 class="font-bold text-slate-900 text-base mb-1">ExpressPeek for Business</h3>
                     <p class="text-sm text-slate-500 leading-relaxed">Shipping regularly? Get a business account and unlock premium benefits.</p>
                 </div>
                 <span class="text-sm text-emerald-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
@@ -450,7 +486,7 @@
 <section class="bg-gray-50 border-y border-white/10 py-20">
     <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-12">
-            <h2 class="text-3xl font-black text-slate-900">Why Choose ExpressPeak?</h2>
+            <h2 class="text-3xl font-black text-slate-900">Why Choose ExpressPeek?</h2>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @foreach([
@@ -487,7 +523,7 @@
         <div class="flex items-center px-10 py-16 flex-1 relative z-10">
             <div class="text-center md:text-left">
                 <h2 class="text-3xl md:text-4xl font-black text-white mb-4">Ready to Ship Smarter?</h2>
-                <p class="text-violet-200 max-w-lg mb-8 text-sm leading-relaxed">Join thousands who trust ExpressPeak for their logistics. Free to register.</p>
+                <p class="text-violet-200 max-w-lg mb-8 text-sm leading-relaxed">Join thousands who trust ExpressPeek for their logistics. Free to register.</p>
                 <div class="flex items-center justify-center md:justify-start gap-4 flex-wrap">
                     <a href="{{ route('register') }}"
                        class="px-8 py-3.5 rounded-xl bg-white text-violet-700 font-bold text-sm hover:bg-violet-50 transition-colors shadow-xl">
@@ -513,5 +549,34 @@
 @include('partials.footer')
 
 @include('components.quote-modal')
+
+{{-- Schema.org Structured Data --}}
+@include('partials.schema')
+
+{{-- Hero video: autoplay only on desktop with no motion preference --}}
+<script>
+(function() {
+    var video = document.getElementById('hero-video');
+    if (!video) return;
+    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var isDesktop = window.matchMedia('(min-width: 768px)').matches;
+    if (isDesktop && !prefersReduced) {
+        video.play().catch(function() {});
+    }
+    // Pause when off-screen
+    if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting && isDesktop && !prefersReduced) {
+                    video.play().catch(function() {});
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.25 });
+        obs.observe(video);
+    }
+})();
+</script>
 </body>
 </html>

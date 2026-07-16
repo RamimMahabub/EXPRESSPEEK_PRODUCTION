@@ -4,6 +4,10 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Api\QuoteController;
 use App\Http\Controllers\SourcingRequestController;
+use App\Http\Controllers\SeoPageController;
+use App\Http\Controllers\CountryPageController;
+use App\Http\Controllers\CityPageController;
+use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -45,6 +49,34 @@ Route::post('/quote', [QuoteController::class, 'index']);
 Route::get('/sourcing', [SourcingRequestController::class, 'create'])->name('sourcing.create');
 Route::post('/sourcing', [SourcingRequestController::class, 'store'])->name('sourcing.store');
 Route::get('/sourcing/success', [SourcingRequestController::class, 'success'])->name('sourcing.success');
+
+// SEO Pages — Terms, Privacy, Help, Customer Service
+Route::get('/terms', [SeoPageController::class, 'terms'])->name('terms');
+Route::get('/privacy', [SeoPageController::class, 'privacy'])->name('privacy');
+Route::get('/help', [SeoPageController::class, 'help'])->name('help');
+Route::get('/customer-service', [SeoPageController::class, 'customerService'])->name('customer-service');
+
+// Country & City Landing Pages (SEO)
+Route::get('/ship-to/{country}', [CountryPageController::class, 'show'])->name('ship-to');
+Route::get('/ship-from/{city}', [CityPageController::class, 'show'])->name('ship-from');
+
+// Blog / Resources
+Route::get('/resources', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/resources/{slug}', [BlogController::class, 'show'])->name('blog.show');
+
+// Bangla Localized Routes
+Route::prefix('bn')->middleware([\App\Http\Middleware\SetLocale::class])->group(function () {
+    Route::get('/', [HomeController::class, 'index'])->name('bn.home');
+    Route::get('/track', [HomeController::class, 'track'])->name('bn.track');
+    Route::get('/quote', [HomeController::class, 'quote'])->name('bn.quote');
+    Route::get('/sourcing', [SourcingRequestController::class, 'create'])->name('bn.sourcing.create');
+    Route::get('/terms', [SeoPageController::class, 'terms'])->name('bn.terms');
+    Route::get('/privacy', [SeoPageController::class, 'privacy'])->name('bn.privacy');
+    Route::get('/help', [SeoPageController::class, 'help'])->name('bn.help');
+    Route::get('/customer-service', [SeoPageController::class, 'customerService'])->name('bn.customer-service');
+});
+
+
 
 // /dashboard redirects admins/agents to their panels; customers and guests go to /
 Route::get('/dashboard', function () {
