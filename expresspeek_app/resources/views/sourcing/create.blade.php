@@ -139,25 +139,25 @@
 @section('content')
 
 {{-- ===== HERO ===== --}}
-<section class="sourcing-hero py-16 md:py-24">
-    <div class="relative max-w-5xl mx-auto px-6 text-center">
+<section class="sourcing-hero py-12 md:py-24">
+    <div class="relative max-w-5xl mx-auto px-4 sm:px-6 text-center">
         {{-- Badge --}}
         <div class="inline-flex items-center gap-2 bg-white/15 border border-white/25 text-white text-xs font-bold px-4 py-2 rounded-full mb-6 backdrop-blur-sm">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             🇧🇩 Shop from Bangladesh
         </div>
 
-        <h1 class="text-4xl md:text-6xl font-black text-white leading-tight mb-5">
-            Want Something from<br>
+        <h1 class="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight mb-5">
+            Want Something from<br class="hidden sm:block">
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-300 to-pink-300">Bangladesh?</span>
         </h1>
-        <p class="text-violet-200 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+        <p class="text-violet-200 text-base md:text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
             Living abroad? We'll find it, buy it, and deliver it right to your door — anywhere in the world.
             Just tell us what you need.
         </p>
 
         {{-- 3-Step Process --}}
-        <div class="grid grid-cols-3 gap-4 max-w-2xl mx-auto mb-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto mb-2">
             @foreach([
                 ['num' => '1', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'title' => 'Submit Request', 'desc' => 'Fill the form below'],
                 ['num' => '2', 'icon' => 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z', 'title' => 'We Contact You', 'desc' => 'Via WhatsApp'],
@@ -165,11 +165,11 @@
             ] as $step)
             <div class="bg-white/10 border border-white/20 rounded-2xl p-4 backdrop-blur-sm">
                 <div class="w-9 h-9 rounded-xl bg-violet-500/40 border border-violet-400/40 flex items-center justify-center mx-auto mb-2.5">
-                    <svg class="w-4.5 h-4.5 text-white w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $step['icon'] }}"/>
                     </svg>
                 </div>
-                <p class="text-white font-black text-sm">{{ $step['title'] }}</p>
+                <p class="text-white font-black text-xs sm:text-sm">{{ $step['title'] }}</p>
                 <p class="text-violet-300 text-xs mt-0.5">{{ $step['desc'] }}</p>
             </div>
             @endforeach
@@ -178,24 +178,24 @@
 </section>
 
 {{-- ===== FORM SECTION ===== --}}
-<section class="max-w-3xl mx-auto px-6 -mt-8 pb-20">
+<section class="max-w-3xl mx-auto px-4 sm:px-6 -mt-8 pb-20">
     <div class="form-card rounded-3xl shadow-2xl border border-white/10 overflow-hidden">
 
         {{-- Form Header --}}
-        <div class="bg-gradient-to-r from-violet-600 to-blue-700 px-8 py-6">
-            <h2 class="text-xl font-black text-white">Sourcing Request Form</h2>
-            <p class="text-violet-200 text-sm mt-1">All fields marked * are required. We'll reply on WhatsApp within 24 hours.</p>
+        <div class="bg-gradient-to-r from-violet-600 to-blue-700 px-6 sm:px-8 py-6">
+            <h2 class="text-lg sm:text-xl font-black text-white">Sourcing Request Form</h2>
+            <p class="text-violet-200 text-xs sm:text-sm mt-1">All fields marked * are required. We'll reply on WhatsApp within 24 hours.</p>
         </div>
 
         {{-- Success Flash --}}
         @if(session('success'))
-        <div class="mx-8 mt-6 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-2xl flex items-center gap-3">
+        <div class="mx-6 sm:mx-8 mt-6 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-2xl flex items-center gap-3">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             {{ session('success') }}
         </div>
         @endif
 
-        <form action="{{ route('sourcing.store') }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-7" id="sourcing-form">
+        <form action="{{ route('sourcing.store') }}" method="POST" enctype="multipart/form-data" class="p-6 sm:p-8 space-y-7" id="sourcing-form">
             @csrf
 
             {{-- ─── SECTION: Your Info ─── --}}
@@ -276,7 +276,6 @@
                                 getSelected() { return this.allCodes.find(c => c.c === this.selectedCode) || this.allCodes[0]; }
                             }"
                             @click.away="openPhone = false; qPhone = '';"
-                            :class="openPhone ? 'z-50' : 'z-10'"
                             class="relative flex gap-0 border-[1.5px] border-gray-200 rounded-2xl overflow-visible bg-gray-50 focus-within:bg-white focus-within:border-violet-500 focus-within:ring-4 focus-within:ring-violet-500/10 transition-all @error('whatsapp_number') border-red-400 @enderror"
                         >
                             {{-- Dropdown Trigger --}}
@@ -288,9 +287,9 @@
                                 </button>
                                 
                                 {{-- Dropdown Menu --}}
-                                <div x-show="openPhone" x-transition class="absolute top-full left-0 mt-2 w-64 bg-white border border-white/10 rounded-2xl shadow-2xl z-40 overflow-hidden flex flex-col max-h-72">
-                                    <div class="p-2 border-b border-white/10 sticky top-0 bg-white">
-                                        <input type="text" x-model="qPhone" placeholder="Search country or code..." class="w-full bg-gray-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-0 outline-none" @click.stop>
+                                <div x-show="openPhone" x-transition class="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-72">
+                                    <div class="p-2 border-b border-gray-200 sticky top-0 bg-white z-10">
+                                        <input type="text" x-model="qPhone" placeholder="Search country or code..." class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none" @click.stop>
                                     </div>
                                     <div class="overflow-y-auto flex-1 p-1">
                                         <template x-for="(c, i) in opts" :key="c.c + c.n">
@@ -312,8 +311,8 @@
                                 id="whatsapp_number"
                                 name="whatsapp_number"
                                 value="{{ old('whatsapp_number') }}"
-                                placeholder="01XXXXXXXXX"
-                                class="w-full bg-transparent border-none px-4 py-3.5 text-sm text-slate-100 focus:ring-0 outline-none placeholder:text-slate-400"
+                                placeholder="1968524222"
+                                class="w-full bg-transparent border-none px-4 py-3.5 text-sm text-gray-900 focus:ring-0 outline-none placeholder:text-slate-400"
                                 required
                             >
                         </div>
@@ -365,7 +364,6 @@
                         }"
                         @click.away="open = false; if (!selectedCode) q = ''; else q = selectedName;"
                         class="relative"
-                        :class="open ? 'z-50' : 'z-10'"
                     >
                         <label class="form-label">Destination Country *</label>
                         <div class="relative">
@@ -385,7 +383,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>
-                        <div x-show="open" x-transition class="absolute top-full left-0 right-0 mt-1 bg-white border border-white/10 rounded-2xl shadow-2xl z-30 max-h-56 overflow-y-auto">
+                        <div x-show="open" x-transition class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 max-h-56 overflow-y-auto">
                             <template x-for="(c, i) in opts" :key="c.code">
                                 <div @click="pick(c)" :class="hi === i ? 'bg-violet-50 text-violet-700' : 'text-gray-700 hover:bg-gray-50'"
                                     class="flex items-center justify-between px-4 py-3 text-sm cursor-pointer transition-colors min-h-[44px]">
@@ -537,11 +535,11 @@
                                     <div>
                                         <label class="form-label">Product Image <span class="text-slate-400 font-normal normal-case">(optional)</span></label>
                                         <div
-                                            class="upload-zone relative p-3 text-center border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-violet-400 hover:bg-violet-50 transition-colors bg-gray-50"
+                                            class="upload-zone relative p-3 text-center border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-violet-500 hover:bg-violet-50 transition-all bg-gray-50"
                                             @click="document.getElementById('product_image_'+index).click()"
                                         >
                                             <div :id="'upload-placeholder-'+index">
-                                                <p class="text-xs font-semibold text-slate-400 flex items-center justify-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Click to upload image</p>
+                                                <p class="text-xs font-semibold text-gray-600 flex items-center justify-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Click to upload image</p>
                                             </div>
                                             <div :id="'upload-preview-'+index" class="hidden flex items-center justify-between gap-3 text-left">
                                                 <img :id="'preview-img-'+index" src="" alt="Preview" class="w-10 h-10 rounded-md object-cover border border-gray-200">
@@ -574,7 +572,7 @@
     </div>
 
     {{-- Info Box --}}
-    <div class="mt-8 bg-amber-50 border border-amber-200 rounded-2xl p-6">
+    <div class="mt-8 mx-4 sm:mx-0 bg-amber-50 border border-amber-200 rounded-2xl p-6">
         <div class="flex items-start gap-4">
             <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
                 <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

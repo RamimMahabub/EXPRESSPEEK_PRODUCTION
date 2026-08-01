@@ -159,15 +159,9 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-0 bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/10">
 
         @php
-            $shipNowLink = route('login');
+            $shipNowLink = route('shipment.guest.create');
             if (auth()->check()) {
-                if (auth()->user()->isCustomer()) {
-                    $shipNowLink = route('customer.shipments.create');
-                } elseif (auth()->user()->isAgent()) {
-                    $shipNowLink = route('agent.shipments.create');
-                } elseif (auth()->user()->isAdmin()) {
-                    $shipNowLink = route('admin.shipments.create');
-                }
+                $shipNowLink = route(auth()->user()->shipmentCreateRouteName());
             }
         @endphp
 
@@ -266,7 +260,7 @@
             ['label'=>'Total','value'=>$stats['total'],'icon'=>'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4','from'=>'from-violet-500','to'=>'to-blue-600'],
             ['label'=>'Pending','value'=>$stats['pending'],'icon'=>'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z','from'=>'from-amber-500','to'=>'to-orange-500'],
             ['label'=>'In Transit','value'=>$stats['in_transit'],'icon'=>'M13 10V3L4 14h7v7l9-11h-7z','from'=>'from-blue-500','to'=>'to-cyan-500'],
-            ['label'=>'Delivered','value'=>$stats['delivered'],'icon'=>'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z','from'=>'from-emerald-500','to'=>'to-teal-500'],
+            ['label'=>'Successful','value'=>$stats['delivered'],'icon'=>'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z','from'=>'from-emerald-500','to'=>'to-teal-500'],
         ] as $s)
         <div class="bg-white rounded-2xl p-5 border border-white/10 shadow-sm hover:shadow-md transition-shadow">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-br {{ $s['from'] }} {{ $s['to'] }} flex items-center justify-center mb-3">
@@ -285,9 +279,9 @@
         @foreach($recentShipments as $shipment)
         <div class="flex items-center gap-5 px-6 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-b-0 group">
             <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center
-                {{ $shipment->status === 'delivered' ? 'bg-emerald-100 text-emerald-600' : ($shipment->status === 'in_transit' ? 'bg-blue-100 text-blue-600' : ($shipment->status === 'out_for_delivery' ? 'bg-purple-100 text-purple-600' : 'bg-amber-100 text-amber-600')) }}">
+                {{ in_array($shipment->status, ['connected_to_carrier', 'delivered'], true) ? 'bg-emerald-100 text-emerald-600' : ($shipment->status === 'in_transit' ? 'bg-blue-100 text-blue-600' : ($shipment->status === 'out_for_delivery' ? 'bg-purple-100 text-purple-600' : 'bg-amber-100 text-amber-600')) }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    @if($shipment->status === 'delivered')
+                    @if(in_array($shipment->status, ['connected_to_carrier', 'delivered'], true))
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     @elseif(in_array($shipment->status, ['in_transit','out_for_delivery']))
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -300,7 +294,7 @@
                 <div class="flex items-center gap-3 mb-0.5">
                     <p class="text-sm font-bold text-slate-900 truncate">{{ $shipment->receiver_name }}</p>
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0
-                        {{ $shipment->status === 'delivered' ? 'bg-emerald-100 text-emerald-700' : ($shipment->status === 'in_transit' ? 'bg-blue-100 text-blue-700' : ($shipment->status === 'out_for_delivery' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700')) }}">
+                        {{ in_array($shipment->status, ['connected_to_carrier', 'delivered'], true) ? 'bg-emerald-100 text-emerald-700' : ($shipment->status === 'in_transit' ? 'bg-blue-100 text-blue-700' : ($shipment->status === 'out_for_delivery' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700')) }}">
                         {{ $shipment->status_label }}
                     </span>
                 </div>
@@ -310,12 +304,11 @@
                     <span>{{ $shipment->created_at->diffForHumans() }}</span>
                 </div>
             </div>
-            <div class="hidden md:block text-right flex-shrink-0">
-                <p class="text-sm font-semibold text-gray-700">{{ $shipment->weight }} kg</p>
-                @if($shipment->estimated_delivery)
-                <p class="text-xs text-slate-500 mt-0.5">ETA {{ $shipment->estimated_delivery->format('M d') }}</p>
-                @endif
-            </div>
+            @if($shipment->estimated_delivery)
+                <div class="hidden md:block text-right flex-shrink-0">
+                    <p class="text-xs text-slate-500 mt-0.5">ETA {{ $shipment->estimated_delivery->format('M d') }}</p>
+                </div>
+            @endif
             <svg class="w-4 h-4 text-slate-300 group-hover:text-violet-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
@@ -467,9 +460,9 @@
                 <svg class="w-4 h-4 text-slate-300 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
             @endforeach
-            <a href="{{ $shipNowLink ?? route('login') }}"
+            <a href="{{ $shipNowLink ?? route('shipment.guest.create') }}"
                class="block w-full text-center py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/20">
-                @auth Ship a Package → @else Login to Ship a Package → @endauth
+                Ship a Package →
             </a>
         </div>
     </div>

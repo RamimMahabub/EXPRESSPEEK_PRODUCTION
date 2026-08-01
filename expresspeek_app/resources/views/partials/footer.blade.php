@@ -20,17 +20,17 @@
                     <ul class="space-y-3.5 text-sm">
                         <li><a href="{{ route('home') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Home</a></li>
                         @auth
-                            @if(auth()->user()->isCustomer())
+                            @if(auth()->user()->primaryRoleName() === 'customer')
                                 <li><a href="{{ route('customer.shipments.create') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Ship Now</a></li>
                                 <li><a href="{{ route('customer.shipments.index') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>My Shipments</a></li>
-                            @elseif(auth()->user()->isAgent())
+                            @elseif(auth()->user()->primaryRoleName() === 'agent')
                                 <li><a href="{{ route('agent.shipments.create') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Ship Now</a></li>
                                 <li><a href="{{ route('agent.shipments.index') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>My Shipments</a></li>
-                            @elseif(auth()->user()->isAdmin())
+                            @elseif(auth()->user()->primaryRoleName() === 'admin')
                                 <li><a href="{{ route('admin.shipments.create') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Ship Now</a></li>
                             @endif
                         @else
-                            <li><a href="{{ route('login') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Ship Now</a></li>
+                            <li><a href="{{ route('shipment.guest.create') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Ship Now</a></li>
                         @endauth
                         <li><a href="{{ route('quote') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Get a Quote</a></li>
                         <li><a href="{{ route('track') }}" class="hover:text-violet-400 transition-colors flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span>Track a Shipment</a></li>

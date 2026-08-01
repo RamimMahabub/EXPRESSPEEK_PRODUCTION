@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.operations-dashboard')
 
 @section('title', 'Edit Shipment')
 @section('page-title', 'Edit Shipment')
@@ -20,16 +20,17 @@
     }
 @endphp
 
-<div class="max-w-6xl mx-auto space-y-6">
+<div class="ap-shell">
+    <section class="ap-page-head">
+        <div class="ap-head-copy"><span class="ap-eyebrow">Shipment workspace</span><h1>Update shipment {{ $shipment->tracking_number }}</h1><p>Review contact details, package information, and operational status from one focused screen.</p></div>
+        <div class="ap-head-actions"><a href="{{ route('agent.shipments.index') }}" class="ap-button light">Back to queue</a></div>
+    </section>
+<div class="max-w-6xl mx-auto space-y-6 w-full">
     <div class="neon-card rounded-2xl p-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <p class="text-xs text-slate-400">Tracking</p>
                 <p class="font-mono text-violet-300">{{ $shipment->tracking_number }}</p>
-            </div>
-            <div>
-                <p class="text-xs text-slate-400">AWB</p>
-                <p class="font-mono text-slate-300">{{ $shipment->awb_number ?: '—' }}</p>
             </div>
             <div>
                 <p class="text-xs text-slate-400">Invoice</p>
@@ -148,6 +149,7 @@
             <button type="submit" class="text-sm font-semibold neon-button text-white rounded-xl px-6 py-2.5 transition-colors">Save Shipment</button>
         </div>
     </form>
+</div>
 </div>
 
 @endsection

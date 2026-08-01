@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class Shipment extends Model
 {
@@ -12,7 +11,6 @@ class Shipment extends Model
 
     protected $fillable = [
         'tracking_number',
-        'awb_number',
         'invoice_number',
         'sender_id',
         // Sender details
@@ -70,6 +68,13 @@ class Shipment extends Model
         'notes',
     ];
 
+    /**
+     * Keep the retired legacy identifier out of API and JSON responses.
+     */
+    protected $hidden = [
+        'awb_number',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -79,6 +84,45 @@ class Shipment extends Model
             'sender_is_business' => 'boolean',
             'receiver_is_business' => 'boolean',
         ];
+    }
+
+    /**
+     * Present legacy tracking identifiers without their old letter prefix.
+     */
+    public function getTrackingNumberAttribute($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return self::normalizeTrackingNumber((string) $value);
+    }
+
+    public static function normalizeTrackingNumber(string $value): string
+    {
+        return preg_replace('/\D+/', '', $value) ?? '';
+    }
+
+    /**
+     * Generate a unique numeric-only tracking number.
+     */
+    public static function generateTrackingNumber(): string
+    {
+        do {
+            $number = now()->format('ymd') . random_int(1000, 9999);
+
+            $shipmentExists = self::query()
+                ->where('tracking_number', $number)
+                ->orWhere('tracking_number', 'like', '%' . $number)
+                ->exists();
+
+            $sourcingExists = SourcingRequest::query()
+                ->where('tracking_number', $number)
+                ->orWhere('tracking_number', 'like', '%' . $number)
+                ->exists();
+        } while ($shipmentExists || $sourcingExists);
+
+        return $number;
     }
 
     /**
@@ -114,19 +158,21 @@ class Shipment extends Model
     }
 
     // Status constants
-    const STATUS_PENDING    = 'pending';
-    const STATUS_PICKED_UP  = 'picked_up';
-    const STATUS_IN_TRANSIT = 'in_transit';
-    const STATUS_OUT_FOR_DELIVERY = 'out_for_delivery';
-    const STATUS_DELIVERED  = 'delivered';
-    const STATUS_FAILED     = 'failed';
-    const STATUS_RETURNED   = 'returned';
+    const STATUS_PENDING              = 'pending';
+    const STATUS_PICKED_UP            = 'picked_up';
+    const STATUS_CONNECTED_TO_CARRIER = 'connected_to_carrier';
+    const STATUS_IN_TRANSIT           = 'in_transit';
+    const STATUS_OUT_FOR_DELIVERY     = 'out_for_delivery';
+    const STATUS_DELIVERED            = 'delivered';
+    const STATUS_FAILED               = 'failed';
+    const STATUS_RETURNED             = 'returned';
 
     public static function statuses(): array
     {
         return [
             self::STATUS_PENDING           => 'Pending',
             self::STATUS_PICKED_UP         => 'Picked Up',
+            self::STATUS_CONNECTED_TO_CARRIER => 'Connected to the carrier',
             self::STATUS_IN_TRANSIT        => 'In Transit',
             self::STATUS_OUT_FOR_DELIVERY  => 'Out for Delivery',
             self::STATUS_DELIVERED         => 'Delivered',
@@ -145,12 +191,58 @@ class Shipment extends Model
         return match ($this->status) {
             self::STATUS_PENDING           => 'yellow',
             self::STATUS_PICKED_UP         => 'blue',
+            self::STATUS_CONNECTED_TO_CARRIER => 'green',
             self::STATUS_IN_TRANSIT        => 'indigo',
             self::STATUS_OUT_FOR_DELIVERY  => 'purple',
             self::STATUS_DELIVERED         => 'green',
             self::STATUS_FAILED            => 'red',
             self::STATUS_RETURNED          => 'orange',
             default                        => 'gray',
+        };
+    }
+
+    /**
+     * Statuses displayed by the public progress bar.
+     *
+     * Connecting a shipment to its carrier completes the ExpressPeek-side
+     * journey, so it intentionally has a shorter terminal progress path.
+     */
+    public function getProgressStepsAttribute(): array
+    {
+        if ($this->status === self::STATUS_CONNECTED_TO_CARRIER) {
+            return [
+                self::STATUS_PENDING => 'Booked',
+                self::STATUS_PICKED_UP => 'Picked up',
+                self::STATUS_CONNECTED_TO_CARRIER => 'Connected to the carrier',
+            ];
+        }
+
+        return [
+            self::STATUS_PENDING => 'Booked',
+            self::STATUS_PICKED_UP => 'Picked up',
+            self::STATUS_IN_TRANSIT => 'In transit',
+            self::STATUS_OUT_FOR_DELIVERY => 'Out for delivery',
+            self::STATUS_DELIVERED => 'Delivered',
+        ];
+    }
+
+    public function isSuccessfulOutcome(): bool
+    {
+        return in_array($this->status, [
+            self::STATUS_CONNECTED_TO_CARRIER,
+            self::STATUS_DELIVERED,
+        ], true);
+    }
+
+    public function getCreationNoteAttribute(): string
+    {
+        $sender = $this->relationLoaded('sender') ? $this->sender : $this->sender()->first();
+
+        return match (true) {
+            $sender?->isAdmin() => 'Shipment created by admin.',
+            $sender?->isAgent() => 'Shipment created by agent.',
+            $sender?->isCustomer() => 'Shipment created by customer.',
+            default => 'Shipment created by guest.',
         };
     }
 
@@ -177,6 +269,11 @@ class Shipment extends Model
     public function trackingEvents()
     {
         return $this->hasMany(TrackingEvent::class)->orderByDesc('occurred_at');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(ShipmentInvoice::class);
     }
 
     public function latestEvent()
@@ -234,15 +331,4 @@ class Shipment extends Model
         };
     }
 
-    /**
-     * Generate a unique AWB number (Air Waybill).
-     */
-    public static function generateAwbNumber(): string
-    {
-        do {
-            $number = rand(1000000000, 9999999999);
-        } while (self::where('awb_number', $number)->exists());
-
-        return (string) $number;
-    }
 }

@@ -3,7 +3,7 @@
 @section('title', 'Request Submitted — Sourcing')
 
 @section('content')
-<section class="min-h-[70vh] flex items-center justify-center px-6 py-20">
+<section class="min-h-[70vh] flex items-center justify-center px-4 sm:px-6 py-20">
     <div class="max-w-lg w-full text-center">
 
         {{-- Animated Check --}}
@@ -16,9 +16,9 @@
             </div>
         </div>
 
-        <h1 class="text-3xl md:text-4xl font-black text-slate-100 mb-3">Request Submitted! 🎉</h1>
-        <p class="text-slate-400 text-lg mb-6 leading-relaxed">
-            We've received your sourcing request. Our team will review it and reach out to you on WhatsApp within <strong class="text-gray-700">24 hours</strong>.
+        <h1 class="text-3xl md:text-4xl font-black text-gray-900 mb-3">Request Submitted!</h1>
+        <p class="text-gray-600 text-base md:text-lg mb-6 leading-relaxed">
+            We've received your sourcing request. Our team will review it and reach out to you on WhatsApp within <strong>24 hours</strong>.
         </p>
 
         {{-- Reference Number --}}
@@ -31,8 +31,8 @@
         @endif
 
         {{-- What's Next --}}
-        <div class="bg-white border border-white/10 rounded-2xl p-6 mb-8 text-left shadow-sm">
-            <h3 class="font-bold text-slate-100 mb-4 flex items-center gap-2">
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 mb-8 text-left shadow-sm">
+            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
@@ -51,7 +51,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $step['icon'] }}"/>
                         </svg>
                     </div>
-                    <p class="text-sm text-slate-500">{{ $step['text'] }}</p>
+                    <p class="text-sm text-slate-600">{{ $step['text'] }}</p>
                 </div>
                 @endforeach
             </div>
@@ -60,11 +60,11 @@
         {{-- CTAs --}}
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a href="{{ route('sourcing.create') }}"
-               class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/25">
+               class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-blue-700 text-white font-bold text-sm hover:shadow-lg hover:shadow-violet-500/30 transition-all">
                 Submit Another Request
             </a>
-            <a href="{{ route('customer.dashboard') }}"
-               class="w-full sm:w-auto px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-bold text-sm hover:border-violet-300 hover:text-violet-700 transition-colors">
+            <a href="{{ route('home') }}"
+               class="w-full sm:w-auto px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-bold text-sm hover:border-violet-500 hover:text-violet-700 hover:bg-violet-50 transition-all">
                 Go to Homepage
             </a>
         </div>

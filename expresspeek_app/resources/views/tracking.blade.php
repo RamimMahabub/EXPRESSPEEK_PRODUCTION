@@ -96,11 +96,12 @@
     @elseif($shipment)
         @php
             $events = $shipment->trackingEvents;
-            $statusSteps = ['pending', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
+            $progressSteps = $shipment->progress_steps;
+            $statusSteps = array_keys($progressSteps);
             $statusIndex = array_search($shipment->status, $statusSteps, true);
             $statusIndex = $statusIndex === false ? 0 : $statusIndex;
             $statusTheme = match($shipment->status) {
-                'delivered' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'dot' => 'bg-emerald-500'],
+                'connected_to_carrier', 'delivered' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'dot' => 'bg-emerald-500'],
                 'failed', 'returned' => ['bg' => 'bg-red-50', 'text' => 'text-red-700', 'dot' => 'bg-red-500'],
                 default => ['bg' => 'bg-violet-50', 'text' => 'text-violet-700', 'dot' => 'bg-violet-500'],
             };
@@ -128,10 +129,10 @@
                         @endif
                     </div>
 
-                    <div class="mt-9 grid grid-cols-5 gap-1" aria-label="Shipment progress">
-                        @foreach(['Booked', 'Picked up', 'In transit', 'Out for delivery', 'Delivered'] as $index => $label)
+                    <div class="mt-9 grid gap-1" style="grid-template-columns: repeat({{ count($progressSteps) }}, minmax(0, 1fr));" aria-label="Shipment progress">
+                        @foreach(array_values($progressSteps) as $index => $label)
                             <div class="relative text-center">
-                                @if($index < 4)
+                                @if($index < count($progressSteps) - 1)
                                     <div class="absolute left-1/2 top-3 h-1 w-full {{ $index < $statusIndex ? 'bg-violet-600' : 'bg-slate-200' }}"></div>
                                 @endif
                                 <div class="relative mx-auto flex h-7 w-7 items-center justify-center rounded-full border-4 border-white {{ $index <= $statusIndex ? 'bg-violet-600 text-white shadow-[0_0_0_1px_#7c3aed]' : 'bg-slate-200 text-slate-400 shadow-[0_0_0_1px_#e2e8f0]' }}">
@@ -157,7 +158,7 @@
                                 <div class="min-w-0 flex-1 sm:flex sm:justify-between sm:gap-6">
                                     <div>
                                         <p class="font-bold text-slate-900">{{ \App\Models\Shipment::statuses()[$event->status] ?? ucwords(str_replace('_', ' ', $event->status)) }}</p>
-                                        <p class="mt-1 text-sm leading-6 text-slate-500">{{ $event->notes ?: 'Shipment status updated.' }}</p>
+                                        <p class="mt-1 text-sm leading-6 text-slate-500">{{ $loop->last && $event->status === \App\Models\Shipment::STATUS_PENDING ? $shipment->creation_note : ($event->notes ?: 'Shipment status updated.') }}</p>
                                         @if($event->location)<p class="mt-1.5 text-xs font-semibold text-slate-400">{{ $event->location }}</p>@endif
                                     </div>
                                     <time class="mt-2 block flex-none text-xs font-semibold text-slate-400 sm:mt-0 sm:text-right">{{ optional($event->occurred_at)->format('M d, Y') }}<br class="hidden sm:block"> {{ optional($event->occurred_at)->format('g:i A') }}</time>
@@ -175,7 +176,7 @@
                             @if($shipment->carrier_tracking_number)<div><dt class="text-xs font-bold uppercase tracking-wider text-slate-400">Carrier reference</dt><dd class="mt-1.5 font-mono text-sm font-bold text-slate-900">{{ $shipment->carrier_tracking_number }}</dd></div>@endif
                             <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-400">Route</dt><dd class="mt-1.5 text-sm font-semibold text-slate-900">{{ $shipment->sender_city ?: $shipment->sender_country ?: 'Origin' }} <span class="mx-1 text-slate-300">→</span> {{ $shipment->receiver_city ?: $shipment->receiver_country ?: 'Destination' }}</dd></div>
                             <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-400">Estimated delivery</dt><dd class="mt-1.5 text-sm font-semibold text-slate-900">{{ $shipment->estimated_delivery?->format('l, M d, Y') ?? 'To be confirmed' }}</dd></div>
-                            <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-400">Package</dt><dd class="mt-1.5 text-sm font-semibold text-slate-900">{{ $shipment->total_packages ?: 1 }} {{ ($shipment->total_packages ?: 1) == 1 ? 'piece' : 'pieces' }}{{ $shipment->total_weight ? ' · '.rtrim(rtrim(number_format($shipment->total_weight, 2), '0'), '.').' kg' : '' }}</dd></div>
+                            <div><dt class="text-xs font-bold uppercase tracking-wider text-slate-400">Package</dt><dd class="mt-1.5 text-sm font-semibold text-slate-900">{{ $shipment->total_packages ?: 1 }} {{ ($shipment->total_packages ?: 1) == 1 ? 'piece' : 'pieces' }}</dd></div>
                         </dl>
                     </aside>
                 </div>

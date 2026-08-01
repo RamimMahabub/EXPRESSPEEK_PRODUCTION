@@ -39,17 +39,19 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // Create roles and assign permissions
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $adminRole->givePermissionTo(Permission::all());
+        $adminRole->syncPermissions(Permission::all());
 
         $customerRole = Role::firstOrCreate(['name' => 'customer']);
-        $customerRole->givePermissionTo([
+        $customerRole->syncPermissions([
             'view shipments',
             'create shipments',
         ]);
 
         $agentRole = Role::firstOrCreate(['name' => 'agent']);
-        $agentRole->givePermissionTo([
+        $agentRole->syncPermissions([
             'view shipments',
+            'create shipments',
+            'edit shipments',
             'update tracking',
         ]);
 
@@ -61,7 +63,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'password' => bcrypt('password'),
             ]
         );
-        $admin->assignRole('admin');
+        $admin->syncRoles(['admin']);
 
         // Create demo customer
         $customer = User::firstOrCreate(
@@ -71,7 +73,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'password' => bcrypt('password'),
             ]
         );
-        $customer->assignRole('customer');
+        $customer->syncRoles(['customer']);
 
         // Create demo agent
         $agent = User::firstOrCreate(
@@ -81,7 +83,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'password' => bcrypt('password'),
             ]
         );
-        $agent->assignRole('agent');
+        $agent->syncRoles(['agent']);
 
         $this->command->info('✅ Roles, permissions, and demo users created successfully.');
         $this->command->table(

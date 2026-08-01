@@ -34,13 +34,35 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'phone_country_code' => ['required', 'string', 'regex:/^\+[1-9]\d{0,3}$/'],
+            'phone' => ['required', 'string', 'regex:/^[0-9\s().-]{6,20}$/'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'terms' => ['accepted'],
         ]);
 
-        $user = DB::transaction(function () use ($request): User {
+        $normalizedPhone = User::normalizePhone(
+            (string) $request->phone_country_code,
+            (string) $request->phone,
+        );
+
+        if (! preg_match('/^\+[1-9]\d{7,14}$/', $normalizedPhone)) {
+            throw ValidationException::withMessages([
+                'phone' => 'Enter a valid mobile number including the correct country code.',
+            ]);
+        }
+
+        if (User::query()->where('phone', $normalizedPhone)->exists()) {
+            throw ValidationException::withMessages([
+                'phone' => 'This phone number is already connected to an account.',
+            ]);
+        }
+
+        $user = DB::transaction(function () use ($request, $normalizedPhone): User {
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
+                'phone_country_code' => $request->phone_country_code,
+                'phone' => $normalizedPhone,
                 'password' => Hash::make($request->password),
             ]);
 

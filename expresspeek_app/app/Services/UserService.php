@@ -14,8 +14,10 @@ class UserService
     public function createUser(array $data, string $role): User
     {
         $user = User::create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone_country_code' => $data['phone_country_code'],
+            'phone' => $data['phone'],
             'password' => Hash::make($data['password']),
         ]);
 
@@ -27,9 +29,9 @@ class UserService
     /**
      * Get all users with a specific role.
      */
-    public function getUsersByRole(string $role): Collection
+    public function getUsersByRole(string $role, int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return User::role($role)->latest()->get();
+        return User::with('roles')->role($role)->latest()->paginate($perPage);
     }
 
     /**
@@ -38,10 +40,10 @@ class UserService
     public function getUserStats(): array
     {
         return [
-            'total'     => User::count(),
-            'admins'    => User::role('admin')->count(),
+            'total' => User::count(),
+            'admins' => User::role('admin')->count(),
             'customers' => User::role('customer')->count(),
-            'agents'    => User::role('agent')->count(),
+            'agents' => User::role('agent')->count(),
         ];
     }
 

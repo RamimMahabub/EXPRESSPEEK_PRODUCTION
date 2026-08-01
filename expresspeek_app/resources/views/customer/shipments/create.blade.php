@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.operations-dashboard')
 
 @section('title', 'Create Shipment')
 @section('page-title', 'Create Shipment')
@@ -8,10 +8,19 @@
 
 @section('content')
 
-<div id="shipmentWizard" class="max-w-5xl mx-auto">
+<div id="shipmentWizard" class="premium-wizard ap-shell max-w-5xl mx-auto">
+
+    <section class="ap-page-head wizard-hero">
+        <div class="ap-head-copy">
+            <span class="ap-eyebrow">Guided shipment builder</span>
+            <h1>Create a shipment with confidence</h1>
+            <p>Move from contact details to carrier selection in five focused steps. Your shipment is only created after review.</p>
+        </div>
+        <div class="wizard-secure"><svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3"/><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M12 14v3"/></svg><span><strong>Secure workflow</strong><small>Details saved only on submit</small></span></div>
+    </section>
 
     {{-- Progress Bar --}}
-    <div class="mb-8">
+    <div class="wizard-progress-card mb-8">
         <div class="flex items-center justify-between relative">
             <div class="absolute top-5 left-0 right-0 h-0.5 bg-gray-800 z-0"></div>
             <div class="absolute top-5 left-0 h-0.5 bg-violet-600 z-0 transition-all duration-500" id="progressLine" style="width:0%"></div>
@@ -148,22 +157,14 @@
         {{-- ============================================================ --}}
         <div class="wizard-step hidden" data-step="3">
             <div class="neon-card rounded-2xl p-6">
-                <h3 class="text-base font-semibold text-white mb-6">Package Details</h3>
+                <h3 class="text-base font-semibold text-white mb-2">Package Details</h3>
+                <div class="mb-6 flex items-start gap-3 rounded-xl border border-violet-500/20 bg-violet-500/10 px-4 py-3 text-xs leading-5 text-slate-300">
+                    <svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+                    <p><strong class="text-white">Actual weight is required.</strong> Dimensions are optional. If all three dimensions are entered, volumetric weight is calculated using Length (cm) x Width (cm) x Height (cm) / 5000, and the larger weight is charged.</p>
+                </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm mb-4">
-                        <thead>
-                            <tr class="text-left border-b border-white/10">
-                                <th class="pb-3 text-xs font-medium text-slate-400 w-8">#</th>
-                                <th class="pb-3 text-xs font-medium text-slate-400">Weight (kg)</th>
-                                <th class="pb-3 text-xs font-medium text-slate-400">Quantity</th>
-                                <th class="pb-3 text-xs font-medium text-slate-400 w-10"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="packagesList" class="divide-y divide-gray-800/50">
-                            {{-- rows added by JS --}}
-                        </tbody>
-                    </table>
+                <div id="packagesList" class="mb-4 space-y-4">
+                    {{-- package cards added by JS --}}
                 </div>
 
                 <button type="button" onclick="addPackage()"
@@ -173,13 +174,17 @@
                 </button>
 
                 {{-- Totals --}}
-                <div class="mt-6 pt-5 border-t border-white/10 grid grid-cols-2 gap-4">
+                <div class="mt-6 pt-5 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-gray-800/60 rounded-xl p-4 text-center">
                         <p class="text-xs text-slate-400 mb-1">Total Packages</p>
                         <p class="text-2xl font-bold text-white" id="totalPackagesDisplay">0</p>
                     </div>
                     <div class="bg-gray-800/60 rounded-xl p-4 text-center">
-                        <p class="text-xs text-slate-400 mb-1">Total Weight</p>
+                        <p class="text-xs text-slate-400 mb-1">Volumetric Weight</p>
+                        <p class="text-2xl font-bold text-white"><span id="totalVolumetricDisplay">0.00</span> <span class="text-sm font-normal text-slate-400">kg</span></p>
+                    </div>
+                    <div class="bg-gray-800/60 rounded-xl p-4 text-center">
+                        <p class="text-xs text-slate-400 mb-1">Chargeable Weight</p>
                         <p class="text-2xl font-bold text-white"><span id="totalWeightDisplay">0.00</span> <span class="text-sm font-normal text-slate-400">kg</span></p>
                     </div>
                 </div>
@@ -235,7 +240,7 @@
                         </svg>
                         <div>
                             <p class="font-semibold text-sm">Shipment Created Successfully!</p>
-                            <p class="text-xs text-emerald-400 mt-0.5">Tracking: <span id="reviewTracking" class="font-mono font-bold"></span> | AWB: <span id="reviewAwb" class="font-mono font-bold"></span></p>
+                            <p class="text-xs text-emerald-400 mt-0.5">Tracking: <span id="reviewTracking" class="font-mono font-bold"></span></p>
                         </div>
                     </div>
 
@@ -627,10 +632,30 @@ function validateStep(step) {
         const rows = document.querySelectorAll('.package-row');
         if (rows.length === 0) { alert('Add at least one package.'); return false; }
         for (const row of rows) {
-            const w = row.querySelector('[data-field="weight"]');
-            if (!w || parseFloat(w.value) <= 0) {
-                w && w.focus();
-                showFieldError(w, 'Weight required');
+            const weight = row.querySelector('[data-field="weight"]');
+            const dimensionInputs = ['length', 'width', 'height'].map(field => row.querySelector(`[data-field="${field}"]`));
+            const actualWeight = parseFloat(weight?.value) || 0;
+            const dimensionValues = dimensionInputs.map(input => parseFloat(input?.value) || 0);
+            const hasAnyDimension = dimensionValues.some(value => value > 0);
+            const hasAllDimensions = dimensionValues.every(value => value > 0);
+
+            if (actualWeight <= 0) {
+                weight?.focus();
+                showFieldError(weight, 'Actual weight is required');
+                return false;
+            }
+
+            if (hasAnyDimension && !hasAllDimensions) {
+                const missingDimension = dimensionInputs.find((input, index) => dimensionValues[index] <= 0);
+                missingDimension?.focus();
+                showFieldError(missingDimension, 'Complete all three dimensions');
+                return false;
+            }
+
+            const quantity = row.querySelector('[data-field="quantity"]');
+            if (!quantity || parseInt(quantity.value, 10) <= 0) {
+                quantity?.focus();
+                showFieldError(quantity, 'Quantity must be at least 1');
                 return false;
             }
         }
@@ -779,32 +804,114 @@ let packageCount = 0;
 function addPackage(data = {}) {
     packageCount++;
     const idx = packageCount;
-    const tbody = document.getElementById('packagesList');
-    const tr = document.createElement('tr');
-    tr.className = 'package-row';
-    tr.dataset.idx = idx;
-    tr.innerHTML = `
-        <td class="py-3 text-slate-400 text-xs pr-2">${idx}</td>
-        <td class="py-3 pr-3">
-            <input type="number" name="packages[${idx}][weight]" data-field="weight"
-                value="${data.weight||''}" min="0.01" step="0.01" placeholder="0.00"
-                oninput="updatePackageTotals()"
-                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500">
-        </td>
-        <td class="py-3 pr-3">
-            <input type="number" name="packages[${idx}][quantity]" data-field="quantity"
-                value="${data.quantity||1}" min="1"
-                oninput="updatePackageTotals()"
-                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500">
-        </td>
-        <td class="py-3">
+    const container = document.getElementById('packagesList');
+    const packageCard = document.createElement('div');
+    packageCard.className = 'package-row overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm';
+    packageCard.dataset.idx = idx;
+    const initialWeight = data.actual_weight ?? data.weight ?? '';
+    packageCard.innerHTML = `
+        <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+            <div class="flex items-center gap-2">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 text-xs font-bold text-violet-700">${idx}</span>
+                <span class="text-sm font-semibold text-slate-900">Package ${idx}</span>
+            </div>
             <button type="button" onclick="removePackage(this)"
-                class="w-7 h-7 rounded-lg bg-red-900/30 hover:bg-red-900/60 text-red-400 flex items-center justify-center transition-all">
+                aria-label="Remove package ${idx}"
+                class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-900/30 text-red-400 transition-all hover:bg-red-900/60">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
-        </td>`;
-    tbody.appendChild(tr);
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-12">
+            <label class="block md:col-span-5">
+                <span class="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-400">
+                    Actual weight (kg)
+                    <span class="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-rose-600">Required</span>
+                </span>
+                <input type="number" name="packages[${idx}][weight]" data-field="weight"
+                    value="${initialWeight}" min="0.01" step="0.01" placeholder="0.00" required
+                    oninput="updatePackageTotals()"
+                    class="w-full rounded-xl border border-gray-700 bg-gray-800 px-3 py-3 text-sm text-white placeholder-gray-600 focus:border-violet-500 focus:outline-none">
+            </label>
+            <label class="block md:col-span-2">
+                <span class="mb-2 block text-xs font-medium uppercase tracking-wide text-slate-400">Quantity</span>
+                <input type="number" name="packages[${idx}][quantity]" data-field="quantity"
+                    value="${data.quantity||1}" min="1" required
+                    oninput="updatePackageTotals()"
+                    class="w-full rounded-xl border border-gray-700 bg-gray-800 px-3 py-3 text-sm text-white focus:border-violet-500 focus:outline-none">
+            </label>
+            <div class="md:col-span-5">
+                <span class="mb-2 block text-xs font-medium uppercase tracking-wide text-slate-400">Chargeable weight</span>
+                <div class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5">
+                    <strong class="block text-base text-violet-700" data-field="chargeable">0.00 kg</strong>
+                    <span class="mt-0.5 block text-[11px] text-slate-400" data-field="weight-source">Actual weight required</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 bg-slate-50/80 p-4">
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <p class="text-sm font-semibold text-slate-800">Volumetric option <span class="font-normal text-slate-500">(optional)</span></p>
+                    <p class="mt-0.5 text-[11px] text-slate-500">Add all three dimensions only when you want volumetric weight calculated.</p>
+                </div>
+                <span class="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-[11px] font-medium text-cyan-700">L × W × H ÷ 5000</span>
+            </div>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <label class="block">
+                    <span class="mb-1.5 block text-xs text-slate-400">Length (cm)</span>
+                    <input type="number" name="packages[${idx}][length]" data-field="length"
+                        value="${data.length||''}" min="0.01" step="0.01" placeholder="Optional"
+                        oninput="updatePackageTotals()"
+                        class="w-full rounded-xl border border-gray-700 bg-gray-800 px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-cyan-500 focus:outline-none">
+                </label>
+                <label class="block">
+                    <span class="mb-1.5 block text-xs text-slate-400">Width (cm)</span>
+                    <input type="number" name="packages[${idx}][width]" data-field="width"
+                        value="${data.width||''}" min="0.01" step="0.01" placeholder="Optional"
+                        oninput="updatePackageTotals()"
+                        class="w-full rounded-xl border border-gray-700 bg-gray-800 px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-cyan-500 focus:outline-none">
+                </label>
+                <label class="block">
+                    <span class="mb-1.5 block text-xs text-slate-400">Height (cm)</span>
+                    <input type="number" name="packages[${idx}][height]" data-field="height"
+                        value="${data.height||''}" min="0.01" step="0.01" placeholder="Optional"
+                        oninput="updatePackageTotals()"
+                        class="w-full rounded-xl border border-gray-700 bg-gray-800 px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-cyan-500 focus:outline-none">
+                </label>
+                <div>
+                    <span class="mb-1.5 block text-xs text-slate-400">Volumetric weight</span>
+                    <div class="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2.5 text-sm font-semibold text-cyan-700" data-field="volumetric">0.00 kg</div>
+                </div>
+            </div>
+        </div>`;
+    container.appendChild(packageCard);
     updatePackageTotals();
+}
+
+function calculatePackageWeights(row) {
+    const actualWeight = parseFloat(row.querySelector('[data-field="weight"]')?.value) || 0;
+    const length = parseFloat(row.querySelector('[data-field="length"]')?.value) || 0;
+    const width = parseFloat(row.querySelector('[data-field="width"]')?.value) || 0;
+    const height = parseFloat(row.querySelector('[data-field="height"]')?.value) || 0;
+    const hasAllDimensions = length > 0 && width > 0 && height > 0;
+    const rawVolumetricWeight = hasAllDimensions ? (length * width * height) / 5000 : 0;
+    const volumetricWeight = rawVolumetricWeight > 0 ? Math.max(Math.round((rawVolumetricWeight + Number.EPSILON) * 100) / 100, 0.01) : 0;
+    const rawChargeableWeight = Math.max(actualWeight, rawVolumetricWeight);
+    const chargeableWeight = rawChargeableWeight > 0 ? Math.max(Math.round((rawChargeableWeight + Number.EPSILON) * 100) / 100, 0.01) : 0;
+
+    let source = 'Actual weight required';
+    if (actualWeight > 0 && hasAllDimensions) {
+        source = Math.abs(rawVolumetricWeight - actualWeight) < 0.005
+            ? 'Both are equal'
+            : (rawVolumetricWeight > actualWeight ? 'Volumetric is higher' : 'Actual is higher');
+    } else if (hasAllDimensions) {
+        source = 'Volumetric weight';
+    } else if (actualWeight > 0) {
+        source = 'Actual weight';
+    }
+
+    return { actualWeight, volumetricWeight, chargeableWeight, source };
 }
 
 function removePackage(btn) {
@@ -815,14 +922,19 @@ function removePackage(btn) {
 }
 
 function updatePackageTotals() {
-    let totalPkgs = 0, totalWt = 0;
+    let totalPkgs = 0, totalVolumetric = 0, totalWt = 0;
     document.querySelectorAll('.package-row').forEach(row => {
-        const w = parseFloat(row.querySelector('[data-field="weight"]').value) || 0;
         const q = parseInt(row.querySelector('[data-field="quantity"]').value) || 0;
+        const weights = calculatePackageWeights(row);
         totalPkgs += q;
-        totalWt   += w * q;
+        totalVolumetric += weights.volumetricWeight * q;
+        totalWt += weights.chargeableWeight * q;
+        row.querySelector('[data-field="chargeable"]').textContent = `${weights.chargeableWeight.toFixed(2)} kg`;
+        row.querySelector('[data-field="volumetric"]').textContent = `${weights.volumetricWeight.toFixed(2)} kg`;
+        row.querySelector('[data-field="weight-source"]').textContent = weights.source;
     });
     document.getElementById('totalPackagesDisplay').textContent = totalPkgs;
+    document.getElementById('totalVolumetricDisplay').textContent = totalVolumetric.toFixed(2);
     document.getElementById('totalWeightDisplay').textContent   = totalWt.toFixed(2);
 }
 
@@ -1024,7 +1136,6 @@ function submitShipment() {
             createdShipment = data.shipment;
             document.getElementById('reviewContent').classList.remove('hidden');
             document.getElementById('reviewTracking').textContent = data.shipment.tracking_number;
-            document.getElementById('reviewAwb').textContent      = data.shipment.awb_number;
             const waybillBtn = document.getElementById('waybillBtn');
             const invoiceBtn = document.getElementById('invoiceBtn');
             if (data.waybill_url) {
@@ -1077,7 +1188,7 @@ function populateReview(shipment, fd) {
 
     document.getElementById('reviewPackages').innerHTML = `
         <p>Total Packages: <span class="text-white">${g('total_packages')}</span></p>
-        <p>Total Weight: <span class="text-white">${g('total_weight')} kg</span></p>`;
+        <p>Chargeable Weight: <span class="text-white">${g('total_weight')} kg</span></p>`;
 }
 
 // ============================================================

@@ -110,12 +110,20 @@
     </div>
     <div>
         <label class="block text-xs font-medium text-slate-400 mb-1.5">Code</label>
-        <input type="text" name="{{ $prefix }}_phone_code" placeholder="+880" maxlength="6"
-            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500">
+        <div class="relative phone-code-search-wrapper">
+            <input type="text" name="{{ $prefix }}_phone_code" id="{{ $prefix }}_phone_code_input" 
+                value="{{ old($prefix . '_phone_code', $prefix === 'sender' ? '+880' : '') }}" 
+                placeholder="+880" autocomplete="off"
+                oninput="phoneCodeAutocomplete(this,'{{ $prefix }}')"
+                onfocus="phoneCodeAutocomplete(this,'{{ $prefix }}')"
+                onkeydown="phoneCodeKeydown(event,'{{ $prefix }}')"
+                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500 transition-colors">
+            <div id="{{ $prefix }}_phone_code_dropdown" class="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-xl shadow-xl z-30 hidden max-h-56 overflow-y-auto"></div>
+        </div>
     </div>
     <div>
         <label class="block text-xs font-medium text-slate-400 mb-1.5">Phone Number</label>
-        <input type="text" name="{{ $prefix }}_phone" placeholder="01XXXXXXXXX"
+        <input type="text" name="{{ $prefix }}_phone" placeholder="1968524222"
             class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500">
     </div>
 </div>
@@ -275,20 +283,128 @@ function selectCountry(prefix, name, code) {
     document.getElementById(prefix + '_country_dropdown').classList.add('hidden');
     const clearBtn = document.getElementById(prefix + '_country_clear');
     if (clearBtn) clearBtn.classList.remove('hidden');
-    const phoneCodes = {AE:'+971',BD:'+880',IN:'+91',PK:'+92',US:'+1',GB:'+44',SA:'+966',
-        SG:'+65',MY:'+60',AU:'+61',CA:'+1',DE:'+49',FR:'+33',JP:'+81',CN:'+86',
-        QA:'+974',KW:'+965',OM:'+968',BH:'+973',EG:'+20',TR:'+90',NL:'+31',
-        LK:'+94',NP:'+977',MM:'+95',KH:'+855',VN:'+84',TH:'+66',ID:'+62',PH:'+63',
-        HK:'+852',TW:'+886',KR:'+82',NG:'+234',ZA:'+27',KE:'+254',PK:'+92'};
-    const codeEl = document.querySelector(`[name="${prefix}_phone_code"]`);
-    if (codeEl && !codeEl.value && phoneCodes[code]) codeEl.value = phoneCodes[code];
+    const codeEl = document.getElementById(prefix + '_phone_code_input');
+    const cObj = window.PHONE_CODES.find(p => p.code === code);
+    if (codeEl && !codeEl.value && cObj) codeEl.value = cObj.dial;
 }
 
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.country-search-wrapper')) {
         document.querySelectorAll('[id$="_country_dropdown"]').forEach(d => d.classList.add('hidden'));
     }
+    if (!e.target.closest('.phone-code-search-wrapper')) {
+        document.querySelectorAll('[id$="_phone_code_dropdown"]').forEach(d => d.classList.add('hidden'));
+    }
 });
+
+window.PHONE_CODES = [
+    {code:'AF',dial:'+93'},{code:'AL',dial:'+355'},{code:'DZ',dial:'+213'},{code:'AS',dial:'+1684'},
+    {code:'AD',dial:'+376'},{code:'AO',dial:'+244'},{code:'AI',dial:'+1264'},{code:'AG',dial:'+1268'},
+    {code:'AR',dial:'+54'},{code:'AM',dial:'+374'},{code:'AW',dial:'+297'},{code:'AU',dial:'+61'},
+    {code:'AT',dial:'+43'},{code:'AZ',dial:'+994'},{code:'BS',dial:'+1242'},{code:'BH',dial:'+973'},
+    {code:'BD',dial:'+880'},{code:'BB',dial:'+1246'},{code:'BY',dial:'+375'},{code:'BE',dial:'+32'},
+    {code:'BZ',dial:'+501'},{code:'BJ',dial:'+229'},{code:'BM',dial:'+1441'},{code:'BT',dial:'+975'},
+    {code:'BO',dial:'+591'},{code:'BA',dial:'+387'},{code:'BW',dial:'+267'},{code:'BR',dial:'+55'},
+    {code:'BN',dial:'+673'},{code:'BG',dial:'+359'},{code:'BF',dial:'+226'},{code:'BI',dial:'+257'},
+    {code:'KH',dial:'+855'},{code:'CM',dial:'+237'},{code:'CA',dial:'+1'},{code:'CV',dial:'+238'},
+    {code:'KY',dial:'+1345'},{code:'CF',dial:'+236'},{code:'TD',dial:'+235'},{code:'CL',dial:'+56'},
+    {code:'CN',dial:'+86'},{code:'CO',dial:'+57'},{code:'KM',dial:'+269'},{code:'CG',dial:'+242'},
+    {code:'CD',dial:'+243'},{code:'CK',dial:'+682'},{code:'CR',dial:'+506'},{code:'HR',dial:'+385'},
+    {code:'CU',dial:'+53'},{code:'CY',dial:'+357'},{code:'CZ',dial:'+420'},{code:'DK',dial:'+45'},
+    {code:'DJ',dial:'+253'},{code:'DM',dial:'+1767'},{code:'DO',dial:'+1809'},{code:'EC',dial:'+593'},
+    {code:'EG',dial:'+20'},{code:'SV',dial:'+503'},{code:'GQ',dial:'+240'},{code:'ER',dial:'+291'},
+    {code:'EE',dial:'+372'},{code:'SZ',dial:'+268'},{code:'ET',dial:'+251'},{code:'FJ',dial:'+679'},
+    {code:'FI',dial:'+358'},{code:'FR',dial:'+33'},{code:'PF',dial:'+689'},{code:'GA',dial:'+241'},
+    {code:'GM',dial:'+220'},{code:'GE',dial:'+995'},{code:'DE',dial:'+49'},{code:'GH',dial:'+233'},
+    {code:'GI',dial:'+350'},{code:'GR',dial:'+30'},{code:'GL',dial:'+299'},{code:'GD',dial:'+1473'},
+    {code:'GT',dial:'+502'},{code:'GN',dial:'+224'},{code:'GW',dial:'+245'},{code:'GY',dial:'+592'},
+    {code:'HT',dial:'+509'},{code:'HN',dial:'+504'},{code:'HK',dial:'+852'},{code:'HU',dial:'+36'},
+    {code:'IS',dial:'+354'},{code:'IN',dial:'+91'},{code:'ID',dial:'+62'},{code:'IR',dial:'+98'},
+    {code:'IQ',dial:'+964'},{code:'IE',dial:'+353'},{code:'IL',dial:'+972'},{code:'IT',dial:'+39'},
+    {code:'CI',dial:'+225'},{code:'JM',dial:'+1876'},{code:'JP',dial:'+81'},{code:'JO',dial:'+962'},
+    {code:'KZ',dial:'+7'},{code:'KE',dial:'+254'},{code:'KW',dial:'+965'},{code:'KG',dial:'+996'},
+    {code:'LA',dial:'+856'},{code:'LV',dial:'+371'},{code:'LB',dial:'+961'},{code:'LS',dial:'+266'},
+    {code:'LR',dial:'+231'},{code:'LY',dial:'+218'},{code:'LI',dial:'+423'},{code:'LT',dial:'+370'},
+    {code:'LU',dial:'+352'},{code:'MO',dial:'+853'},{code:'MG',dial:'+261'},{code:'MW',dial:'+265'},
+    {code:'MY',dial:'+60'},{code:'MV',dial:'+960'},{code:'ML',dial:'+223'},{code:'MT',dial:'+356'},
+    {code:'MH',dial:'+692'},{code:'MR',dial:'+222'},{code:'MU',dial:'+230'},{code:'MX',dial:'+52'},
+    {code:'FM',dial:'+691'},{code:'MD',dial:'+373'},{code:'MC',dial:'+377'},{code:'MN',dial:'+976'},
+    {code:'ME',dial:'+382'},{code:'MA',dial:'+212'},{code:'MZ',dial:'+258'},{code:'MM',dial:'+95'},
+    {code:'NA',dial:'+264'},{code:'NP',dial:'+977'},{code:'NL',dial:'+31'},{code:'NZ',dial:'+64'},
+    {code:'NI',dial:'+505'},{code:'NE',dial:'+227'},{code:'NG',dial:'+234'},{code:'KP',dial:'+850'},
+    {code:'MK',dial:'+389'},{code:'NO',dial:'+47'},{code:'OM',dial:'+968'},{code:'PK',dial:'+92'},
+    {code:'PS',dial:'+970'},{code:'PA',dial:'+507'},{code:'PG',dial:'+675'},{code:'PY',dial:'+595'},
+    {code:'PE',dial:'+51'},{code:'PH',dial:'+63'},{code:'PL',dial:'+48'},{code:'PT',dial:'+351'},
+    {code:'PR',dial:'+1'},{code:'QA',dial:'+974'},{code:'RO',dial:'+40'},{code:'RU',dial:'+7'},
+    {code:'RW',dial:'+250'},{code:'LC',dial:'+1758'},{code:'WS',dial:'+685'},{code:'SM',dial:'+378'},
+    {code:'SA',dial:'+966'},{code:'SN',dial:'+221'},{code:'RS',dial:'+381'},{code:'SC',dial:'+248'},
+    {code:'SL',dial:'+232'},{code:'SG',dial:'+65'},{code:'SK',dial:'+421'},{code:'SI',dial:'+386'},
+    {code:'SB',dial:'+677'},{code:'SO',dial:'+252'},{code:'ZA',dial:'+27'},{code:'KR',dial:'+82'},
+    {code:'SS',dial:'+211'},{code:'ES',dial:'+34'},{code:'LK',dial:'+94'},{code:'SD',dial:'+249'},
+    {code:'SR',dial:'+597'},{code:'SE',dial:'+46'},{code:'CH',dial:'+41'},{code:'SY',dial:'+963'},
+    {code:'TW',dial:'+886'},{code:'TJ',dial:'+992'},{code:'TZ',dial:'+255'},{code:'TH',dial:'+66'},
+    {code:'TL',dial:'+670'},{code:'TG',dial:'+228'},{code:'TO',dial:'+676'},{code:'TT',dial:'+1868'},
+    {code:'TN',dial:'+216'},{code:'TR',dial:'+90'},{code:'TM',dial:'+993'},{code:'UG',dial:'+256'},
+    {code:'UA',dial:'+380'},{code:'AE',dial:'+971'},{code:'GB',dial:'+44'},{code:'US',dial:'+1'},
+    {code:'UY',dial:'+598'},{code:'UZ',dial:'+998'},{code:'VU',dial:'+678'},{code:'VA',dial:'+379'},
+    {code:'VE',dial:'+58'},{code:'VN',dial:'+84'},{code:'YE',dial:'+967'},{code:'ZM',dial:'+260'},
+    {code:'ZW',dial:'+263'}
+];
+
+const _phoneCodeIdx = {};
+
+function _buildPhoneCodeDropdown(prefix, results, q) {
+    const dd = document.getElementById(prefix + '_phone_code_dropdown');
+    if (!results.length) {
+        dd.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400 italic">No codes found</div>';
+        dd.classList.remove('hidden');
+        return;
+    }
+    const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    dd.innerHTML = results.map((c, i) => {
+        const labelStr = c.code + ' ' + c.dial;
+        const label = q ? labelStr.replace(new RegExp('(' + esc(q) + ')', 'gi'), '<strong class="text-white font-semibold">$1</strong>') : labelStr;
+        return `<div class="phone-code-option flex items-center justify-between px-3 py-2 text-sm text-slate-300 hover:bg-gray-700/80 cursor-pointer transition-colors" data-idx="${i}" ontouchend="event.preventDefault();selectPhoneCode('${prefix}','${c.dial}')" onclick="selectPhoneCode('${prefix}','${c.dial}')"><span>${label}</span></div>`;
+    }).join('');
+    dd.classList.remove('hidden');
+    _phoneCodeIdx[prefix] = -1;
+}
+
+function phoneCodeAutocomplete(input, prefix) {
+    const q = input.value.trim().toLowerCase();
+    const results = q.length === 0
+        ? window.PHONE_CODES.slice(0, 50)
+        : window.PHONE_CODES.filter(c => c.code.toLowerCase().includes(q) || c.dial.includes(q)).slice(0, 12);
+    _buildPhoneCodeDropdown(prefix, results, q);
+}
+
+function phoneCodeKeydown(e, prefix) {
+    const dd = document.getElementById(prefix + '_phone_code_dropdown');
+    const opts = dd.querySelectorAll('.phone-code-option');
+    if (!opts.length || dd.classList.contains('hidden')) return;
+    if (!_phoneCodeIdx[prefix]) _phoneCodeIdx[prefix] = -1;
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        _phoneCodeIdx[prefix] = Math.min(_phoneCodeIdx[prefix] + 1, opts.length - 1);
+        opts.forEach((o, i) => o.classList.toggle('bg-gray-700', i === _phoneCodeIdx[prefix]));
+        opts[_phoneCodeIdx[prefix]].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        _phoneCodeIdx[prefix] = Math.max(_phoneCodeIdx[prefix] - 1, 0);
+        opts.forEach((o, i) => o.classList.toggle('bg-gray-700', i === _phoneCodeIdx[prefix]));
+        opts[_phoneCodeIdx[prefix]].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (_phoneCodeIdx[prefix] >= 0) opts[_phoneCodeIdx[prefix]].click();
+    } else if (e.key === 'Escape') {
+        dd.classList.add('hidden');
+    }
+}
+
+function selectPhoneCode(prefix, dial) {
+    document.getElementById(prefix + '_phone_code_input').value = dial;
+    document.getElementById(prefix + '_phone_code_dropdown').classList.add('hidden');
+}
 </script>
 @endpush
 @endonce

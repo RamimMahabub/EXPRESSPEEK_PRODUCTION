@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="0nWLwhKdOobCt6f8y0xRqVy455xMWNK8njXw9XId">
+    <title>ExpressPeek — Profile</title>
+    <link rel="icon" href="https://127.0.0.1:8011/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="https://127.0.0.1:8011/favicon.png" type="image/png">
+<link rel="shortcut icon" href="https://127.0.0.1:8011/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://127.0.0.1:8011/build/assets/app-BdnLz7pG.css" /><link rel="modulepreload" as="script" href="https://127.0.0.1:8011/build/assets/app-YkUiYbng.js" /><link rel="stylesheet" href="https://127.0.0.1:8011/build/assets/app-BdnLz7pG.css" /><script type="module" src="https://127.0.0.1:8011/build/assets/app-YkUiYbng.js"></script>    <style>
+        :root { --ops-ink:#0b1739; --ops-muted:#697894; --ops-line:#e5eaf3; --ops-purple:#6534f5; --ops-blue:#2670f5; --ops-green:#12a870; --ops-orange:#f78a19; --ops-red:#ef3152; }
+        * { box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { margin:0; min-width:320px; overflow-x:hidden; color:var(--ops-ink); background:#f7f9fe; font-family:'Manrope',sans-serif; -webkit-font-smoothing:antialiased; }
+        a { color:inherit; text-decoration:none; }
+        button,input { font:inherit; }
+        .ops-icon { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+        .ops-topbar { position:sticky; top:0; z-index:40; height:78px; display:flex; align-items:center; padding:0 30px; border-bottom:1px solid var(--ops-line); background:rgba(255,255,255,.95); backdrop-filter:blur(18px); }
+        .ops-topbar-inner { width:100%; max-width:1780px; min-width:0; margin:0 auto; display:flex; align-items:center; gap:30px; }
+        .ops-topbar-inner.is-admin { gap:14px; }
+        .ops-topbar-inner.is-admin .ops-logo { width:165px; }
+        .ops-topbar-inner.is-admin .ops-nav { gap:2px; }
+        .ops-topbar-inner.is-admin .ops-nav-link { gap:5px; padding:10px 8px; font-size:10px; }
+        .ops-topbar-inner.is-admin .ops-nav-link .ops-icon { width:16px; height:16px; }
+        .ops-topbar-inner.is-admin .ops-profile { max-width:190px; }
+        .ops-topbar-inner.is-admin .ops-profile-copy { width:100px; }
+        .ops-logo { width:180px; flex:0 0 auto; }
+        .ops-logo img { display:block; width:158px; height:48px; object-fit:contain; }
+        .ops-nav { min-width:0; flex:1; display:flex; align-items:center; gap:5px; }
+        .ops-nav-link { display:flex; align-items:center; gap:8px; padding:12px 14px; border-radius:12px; color:#536484; font-size:12px; font-weight:650; white-space:nowrap; transition:.2s ease; }
+        .ops-nav-link:hover,.ops-nav-link.active { color:var(--ops-purple); background:#f1edff; }
+        .ops-nav-link .ops-icon { width:18px; height:18px; }
+        .ops-role-pill { padding:5px 9px; border-radius:99px; color:#5f37da; background:#f2edff; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+        .ops-top-actions { min-width:0; display:flex; align-items:center; gap:8px; }
+        .ops-icon-btn { position:relative; width:39px; height:39px; flex:0 0 auto; display:grid; place-items:center; border:0; border-radius:11px; color:#576886; background:transparent; cursor:pointer; transition:.2s; }
+        .ops-icon-btn:hover { color:var(--ops-purple); background:#f3efff; }
+        .ops-notice { position:absolute; top:2px; right:1px; min-width:16px; height:16px; padding:0 4px; display:grid; place-items:center; border:2px solid white; border-radius:99px; color:white; background:var(--ops-red); font-size:7px; font-weight:800; }
+        .ops-profile { min-width:0; max-width:238px; overflow:hidden; display:flex; align-items:center; gap:10px; margin-left:5px; padding-left:14px; border-left:1px solid var(--ops-line); }
+        .ops-avatar { width:42px; height:42px; flex:0 0 auto; display:grid; place-items:center; overflow:hidden; border-radius:50%; color:white; background:linear-gradient(135deg,#286de1,#6937eb); box-shadow:0 8px 20px rgba(75,56,201,.2); font-size:12px; font-weight:800; object-fit:cover; }
+        .ops-profile-copy { display:block; width:122px; min-width:0; overflow:hidden; }
+        .ops-profile-name,.ops-profile-email { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .ops-profile-name { color:var(--ops-ink); font-size:12px; font-weight:800; }
+        .ops-profile-email { margin-top:2px; color:#8290a8; font-size:8px; }
+        .ops-home-action { height:39px; flex:0 0 auto; display:inline-flex; align-items:center; gap:7px; padding:0 11px; border-radius:11px; color:#536484; font-size:10px; font-weight:750; white-space:nowrap; transition:.2s ease; }
+        .ops-home-action:hover { color:var(--ops-purple); background:#f3efff; }
+        .ops-home-action .ops-icon { width:17px; height:17px; }
+        .ops-main { max-width:1780px; margin:0 auto; padding:24px 30px 38px; }
+        .ops-card { background:rgba(255,255,255,.98); border:1px solid var(--ops-line); border-radius:16px; box-shadow:0 8px 28px rgba(22,42,84,.045); }
+        .ops-title { margin:0; color:var(--ops-ink); font-size:16px; font-weight:800; }
+        .ops-section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+        .ops-link { display:inline-flex; align-items:center; gap:5px; color:var(--ops-purple); font-size:10px; font-weight:800; }
+        .ops-link:hover { color:#3f17bd; }
+        .ops-flash { margin-bottom:14px; padding:13px 16px; border-radius:12px; font-size:11px; }
+        .ops-flash.success { color:#087b52; background:#edfbf5; border:1px solid #ccefe0; }
+        .ops-flash.error { color:#c8203e; background:#fff2f4; border:1px solid #ffd8df; }
+
+        .ops-hero { position:relative; min-height:220px; overflow:hidden; border:1px solid var(--ops-line); border-radius:18px; background:linear-gradient(105deg,#fbfdff 0%,#f4f8fc 34%,#e2edf6 63%,#d5e5f1 78%,#edf4fa 100%); box-shadow:0 12px 36px rgba(41,56,132,.08); }
+        .ops-hero::before { content:''; position:absolute; z-index:0; inset:0; background:url('/images/dashboard-logistics-hero-light.png') 18% center/auto 100% no-repeat; -webkit-mask-image:linear-gradient(90deg,transparent 5%,#000 13%,#000 43%,transparent 54%); mask-image:linear-gradient(90deg,transparent 5%,#000 13%,#000 43%,transparent 54%); }
+        .ops-hero::after { content:''; position:absolute; z-index:1; inset:0; background:linear-gradient(90deg,rgba(250,252,255,.98) 0%,rgba(250,252,255,.76) 21%,rgba(250,252,255,.06) 38%,rgba(250,252,255,0) 65%,rgba(250,252,255,.04) 100%); }
+        .ops-hero-copy { position:relative; z-index:2; width:35%; min-width:420px; padding:31px 26px; }
+        .ops-kicker { display:inline-flex; align-items:center; gap:7px; margin-bottom:9px; padding:5px 9px; border-radius:99px; color:#5932db; background:rgba(239,234,255,.92); font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+        .ops-hero h1 { margin:0; color:var(--ops-ink); font-size:25px; line-height:1.2; letter-spacing:-.5px; font-weight:800; }
+        .ops-hero p { margin:7px 0 18px; color:#687793; font-size:12px; }
+        .ops-command { width:310px; padding:12px 14px; border:1px solid rgba(218,225,239,.94); border-radius:13px; background:rgba(255,255,255,.92); box-shadow:0 9px 24px rgba(27,43,88,.09); backdrop-filter:blur(9px); }
+        .ops-command-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+        .ops-command-title { display:flex; align-items:center; gap:8px; color:#263555; font-size:9px; font-weight:800; }
+        .ops-command-title::before { content:''; width:8px; height:8px; flex:0 0 auto; border-radius:50%; background:#24c886; box-shadow:0 0 0 4px rgba(36,200,134,.11); }
+        .ops-command-link { color:var(--ops-purple); font-size:8px; font-weight:800; }
+        .ops-command-metrics { display:grid; grid-template-columns:1fr 1fr; }
+        .ops-command-metric { min-width:0; display:flex; align-items:center; gap:8px; }
+        .ops-command-metric + .ops-command-metric { padding-left:12px; border-left:1px solid #e7ebf3; }
+        .ops-command-metric strong { color:var(--ops-ink); font-size:20px; line-height:1; }
+        .ops-command-metric span { color:#71809b; font-size:8px; line-height:1.25; }
+        .ops-hero-actions { position:absolute; z-index:3; top:34px; right:28px; width:50%; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+        .ops-action { min-height:152px; padding:23px 16px 17px; border:1px solid rgba(224,229,240,.94); border-radius:15px; background:rgba(255,255,255,.90); backdrop-filter:blur(7px); box-shadow:0 12px 28px rgba(31,47,96,.075); transition:.2s ease; }
+        .ops-action:hover { transform:translateY(-4px); border-color:#d8ceff; box-shadow:0 16px 30px rgba(80,55,190,.13); }
+        .ops-action-icon,.ops-soft-icon { display:grid; place-items:center; border-radius:12px; }
+        .ops-action-icon { width:46px; height:46px; margin-bottom:13px; color:white; }
+        .ops-action-icon.purple { background:linear-gradient(135deg,#7e59fa,#5127e6); }
+        .ops-action-icon.blue { background:linear-gradient(135deg,#62b3ff,#286af4); }
+        .ops-action-icon.green { background:linear-gradient(135deg,#61d9a7,#17aa73); }
+        .ops-action-icon.orange { background:linear-gradient(135deg,#ffc362,#ff901d); }
+        .ops-action strong { display:block; color:#13203f; font-size:12px; }
+        .ops-action small { display:block; margin-top:5px; color:#8290a8; font-size:9px; }
+
+        .ops-stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:14px; margin-top:14px; }
+        .ops-stat { position:relative; min-height:108px; padding:17px; overflow:hidden; display:block; color:inherit; text-decoration:none; transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+        .ops-stat:hover { transform:translateY(-3px); border-color:#d9d0fa; box-shadow:0 14px 30px rgba(66,48,150,.11); }
+        .ops-stat:focus-visible { outline:3px solid rgba(103,65,239,.22); outline-offset:2px; }
+        .ops-stat-main { display:flex; align-items:flex-start; gap:11px; }
+        .ops-soft-icon { width:38px; height:38px; flex:0 0 auto; }
+        .ops-soft-icon.purple { color:var(--ops-purple); background:#f1edff; }
+        .ops-soft-icon.blue { color:var(--ops-blue); background:#edf3ff; }
+        .ops-soft-icon.green { color:var(--ops-green); background:#eaf9f3; }
+        .ops-soft-icon.orange { color:var(--ops-orange); background:#fff5e8; }
+        .ops-soft-icon.red { color:var(--ops-red); background:#fff0f3; }
+        .ops-stat-label { margin:0; color:#5e6d88; font-size:10px; font-weight:700; }
+        .ops-stat-value { margin:4px 0 0; color:var(--ops-ink); font-size:25px; line-height:1; font-weight:800; }
+        .ops-stat-note { margin:10px 0 0 49px; color:#71809a; font-size:8px; }
+        .ops-stat-note strong { color:var(--ops-green); }
+        .ops-stat-note.warning strong { color:var(--ops-orange); }
+        .ops-stat-note.danger strong { color:var(--ops-red); }
+        .ops-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) 350px; gap:14px; margin-top:14px; align-items:start; }
+        .ops-panel { padding:18px; }
+        .ops-side { display:grid; gap:12px; }
+        .ops-chart { height:190px; }
+        .ops-chart svg { display:block; width:100%; height:165px; overflow:visible; }
+        .ops-chart-labels { display:grid; grid-template-columns:repeat(7,1fr); color:#7b89a2; font-size:8px; text-align:center; }
+        .ops-legend { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; padding:11px; border:1px solid var(--ops-line); border-radius:10px; }
+        .ops-legend span { color:#687792; font-size:8px; }
+        .ops-legend strong { display:block; margin-top:3px; color:var(--ops-ink); font-size:11px; }
+        .ops-table-wrap { overflow:auto; }
+        .ops-table { width:100%; border-collapse:collapse; font-size:9px; }
+        .ops-table th { padding:0 7px 11px; color:#8290a9; font-size:8px; font-weight:600; text-align:left; white-space:nowrap; }
+        .ops-table td { padding:10px 7px; border-top:1px solid #edf0f5; color:#475774; vertical-align:middle; }
+        .ops-table strong { display:block; color:#273756; font-weight:700; }
+        .ops-table small { display:block; margin-top:2px; color:#8a97ae; font-size:8px; }
+        .ops-tracking { color:#5d39ea!important; font-weight:800; }
+        .ops-status { display:inline-flex; align-items:center; gap:4px; padding:4px 7px; border-radius:99px; font-size:8px; font-weight:800; white-space:nowrap; }
+        .ops-status::before { content:''; width:5px; height:5px; border:1.5px solid currentColor; border-radius:50%; }
+        .ops-status.pending { color:#dd7909; background:#fff4e4; }
+        .ops-status.in_transit,.ops-status.picked_up,.ops-status.out_for_delivery { color:#266fe9; background:#edf4ff; }
+        .ops-status.delivered { color:#059560; background:#e9f9f2; }
+        .ops-status.failed,.ops-status.returned { color:#e82d4b; background:#fff0f2; }
+        .ops-action-link { display:inline-flex; padding:6px 9px; border-radius:7px; color:#5a34d8; background:#f2edff; font-size:8px; font-weight:800; }
+        .ops-quick-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+        .ops-quick { min-height:77px; padding:12px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; border:1px solid #eef0f6; border-radius:11px; color:#324260; background:#fbfcff; text-align:center; font-size:8px; font-weight:800; transition:.2s; }
+        .ops-quick:hover { color:white; border-color:transparent; background:linear-gradient(135deg,#734cf2,#4f27dc); box-shadow:0 10px 20px rgba(82,49,202,.18); }
+        .ops-list { display:grid; }
+        .ops-list-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; padding:10px 0; border-top:1px solid #edf0f5; }
+        .ops-list-row:first-child { padding-top:0; border-top:0; }
+        .ops-list-row span { color:#687792; font-size:9px; }
+        .ops-list-row strong { color:var(--ops-ink); font-size:10px; }
+        .ops-progress { height:5px; margin-top:5px; overflow:hidden; border-radius:99px; background:#eef1f7; }
+        .ops-progress i { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#7141ef,#3977f3); }
+        .ops-empty { padding:58px 18px; color:#7e8ba4; text-align:center; font-size:10px; }
+        .ops-empty .ops-soft-icon { margin:0 auto 11px; }
+        .ops-mobile-header,.ops-bottom-nav { display:none; }
+        .ops-footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:20px 30px; border-top:1px solid var(--ops-line); color:#7b89a2; background:white; font-size:9px; }
+
+        @media (max-width:1450px) {
+            .ops-nav-link { padding-inline:10px; }
+            .ops-nav-link span { display:none; }
+            .ops-home-action span { display:none; }
+            .ops-home-action { width:39px; padding:0; justify-content:center; }
+            .ops-hero-actions { width:52%; gap:10px; }
+            .ops-grid { grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) 310px; }
+        }
+        @media (max-width:1120px) {
+            .ops-topbar,.ops-main { padding-left:20px; padding-right:20px; }
+            .ops-logo { width:158px; }
+            .ops-profile-copy { display:none; }
+            .ops-hero { min-height:350px; }
+            .ops-hero-actions { top:auto; left:20px; right:20px; bottom:18px; width:auto; }
+            .ops-action { min-height:123px; padding:14px; }
+            .ops-action-icon { width:38px; height:38px; margin-bottom:8px; }
+            .ops-stats { grid-template-columns:repeat(3,1fr); }
+            .ops-grid { grid-template-columns:1fr 1fr; }
+            .ops-side { grid-column:1/-1; grid-template-columns:1fr 1fr; }
+        }
+        @media (max-width:767px) {
+            body { padding-bottom:76px; }
+            .ops-topbar,.ops-footer { display:none; }
+            .ops-mobile-header { position:sticky; top:0; z-index:40; width:100%; max-width:100vw; height:76px; padding:0 14px; overflow:hidden; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--ops-line); background:rgba(255,255,255,.97); backdrop-filter:blur(16px); }
+            .ops-mobile-header img { width:146px; height:44px; object-fit:contain; }
+            .ops-mobile-actions { min-width:0; flex:0 0 auto; display:flex; align-items:center; gap:8px; }
+            .ops-mobile-actions .ops-avatar { width:38px; height:38px; }
+            .ops-main { padding:22px 14px 28px; }
+            .ops-hero { min-height:220px; margin-top:74px; overflow:visible; border:0; background:linear-gradient(180deg,#eef5fb 0%,#f9fbfd 48%,#e7f0f7 100%); }
+            .ops-hero::before { background-image:url('/images/dashboard-logistics-hero-light.png'); background-position:center bottom; background-size:100% auto; background-repeat:no-repeat; -webkit-mask-image:none; mask-image:none; }
+            .ops-hero::after { bottom:auto; height:220px; border-radius:18px; background:linear-gradient(90deg,rgba(249,252,255,.96) 0%,rgba(249,252,255,.76) 43%,rgba(249,252,255,.12) 76%,rgba(249,252,255,0) 100%); }
+            .ops-hero-copy { width:100%; min-width:0; padding:22px 20px; }
+            .ops-kicker { position:absolute; top:-67px; left:0; }
+            .ops-hero h1 { position:absolute; top:-40px; left:0; color:var(--ops-ink); font-size:20px; white-space:nowrap; }
+            .ops-hero p { display:none; }
+            .ops-command { width:min(310px,calc(100vw - 68px)); }
+            .ops-hero-actions { position:relative; inset:auto; width:auto; margin-top:14px; padding:20px 8px; grid-template-columns:repeat(4,minmax(0,1fr)); border:1px solid var(--ops-line); border-radius:16px; background:white; }
+            .ops-action { min-width:0; min-height:92px; padding:4px; border:0; box-shadow:none; text-align:center; }
+            .ops-action:hover { transform:none; box-shadow:none; }
+            .ops-action:not(:last-child) { border-right:1px solid var(--ops-line); border-radius:0; }
+            .ops-action-icon { width:42px; height:42px; margin:0 auto 9px; }
+            .ops-action strong { font-size:9px; line-height:1.3; }
+            .ops-action small { display:none; }
+            .ops-stats { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+            .ops-stat { min-height:125px; padding:14px; }
+            .ops-stat:last-child { grid-column:1/-1; }
+            .ops-stat-main { display:block; }
+            .ops-stat-label { margin-top:8px; }
+            .ops-stat-value { margin-top:5px; }
+            .ops-stat-note { position:absolute; left:14px; bottom:11px; margin:0; }
+            .ops-grid { display:flex; flex-direction:column; }
+            .ops-panel { width:100%; padding:16px 14px; }
+            .ops-grid > :nth-child(2) { order:-1; }
+            .ops-side { width:100%; display:contents; }
+            .ops-table th { display:none; }
+            .ops-table,.ops-table tbody,.ops-table tr,.ops-table td { display:block; }
+            .ops-table tr { position:relative; min-height:68px; padding:11px 92px 11px 46px; border-top:1px solid #edf0f5; }
+            .ops-table tr:first-child { border-top:0; }
+            .ops-table td { padding:0; border:0; }
+            .ops-table td:first-child { margin-bottom:4px; font-size:10px; }
+            .ops-table td:nth-child(2) { color:#66758e; font-size:9px; }
+            .ops-table td:nth-child(3) { display:none; }
+            .ops-table td:nth-child(4) { position:absolute; right:2px; top:13px; }
+            .ops-table td:last-child { position:absolute; right:2px; bottom:11px; }
+            .ops-table tr::before { content:'□'; position:absolute; left:3px; top:14px; width:34px; height:34px; display:grid; place-items:center; border-radius:10px; color:var(--ops-purple); background:#f1edff; font-size:18px; }
+            .ops-bottom-nav { position:fixed; z-index:50; left:0; right:0; bottom:0; height:76px; display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); padding:7px 3px max(7px,env(safe-area-inset-bottom)); border-top:1px solid var(--ops-line); background:rgba(255,255,255,.97); backdrop-filter:blur(16px); box-shadow:0 -8px 26px rgba(25,39,79,.08); }
+            .ops-bottom-link { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#697791; font-size:8px; font-weight:650; }
+            .ops-bottom-link.active { color:var(--ops-purple); }
+            .ops-bottom-link.active::before { content:''; position:absolute; top:-7px; width:36px; height:3px; border-radius:99px; background:var(--ops-purple); }
+            .ops-bottom-link .ops-icon { width:22px; height:22px; }
+        }
+        @media (max-width:420px) {
+            .ops-main { padding-left:11px; padding-right:11px; }
+            .ops-action strong { font-size:8px; }
+            .ops-legend { grid-template-columns:repeat(2,1fr); }
+        }
+    </style>
+    </head>
+<body class="role-panel">
+<div>
+    <header class="ops-topbar">
+        <div class="ops-topbar-inner ">
+            <a class="ops-logo" href="https://127.0.0.1:8011/agent/dashboard"><img src="/images/express-peek-logo.webp" alt="Express Peek"></a>
+            <nav class="ops-nav" aria-label="Primary navigation">
+                <a class="ops-nav-link " href="https://127.0.0.1:8011/agent/dashboard"><svg class="ops-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Dashboard</span></a>
+                                    <a class="ops-nav-link " href="https://127.0.0.1:8011/agent/shipments"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg><span>Delivery Queue</span></a>
+                    <a class="ops-nav-link" href="https://127.0.0.1:8011/track"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Tracking</span></a>
+                    <a class="ops-nav-link " href="https://127.0.0.1:8011/agent/shipments/create"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create Shipment</span></a>
+                    <a class="ops-nav-link " href="https://127.0.0.1:8011/agent/address-book/manage"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h7M8 13h7"/></svg><span>Address Book</span></a>
+                            </nav>
+            <span class="ops-role-pill">Agent</span>
+            <div class="ops-top-actions">
+                <a class="ops-icon-btn" href="https://127.0.0.1:8011/agent/shipments" aria-label="Shipment updates"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="ops-notice">1</span></a>
+                <a class="ops-icon-btn" href="https://127.0.0.1:8011/customer-service" aria-label="Support"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M21 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></a>
+                <a class="ops-home-action" href="https://127.0.0.1:8011" aria-label="Back to Home"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3V11Z"/></svg><span>Back to Home</span></a>
+                <a class="ops-profile" href="https://127.0.0.1:8011/profile"><span class="ops-avatar">SA</span><span class="ops-profile-copy"><span class="ops-profile-name">Super Admin</span><span class="ops-profile-email">admin@expresspeek.com</span></span></a>
+                <form method="POST" action="https://127.0.0.1:8011/logout"><input type="hidden" name="_token" value="0nWLwhKdOobCt6f8y0xRqVy455xMWNK8njXw9XId" autocomplete="off"><button class="ops-icon-btn" type="submit" aria-label="Sign out"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg></button></form>
+            </div>
+        </div>
+    </header>
+
+    <header class="ops-mobile-header"><a href="https://127.0.0.1:8011/agent/dashboard"><img src="/images/express-peek-logo.webp" alt="Express Peek"></a><div class="ops-mobile-actions"><span class="ops-role-pill">Agent</span><a href="https://127.0.0.1:8011/profile"><span class="ops-avatar">SA</span></a></div></header>
+
+    <main class="ops-main panel-content">
+                        <style>
+    [x-cloak]{display:none!important}.profile-file-input{display:none!important}.profile-shell{max-width:1180px;margin:0 auto;display:grid;gap:18px}.profile-hero{position:relative;min-height:230px;overflow:hidden;border-radius:24px;color:#fff;background:linear-gradient(115deg,#07143f 0%,#182568 48%,#5733d7 100%);box-shadow:0 22px 55px rgba(27,37,96,.18)}.profile-hero:before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 82% 18%,rgba(103,187,255,.4),transparent 25%),radial-gradient(circle at 65% 110%,rgba(156,115,255,.5),transparent 38%),url('/images/tracking-route-hero.webp') 92% center/auto 120% no-repeat;opacity:.78}.profile-hero:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,14,50,.96),rgba(11,25,81,.68) 60%,rgba(29,28,106,.2))}.profile-hero-inner{position:relative;z-index:2;min-height:230px;padding:34px;display:flex;align-items:flex-end;justify-content:space-between;gap:28px}.profile-identity{display:flex;align-items:center;gap:22px}.profile-hero-avatar{width:112px;height:112px;flex:0 0 auto;display:grid;place-items:center;overflow:hidden;border:5px solid rgba(255,255,255,.92);border-radius:30px;color:#fff;background:linear-gradient(135deg,#8b5cf6,#2563eb);box-shadow:0 20px 36px rgba(0,0,0,.25);font-size:28px;font-weight:850}.profile-hero-avatar img{width:100%;height:100%;object-fit:cover}.profile-eyebrow{display:inline-flex;align-items:center;gap:7px;margin-bottom:9px;padding:6px 10px;border:1px solid rgba(255,255,255,.16);border-radius:99px;background:rgba(255,255,255,.1);font-size:9px;font-weight:850;letter-spacing:.1em;text-transform:uppercase}.profile-eyebrow i{width:7px;height:7px;border-radius:50%;background:#4ce0a7;box-shadow:0 0 0 4px rgba(76,224,167,.13)}.profile-hero h2{margin:0;font-size:28px;line-height:1.15;font-weight:850;letter-spacing:-.04em}.profile-hero p{margin:7px 0 0;color:rgba(230,235,255,.8);font-size:12px}.profile-completion{min-width:245px;padding:16px 18px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.1);backdrop-filter:blur(12px)}.profile-completion-head{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff;font-size:10px;font-weight:800}.profile-completion-track{height:6px;margin-top:10px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.18)}.profile-completion-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#47e3ae,#7bb8ff)}.profile-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);gap:18px}.profile-card{overflow:hidden;border:1px solid #e3e8f1;border-radius:20px;background:#fff;box-shadow:0 10px 34px rgba(30,45,84,.055)}.profile-card-head{display:flex;align-items:center;gap:12px;padding:22px 24px;border-bottom:1px solid #edf0f5}.profile-card-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;color:#6640e8;background:#f1edff}.profile-card-icon.blue{color:#2563eb;background:#ebf3ff}.profile-card-icon svg{width:20px;height:20px}.profile-card-head h3{margin:0;color:#12203f;font-size:16px;font-weight:850}.profile-card-head p{margin:4px 0 0;color:#7b889e;font-size:10px}.profile-card-body{padding:24px}.profile-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.profile-field.full{grid-column:1/-1}.profile-label{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;color:#31405c;font-size:10px;font-weight:800}.profile-label span{color:#9aa5b6;font-size:9px;font-weight:650}.profile-input-wrap{position:relative}.profile-input-icon{position:absolute;left:13px;top:50%;width:17px;height:17px;transform:translateY(-50%);color:#8c9ab1;pointer-events:none}.profile-input{width:100%;height:48px;padding:0 15px 0 40px;border:1.5px solid #dde3ed;border-radius:12px;outline:0;color:#13213e;background:#fafbfd;font-size:12px;font-weight:650;transition:.2s}.profile-input:focus{border-color:#7856ee;background:#fff;box-shadow:0 0 0 4px rgba(120,86,238,.1)}.profile-input.no-icon{padding-left:14px}.profile-phone{display:grid;grid-template-columns:122px minmax(0,1fr);gap:8px}.profile-code{padding:0 8px;border:1.5px solid #dde3ed;border-radius:12px;color:#263650;background:#fafbfd;font-size:11px;font-weight:750}.profile-save{min-height:46px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;color:#fff;background:linear-gradient(135deg,#7549ee,#4338ca 58%,#2475eb);box-shadow:0 12px 24px rgba(82,51,201,.2);font-size:11px;font-weight:850;cursor:pointer}.profile-save:hover{transform:translateY(-1px)}.profile-photo-box{display:flex;align-items:center;gap:17px;padding:16px;border:1px dashed #cfc7f8;border-radius:16px;background:linear-gradient(135deg,#faf9ff,#f5f8ff)}.profile-photo-preview{width:78px;height:78px;flex:0 0 auto;display:grid;place-items:center;overflow:hidden;border:4px solid #fff;border-radius:22px;color:#fff;background:linear-gradient(135deg,#7550ed,#2972eb);box-shadow:0 10px 24px rgba(72,52,174,.16);font-size:18px;font-weight:850}.profile-photo-preview img{width:100%;height:100%;object-fit:cover}.profile-photo-copy strong{display:block;color:#1d2c4a;font-size:12px}.profile-photo-copy span{display:block;margin-top:4px;color:#7d8aa0;font-size:9px;line-height:1.5}.profile-upload-button{display:inline-flex;margin-top:9px;padding:8px 11px;border:1px solid #d8d0f8;border-radius:9px;color:#6040da;background:#fff;font-size:9px;font-weight:850;cursor:pointer}.profile-upload-button:hover{background:#f4f1ff}.profile-security-list{display:grid;gap:9px;margin:0 0 20px}.profile-security-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #e8ecf3;border-radius:12px;color:#586781;background:#fbfcfe;font-size:9px;font-weight:700}.profile-security-item svg{width:17px;height:17px;color:#11a875}.profile-danger{border:1px solid #f4d1d7;border-radius:18px;background:#fff}.profile-danger summary{padding:17px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;color:#a9273e;font-size:11px;font-weight:850;cursor:pointer;list-style:none}.profile-danger summary::-webkit-details-marker{display:none}.profile-danger-summary{display:flex;align-items:center;gap:10px}.profile-danger-summary svg{width:18px;height:18px}.profile-danger-body{padding:0 20px 20px;border-top:1px solid #f8e1e5}.profile-password-wrap{position:relative}.profile-password-toggle{position:absolute;right:7px;top:50%;width:34px;height:34px;transform:translateY(-50%);display:grid;place-items:center;border:0;border-radius:9px;color:#8290a7;background:transparent;cursor:pointer}.profile-password-toggle:hover{color:#6240e4;background:#f2efff}.profile-password-toggle svg{width:16px;height:16px}.profile-success{margin-bottom:18px;padding:13px 15px;border:1px solid #c9eddf;border-radius:12px;color:#087953;background:#effaf6;font-size:10px;font-weight:750}.profile-error{margin-bottom:18px;padding:13px 15px;border:1px solid #ffd1d9;border-radius:12px;color:#b4233d;background:#fff3f5;font-size:10px;font-weight:750}
+    @media(max-width:900px){.profile-grid{grid-template-columns:1fr}.profile-completion{display:none}}@media(max-width:640px){.profile-shell{gap:12px}.profile-hero{min-height:235px;border-radius:18px}.profile-hero-inner{min-height:235px;padding:24px 18px;align-items:center}.profile-identity{display:block}.profile-hero-avatar{width:82px;height:82px;margin-bottom:16px;border-radius:23px;font-size:20px}.profile-hero h2{font-size:23px}.profile-card{border-radius:16px}.profile-card-head,.profile-card-body{padding:18px}.profile-form-grid{grid-template-columns:1fr}.profile-photo-box{align-items:flex-start}.profile-phone{grid-template-columns:108px minmax(0,1fr)}}
+</style>
+
+
+<div class="profile-shell">
+    <section class="profile-hero">
+        <div class="profile-hero-inner">
+            <div class="profile-identity">
+                <div class="profile-hero-avatar">
+                                            SU
+                                    </div>
+                <div>
+                    <span class="profile-eyebrow"><i></i>Member workspace</span>
+                    <h2>Super Admin</h2>
+                    <p>admin@expresspeek.com  · +8801712345678 </p>
+                </div>
+            </div>
+            <div class="profile-completion">
+                <div class="profile-completion-head"><span>Profile strength</span><strong>75%</strong></div>
+                <div class="profile-completion-track"><span style="width:75%"></span></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="profile-grid">
+        <section class="profile-card">
+            <div class="profile-card-head"><span class="profile-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><div><h3>Personal profile</h3><p>Identity, contact details, and profile photo</p></div></div>
+            <div class="profile-card-body"><form id="send-verification" method="post" action="https://127.0.0.1:8011/email/verification-notification"><input type="hidden" name="_token" value="0nWLwhKdOobCt6f8y0xRqVy455xMWNK8njXw9XId" autocomplete="off"></form>
+
+<form method="post" action="https://127.0.0.1:8011/profile" enctype="multipart/form-data" class="profile-form-grid" x-data="{ preview: null }">
+    <input type="hidden" name="_token" value="0nWLwhKdOobCt6f8y0xRqVy455xMWNK8njXw9XId" autocomplete="off">    <input type="hidden" name="_method" value="patch">
+    <div class="profile-field full">
+        <label class="profile-label" for="avatar">Profile photo <span>Optimized automatically</span></label>
+        <div class="profile-photo-box">
+            <div class="profile-photo-preview">
+                <img x-cloak x-show="preview" :src="preview" alt="Selected profile photo preview">
+                                    <span x-show="!preview">SU</span>
+                            </div>
+            <div class="profile-photo-copy">
+                <strong>Choose a clear portrait</strong>
+                <span>JPG, PNG, or WebP up to 8 MB. We securely crop it to 512×512 and save an optimized WebP copy.</span>
+                <label class="profile-upload-button" for="avatar">Choose photo</label>
+                <input class="profile-file-input" id="avatar" type="file" name="avatar" accept="image/jpeg,image/png,image/webp" @change="const file=$event.target.files[0]; if(file){ if(preview) URL.revokeObjectURL(preview); preview=URL.createObjectURL(file) }">
+            </div>
+        </div>
+            </div>
+
+    <div class="profile-field">
+        <label class="profile-label" for="name">Full name</label>
+        <div class="profile-input-wrap"><svg class="profile-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input class="profile-input" id="name" name="name" type="text" value="Super Admin" required autocomplete="name"></div>
+            </div>
+
+    <div class="profile-field">
+        <label class="profile-label" for="email">Email address</label>
+        <div class="profile-input-wrap"><svg class="profile-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg><input class="profile-input" id="email" name="email" type="email" value="admin@expresspeek.com" required autocomplete="username"></div>
+            </div>
+
+    <div class="profile-field full">
+        <label class="profile-label" for="phone">Mobile number <span>Used for account contact</span></label>
+        <div class="profile-phone">
+            <select class="profile-code" id="phone_country_code" name="phone_country_code" aria-label="Phone country code">
+                                    <option value="+880" selected>🇧🇩 +880</option>
+                                    <option value="+971" >🇦🇪 +971</option>
+                                    <option value="+1" >🇺🇸 +1</option>
+                                    <option value="+44" >🇬🇧 +44</option>
+                                    <option value="+61" >🇦🇺 +61</option>
+                                    <option value="+91" >🇮🇳 +91</option>
+                                    <option value="+92" >🇵🇰 +92</option>
+                                    <option value="+966" >🇸🇦 +966</option>
+                                    <option value="+974" >🇶🇦 +974</option>
+                                    <option value="+65" >🇸🇬 +65</option>
+                                    <option value="+60" >🇲🇾 +60</option>
+                            </select>
+            <div class="profile-input-wrap"><svg class="profile-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16.4v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.3 19.3 0 0 1-6-6A19.8 19.8 0 0 1 1.1 3.7 2 2 0 0 1 3.1 1.5h3A2 2 0 0 1 8 3.2c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L7 9.5a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 1.9Z"/></svg><input class="profile-input" id="phone" name="phone" type="tel" value="01712345678" inputmode="tel" autocomplete="tel-national" placeholder="01712 345678"></div>
+        </div>
+                    </div>
+
+    <div class="profile-field full flex items-center gap-3 pt-1">
+        <button class="profile-save" type="submit"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>Save profile changes</button>
+            </div>
+</form>
+</div>
+        </section>
+
+        <section class="profile-card">
+            <div class="profile-card-head"><span class="profile-card-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 20 6v6c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6l8-3Z"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><div><h3>Account security</h3><p>Password controls and protected access</p></div></div>
+            <div class="profile-card-body"><div class="profile-security-list">
+    <div class="profile-security-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 20 6v6c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6l8-3Z"/><path d="m8 12 2.5 2.5L16 9"/></svg>Rate-limited account protection</div>
+    <div class="profile-security-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Strong password policy enabled</div>
+</div>
+
+<form method="post" action="https://127.0.0.1:8011/password" class="space-y-4">
+    <input type="hidden" name="_token" value="0nWLwhKdOobCt6f8y0xRqVy455xMWNK8njXw9XId" autocomplete="off">    <input type="hidden" name="_method" value="put">
+            <div x-data="{visible:false}">
+            <label class="profile-label" for="update_password_current_password">Current password</label>
+            <div class="profile-password-wrap">
+                <input class="profile-input no-icon" style="padding-right:46px" id="update_password_current_password" name="current_password" :type="visible ? 'text' : 'password'" autocomplete="current-password">
+                <button class="profile-password-toggle" type="button" @click="visible=!visible" :aria-label="visible ? 'Hide password' : 'Show password'">
+                    <svg x-show="!visible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                    <svg x-cloak x-show="visible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 3 18 18M10.6 6.2A11.6 11.6 0 0 1 12 6c6.5 0 10 6 10 6M2 12s3.5 6 10 6a11 11 0 0 0 4.2-.8"/></svg>
+                </button>
+            </div>
+                    </div>
+            <div x-data="{visible:false}">
+            <label class="profile-label" for="update_password_password">New password</label>
+            <div class="profile-password-wrap">
+                <input class="profile-input no-icon" style="padding-right:46px" id="update_password_password" name="password" :type="visible ? 'text' : 'password'" autocomplete="new-password">
+                <button class="profile-password-toggle" type="button" @click="visible=!visible" :aria-label="visible ? 'Hide password' : 'Show password'">
+                    <svg x-show="!visible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                    <svg x-cloak x-show="visible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 3 18 18M10.6 6.2A11.6 11.6 0 0 1 12 6c6.5 0 10 6 10 6M2 12s3.5 6 10 6a11 11 0 0 0 4.2-.8"/></svg>
+                </button>
+            </div>
+                    </div>
+            <div x-data="{visible:false}">
+            <label class="profile-label" for="update_password_password_confirmation">Confirm new password</label>
+            <div class="profile-password-wrap">
+                <input class="profile-input no-icon" style="padding-right:46px" id="update_password_password_confirmation" name="password_confirmation" :type="visible ? 'text' : 'password'" autocomplete="new-password">
+                <button class="profile-password-toggle" type="button" @click="visible=!visible" :aria-label="visible ? 'Hide password' : 'Show password'">
+                    <svg x-show="!visible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                    <svg x-cloak x-show="visible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 3 18 18M10.6 6.2A11.6 11.6 0 0 1 12 6c6.5 0 10 6 10 6M2 12s3.5 6 10 6a11 11 0 0 0 4.2-.8"/></svg>
+                </button>
+            </div>
+                    </div>
+    
+    <div class="flex items-center gap-3 pt-1">
+        <button class="profile-save" type="submit">Update password</button>
+            </div>
+</form>
+</div>
+        </section>
+    </div>
+
+    <details class="profile-danger">
+        <summary><span class="profile-danger-summary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/></svg>Danger zone</span><span>Account deletion options</span></summary>
+        <div class="profile-danger-body"><section class="pt-5">
+    <h3 class="text-sm font-extrabold text-red-900">Permanently delete this account</h3>
+    <p class="mt-2 max-w-2xl text-xs leading-6 text-red-700">Your profile, saved photo, and account data will be permanently removed. This action cannot be undone.</p>
+
+    <button type="button" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')" class="mt-4 inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-extrabold text-red-700 transition hover:bg-red-100">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14"/></svg>
+        Delete my account
+    </button>
+
+    <div
+    x-data="{
+        show: false,
+        focusables() {
+            // All focusable element types...
+            let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
+            return [...$el.querySelectorAll(selector)]
+                // All non-disabled elements...
+                .filter(el => ! el.hasAttribute('disabled'))
+        },
+        firstFocusable() { return this.focusables()[0] },
+        lastFocusable() { return this.focusables().slice(-1)[0] },
+        nextFocusable() { return this.focusables()[this.nextFocusableIndex()] || this.firstFocusable() },
+        prevFocusable() { return this.focusables()[this.prevFocusableIndex()] || this.lastFocusable() },
+        nextFocusableIndex() { return (this.focusables().indexOf(document.activeElement) + 1) % (this.focusables().length + 1) },
+        prevFocusableIndex() { return Math.max(0, this.focusables().indexOf(document.activeElement)) -1 },
+    }"
+    x-init="$watch('show', value => {
+        if (value) {
+            document.body.classList.add('overflow-y-hidden');
+            setTimeout(() =&gt; firstFocusable().focus(), 100)
+        } else {
+            document.body.classList.remove('overflow-y-hidden');
+        }
+    })"
+    x-on:open-modal.window="$event.detail == 'confirm-user-deletion' ? show = true : null"
+    x-on:close-modal.window="$event.detail == 'confirm-user-deletion' ? show = false : null"
+    x-on:close.stop="show = false"
+    x-on:keydown.escape.window="show = false"
+    x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
+    x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
+    x-show="show"
+    class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
+    style="display: none;"
+>
+    <div
+        x-show="show"
+        class="fixed inset-0 transform transition-all"
+        x-on:click="show = false"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div class="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
+    </div>
+
+    <div
+        x-show="show"
+        class="mb-6 bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-2xl sm:mx-auto"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+    >
+        <form method="post" action="https://127.0.0.1:8011/profile" class="p-6 sm:p-8">
+            <input type="hidden" name="_token" value="0nWLwhKdOobCt6f8y0xRqVy455xMWNK8njXw9XId" autocomplete="off">            <input type="hidden" name="_method" value="delete">            <div class="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-red-50 text-red-600"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.6 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0Z"/></svg></div>
+            <h2 class="text-xl font-extrabold text-slate-900">Delete your account?</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-500">Enter your current password to confirm permanent deletion of your account and profile photo.</p>
+            <div class="mt-5">
+                <label class="profile-label" for="delete_account_password">Current password</label>
+                <input id="delete_account_password" name="password" type="password" class="profile-input no-icon" autocomplete="current-password" placeholder="Enter your password">
+                            </div>
+            <div class="mt-6 flex flex-wrap justify-end gap-3">
+                <button type="button" x-on:click="$dispatch('close')" class="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600">Keep account</button>
+                <button type="submit" class="rounded-xl bg-red-600 px-4 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-red-200">Delete permanently</button>
+            </div>
+        </form>
+    </div>
+</div>
+</section>
+</div>
+    </details>
+</div>
+    </main>
+
+    <footer class="ops-footer"><span>© 2026 Express Peek. All rights reserved.</span><span>Secure logistics operations</span></footer>
+
+    <nav class="ops-bottom-nav" aria-label="Mobile navigation">
+        <a class="ops-bottom-link " href="https://127.0.0.1:8011/agent/dashboard"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3V11Z"/></svg><span>Dashboard</span></a>
+        <a class="ops-bottom-link " href="https://127.0.0.1:8011/agent/shipments"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg><span>Shipments</span></a>
+                    <a class="ops-bottom-link " href="https://127.0.0.1:8011/agent/shipments/create"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create</span></a>
+            <a class="ops-bottom-link " href="https://127.0.0.1:8011/agent/address-book/manage"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg><span>Addresses</span></a>
+                <a class="ops-bottom-link" href="https://127.0.0.1:8011"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3V11Z"/></svg><span>Home</span></a>
+                    <a class="ops-bottom-link " href="https://127.0.0.1:8011/profile"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span></a>
+            </nav>
+        </div>
+</body>
+</html>

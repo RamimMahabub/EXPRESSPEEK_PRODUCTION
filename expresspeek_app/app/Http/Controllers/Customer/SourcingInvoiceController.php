@@ -14,6 +14,8 @@ class SourcingInvoiceController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $sourcingInvoice->load('sourcingRequest.items');
+
         $pdf = app('dompdf.wrapper')->loadView('sourcing.invoice-pdf', compact('sourcingInvoice'));
         return $pdf->stream($sourcingInvoice->invoice_number . '.pdf');
     }

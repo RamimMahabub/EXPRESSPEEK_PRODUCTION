@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.operations-dashboard')
 
 @section('title', 'Add User')
 @section('page-title', 'Add New User')
@@ -23,6 +23,20 @@
                 <input type="email" name="email" value="{{ old('email') }}" required
                     class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors @error('email') border-red-500 @enderror">
                 @error('email') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Mobile Number</label>
+                <div class="grid grid-cols-[140px_1fr] gap-3">
+                    <select name="phone_country_code" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500">
+                        @foreach(['+880' => '🇧🇩 +880', '+971' => '🇦🇪 +971', '+1' => '🇺🇸 +1', '+44' => '🇬🇧 +44', '+61' => '🇦🇺 +61', '+91' => '🇮🇳 +91', '+92' => '🇵🇰 +92', '+966' => '🇸🇦 +966', '+974' => '🇶🇦 +974', '+65' => '🇸🇬 +65', '+60' => '🇲🇾 +60'] as $code => $label)
+                            <option value="{{ $code }}" @selected(old('phone_country_code', '+880') === $code)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <input type="tel" name="phone" value="{{ old('phone') }}" required inputmode="tel" placeholder="01712 345678" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 @error('phone') border-red-500 @enderror">
+                </div>
+                @error('phone_country_code') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+                @error('phone') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>

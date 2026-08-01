@@ -1,31 +1,23 @@
-@extends('layouts.dashboard')
+@extends('layouts.operations-dashboard')
 
 @section('title', 'My Shipments')
 @section('page-title', 'My Shipments')
 @section('page-subtitle', 'Track every shipment linked to your account in one place.')
 
 @section('content')
-<section class="max-w-7xl mx-auto px-6 py-6">
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-        <div>
-            <p class="text-xs font-semibold uppercase tracking-widest text-violet-600 mb-2">Customer Portal</p>
-            <h1 class="text-3xl md:text-4xl font-black text-slate-100">My Shipments</h1>
-            <p class="text-sm text-slate-400 mt-2">Track every shipment linked to your account in one place.</p>
-        </div>
-
-        <a href="{{ route('customer.dashboard') }}"
-           class="inline-flex items-center justify-center px-5 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:border-violet-300 hover:text-violet-700 hover:bg-violet-50 transition-colors">
-            Back to Dashboard
-        </a>
-    </div>
+<div class="ap-shell">
+    <section class="ap-page-head">
+        <div class="ap-head-copy"><span class="ap-eyebrow">Personal shipment hub</span><h1>Every delivery, one clear view</h1><p>Follow shipment progress, check destinations, and open full tracking details whenever you need them.</p></div>
+        <div class="ap-head-actions"><a href="{{ route('volumetric-weight-calculator') }}" class="ap-button ghost">Weight calculator</a><a href="{{ route('customer.shipments.create') }}" class="ap-button light">Create shipment</a></div>
+    </section>
 
     <div class="neon-card rounded-2xl overflow-hidden">
         @forelse($shipments as $shipment)
             <a href="{{ route('customer.shipments.show', $shipment) }}" class="flex items-center gap-5 px-6 py-5 border-b border-white/5 hover:bg-white/5 transition-colors last:border-b-0 group">
                 <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
-                    {{ $shipment->status === 'delivered' ? 'bg-emerald-500/10 text-emerald-400' : ($shipment->status === 'in_transit' ? 'bg-blue-500/10 text-blue-400' : ($shipment->status === 'out_for_delivery' ? 'bg-purple-500/10 text-purple-400' : 'bg-amber-500/10 text-amber-400')) }}">
+                    {{ in_array($shipment->status, ['connected_to_carrier', 'delivered'], true) ? 'bg-emerald-500/10 text-emerald-400' : ($shipment->status === 'in_transit' ? 'bg-blue-500/10 text-blue-400' : ($shipment->status === 'out_for_delivery' ? 'bg-purple-500/10 text-purple-400' : 'bg-amber-500/10 text-amber-400')) }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        @if($shipment->status === 'delivered')
+                        @if(in_array($shipment->status, ['connected_to_carrier', 'delivered'], true))
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         @elseif(in_array($shipment->status, ['in_transit', 'out_for_delivery']))
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
@@ -39,7 +31,7 @@
                     <div class="flex items-center gap-3 mb-1">
                         <p class="text-sm font-bold text-white truncate">{{ $shipment->receiver_name }}</p>
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0 border
-                            {{ $shipment->status === 'delivered' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : ($shipment->status === 'in_transit' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : ($shipment->status === 'out_for_delivery' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20')) }}">
+                            {{ in_array($shipment->status, ['connected_to_carrier', 'delivered'], true) ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : ($shipment->status === 'in_transit' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : ($shipment->status === 'out_for_delivery' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20')) }}">
                             {{ $shipment->status_label }}
                         </span>
                     </div>
@@ -51,12 +43,11 @@
                     </div>
                 </div>
 
-                <div class="hidden md:block text-right flex-shrink-0">
-                    <p class="text-sm font-semibold text-gray-300">{{ $shipment->weight }} kg</p>
-                    @if($shipment->estimated_delivery)
+                @if($shipment->estimated_delivery)
+                    <div class="hidden md:block text-right flex-shrink-0">
                         <p class="text-xs text-slate-400 mt-0.5">ETA {{ $shipment->estimated_delivery->format('M d, Y') }}</p>
-                    @endif
-                </div>
+                    </div>
+                @endif
 
                 <svg class="w-4 h-4 text-slate-400 group-hover:text-violet-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -78,5 +69,5 @@
     <div class="mt-6">
         {{ $shipments->links() }}
     </div>
-</section>
+</div>
 @endsection

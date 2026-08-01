@@ -6,7 +6,9 @@ use App\Models\Carrier;
 use App\Models\Shipment;
 use App\Models\User;
 use App\Services\QuoteService;
+use App\Support\PackageWeightCalculator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -106,17 +108,17 @@ class PublicShipmentController extends Controller
             'items.*.value_per_item' => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|numeric|min:0',
             'packages'               => 'required|array|min:1',
             'packages.*.weight'      => 'required|numeric|min:0.01',
+            'packages.*.length'      => 'nullable|numeric|min:0.01',
+            'packages.*.width'       => 'nullable|numeric|min:0.01',
+            'packages.*.height'      => 'nullable|numeric|min:0.01',
             'packages.*.quantity'    => 'required|integer|min:1',
             'carrier_id'             => 'required|exists:carriers,id',
         ]);
 
-        $totalPackages = 0;
-        $totalWeight = 0.0;
-
-        foreach ($data['packages'] as $package) {
-            $totalPackages += (int) $package['quantity'];
-            $totalWeight += (float) $package['weight'] * (int) $package['quantity'];
-        }
+        $data['packages'] = PackageWeightCalculator::normalize($data['packages']);
+        $packageTotals = PackageWeightCalculator::totals($data['packages']);
+        $totalPackages = $packageTotals['packages'];
+        $totalWeight = $packageTotals['weight'];
 
         $items = [];
         if ($data['shipment_type'] === 'non_document' && !empty($data['items']) && is_array($data['items'])) {
@@ -139,7 +141,6 @@ class PublicShipmentController extends Controller
 
         $shipment = Shipment::create([
             'tracking_number'     => $this->generateTrackingNumber(),
-            'awb_number'          => Shipment::generateAwbNumber(),
             'invoice_number'      => 'INV-' . strtoupper(Str::random(6)) . '-' . now()->format('Ymd'),
             'sender_id'           => $senderUser->id,
             'sender_name'         => $data['sender_name'],
@@ -184,8 +185,8 @@ class PublicShipmentController extends Controller
             'carrier_id'            => $carrier->id,
             'carrier_name'          => $carrier->name,
             'status'                => Shipment::STATUS_PENDING,
-            'agent_id'              => $user?->isAgent() ? $user->id : null,
-            'created_by_agent_id'   => $user?->isAgent() ? $user->id : null,
+            'agent_id'              => $user?->primaryRoleName() === 'agent' ? $user->id : null,
+            'created_by_agent_id'   => $user?->primaryRoleName() === 'agent' ? $user->id : null,
             'estimated_delivery'    => null,
             'notes'                 => null,
         ]);
@@ -193,16 +194,24 @@ class PublicShipmentController extends Controller
         $shipment->trackingEvents()->create([
             'location'    => $shipment->sender_city . ', ' . $shipment->sender_country,
             'status'      => Shipment::STATUS_PENDING,
-            'notes'       => $user?->isAgent()
-                ? 'Shipment created by agent.'
-                : ($user?->isCustomer() ? 'Shipment created by customer.' : 'Shipment created by guest.'),
+            'notes'       => $shipment->creation_note,
             'occurred_at' => now(),
         ]);
+
+        // Some production deployments may still have the previous route cache
+        // during a rolling update. Keep waybill printing available through the
+        // existing signed invoice endpoint until the dedicated route is active.
+        $waybillUrl = Route::has('shipment.waybill')
+            ? URL::signedRoute('shipment.waybill', ['shipment' => $shipment])
+            : URL::signedRoute('shipment.invoice', [
+                'shipment' => $shipment,
+                'document' => 'waybill',
+            ]);
 
         return response()->json([
             'success' => true,
             'shipment' => $shipment,
-            'waybill_url' => null,
+            'waybill_url' => $waybillUrl,
             'invoice_url' => URL::signedRoute('shipment.invoice', ['shipment' => $shipment]),
             'message' => 'Shipment created successfully. Tracking number: ' . $shipment->tracking_number,
         ]);
@@ -222,11 +231,15 @@ class PublicShipmentController extends Controller
             ->setPaper('a4', 'portrait')
             ->loadView('agent.shipments.waybill', compact('shipment', 'qrSvg'));
 
-        return $pdf->stream('waybill-' . $shipment->awb_number . '.pdf');
+        return $pdf->stream('waybill-' . $shipment->tracking_number . '.pdf');
     }
 
     public function printInvoice(Request $request, Shipment $shipment)
     {
+        if ($request->query('document') === 'waybill') {
+            return $this->printWaybill($request, $shipment);
+        }
+
         abort_unless($request->hasValidSignature(), 403);
 
         $pdf = app('dompdf.wrapper')->loadView('agent.shipments.invoice', compact('shipment'));
@@ -236,11 +249,7 @@ class PublicShipmentController extends Controller
 
     private function generateTrackingNumber(): string
     {
-        do {
-            $number = 'EP' . strtoupper(Str::random(2)) . now()->format('ymd') . rand(1000, 9999);
-        } while (Shipment::where('tracking_number', $number)->exists());
-
-        return $number;
+        return Shipment::generateTrackingNumber();
     }
 
     private function resolveGuestSenderUser(array $data): User

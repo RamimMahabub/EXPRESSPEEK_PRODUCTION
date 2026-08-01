@@ -115,7 +115,7 @@
     </div>
     <div>
         <label class="block text-xs font-medium text-slate-400 mb-1.5">Phone Number</label>
-        <input type="text" name="{{ $prefix }}_phone" placeholder="01XXXXXXXXX"
+        <input type="text" name="{{ $prefix }}_phone" placeholder="1968524222"
             class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500">
     </div>
 </div>

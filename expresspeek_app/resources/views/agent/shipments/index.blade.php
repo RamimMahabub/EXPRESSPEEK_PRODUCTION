@@ -1,10 +1,16 @@
-@extends('layouts.dashboard')
+@extends('layouts.operations-dashboard')
 
 @section('title', 'Delivery Queue')
 @section('page-title', 'Delivery Queue')
 @section('page-subtitle', 'All assigned shipments with quick edit access')
 
 @section('content')
+
+<div class="ap-shell">
+<section class="ap-page-head">
+    <div class="ap-head-copy"><span class="ap-eyebrow">Delivery operations</span><h1>Your assigned shipment queue</h1><p>See priorities clearly, update delivery progress, and keep every assigned shipment moving.</p></div>
+    <div class="ap-head-actions"><a href="{{ route('volumetric-weight-calculator') }}" class="ap-button ghost">Weight calculator</a><a href="{{ route('agent.shipments.create') }}" class="ap-button light">+ Create shipment</a></div>
+</section>
 
 <div class="neon-card rounded-2xl p-6">
     <div class="flex items-center justify-between mb-5">
@@ -45,7 +51,7 @@
                         <td class="py-3 text-slate-400 text-xs">{{ $shipment->carrier_name ?: '—' }}</td>
                         <td class="py-3">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                @if($shipment->status === 'delivered') bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]
+                                @if(in_array($shipment->status, ['connected_to_carrier', 'delivered'], true)) bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]
                                 @elseif($shipment->status === 'in_transit') bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]
                                 @elseif($shipment->status === 'out_for_delivery') bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.2)]
                                 @elseif($shipment->status === 'pending') bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]
@@ -71,6 +77,7 @@
             {{ $shipments->links() }}
         </div>
     @endif
+</div>
 </div>
 
 @endsection

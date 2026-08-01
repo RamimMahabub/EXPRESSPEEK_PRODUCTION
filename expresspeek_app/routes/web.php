@@ -1,13 +1,17 @@
 <?php
 
+use App\Http\Controllers\Agent\ShipmentController;
+use App\Http\Controllers\Api\QuoteController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CityPageController;
+use App\Http\Controllers\CountryPageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Api\QuoteController;
-use App\Http\Controllers\SourcingRequestController;
+use App\Http\Controllers\PublicShipmentController;
 use App\Http\Controllers\SeoPageController;
-use App\Http\Controllers\CountryPageController;
-use App\Http\Controllers\CityPageController;
-use App\Http\Controllers\BlogController;
+use App\Http\Controllers\SourcingRequestController;
+use App\Http\Middleware\SetLocale;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,25 +24,24 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/track', [HomeController::class, 'track'])->name('track');
 Route::get('/quote', [HomeController::class, 'quote'])->name('quote');
-Route::get('/shipment/guest/create', [\App\Http\Controllers\PublicShipmentController::class, 'create'])->name('shipment.guest.create');
-Route::get('/shipment/carriers', [\App\Http\Controllers\Agent\ShipmentController::class, 'getCarriers'])->name('shipment.carriers.available');
-Route::get('/shipment/create', function (\Illuminate\Http\Request $request) {
-    if (!auth()->check()) {
-        return redirect()->route('login', [
-            'next' => route('shipment.create', $request->query(), false),
-        ]);
+Route::view('/volumetric-weight-calculator', 'tools.volumetric-weight-calculator')
+    ->name('volumetric-weight-calculator');
+Route::get('/shipment/guest/create', [PublicShipmentController::class, 'create'])->name('shipment.guest.create');
+Route::get('/shipment/carriers', [ShipmentController::class, 'getCarriers'])->name('shipment.carriers.available');
+Route::get('/shipment/create', function (Request $request) {
+    if (! auth()->check()) {
+        return redirect()->route('shipment.guest.create', $request->query());
     }
 
     $user = auth()->user();
 
-    if ($user->isCustomer()) {
-        return redirect()->route('customer.dashboard');
-    }
-
-    return redirect()->route('agent.shipments.create', $request->query());
+    return redirect()->route($user->shipmentCreateRouteName(), $request->query());
 })->name('shipment.create');
-Route::post('/shipment', [\App\Http\Controllers\PublicShipmentController::class, 'store'])->name('shipment.store');
-Route::get('/shipment/{shipment}/invoice', [\App\Http\Controllers\PublicShipmentController::class, 'printInvoice'])
+Route::post('/shipment', [PublicShipmentController::class, 'store'])->name('shipment.store');
+Route::get('/shipment/{shipment}/waybill', [PublicShipmentController::class, 'printWaybill'])
+    ->middleware('signed')
+    ->name('shipment.waybill');
+Route::get('/shipment/{shipment}/invoice', [PublicShipmentController::class, 'printInvoice'])
     ->middleware('signed')
     ->name('shipment.invoice');
 
@@ -65,7 +68,7 @@ Route::get('/resources', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/resources/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 // Bangla Localized Routes
-Route::prefix('bn')->middleware([\App\Http\Middleware\SetLocale::class])->group(function () {
+Route::prefix('bn')->middleware([SetLocale::class])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('bn.home');
     Route::get('/track', [HomeController::class, 'track'])->name('bn.track');
     Route::get('/quote', [HomeController::class, 'quote'])->name('bn.quote');
@@ -76,16 +79,12 @@ Route::prefix('bn')->middleware([\App\Http\Middleware\SetLocale::class])->group(
     Route::get('/customer-service', [SeoPageController::class, 'customerService'])->name('bn.customer-service');
 });
 
-
-
 // /dashboard redirects admins/agents to their panels; customers and guests go to /
 Route::get('/dashboard', function () {
-    if (!auth()->check()) return redirect()->route('home');
-    $user = auth()->user();
-    if ($user->isAdmin()) return redirect()->route('admin.dashboard');
-    if ($user->isAgent()) return redirect()->route('agent.dashboard');
-    if ($user->isCustomer()) return redirect()->route('customer.dashboard');
-    return redirect()->route('home');
+    if (! auth()->check()) {
+        return redirect()->route('home');
+    }
+    return redirect()->route(auth()->user()->dashboardRouteName());
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Profile routes (all authenticated users)
@@ -95,13 +94,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Temporary route for cPanel users without terminal access
-Route::get('/cpanel-update', function () {
-    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-    \Illuminate\Support\Facades\Artisan::call('view:clear');
-    return 'Update and migration complete! You can now visit your customer panel.';
-});
+// Kept as a safe bookmark for cPanel deployments without terminal access.
+// The actual updater is protected by the existing administrator middleware.
+Route::get('/cpanel-update', fn () => redirect()->route('admin.system-update'))
+    ->middleware(['auth', 'verified', 'role:admin']);
 
 require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';

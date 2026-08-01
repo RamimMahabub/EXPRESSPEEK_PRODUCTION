@@ -244,7 +244,7 @@ class CountryHelper
             'UA' => 'Ukraine',
             'AE' => 'United Arab Emirates',
             'GB' => 'United Kingdom',
-            'US' => 'United States',
+            'US' => 'USA',
             'UM' => 'United States Minor Outlying Islands',
             'UY' => 'Uruguay',
             'UZ' => 'Uzbekistan',

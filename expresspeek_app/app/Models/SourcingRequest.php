@@ -23,7 +23,7 @@ class SourcingRequest extends Model
 
         'status',
         'tracking_number',
-        'awb_number',
+        'carrier_tracking_number',
         'carrier_id',
         'carrier_name',
         'admin_notes',
@@ -33,11 +33,37 @@ class SourcingRequest extends Model
         'shipment_id',
     ];
 
+    /**
+     * The database column keeps its legacy name for migration-free deployments.
+     */
+    protected $hidden = [
+        'awb_number',
+    ];
+
+    public function getCarrierTrackingNumberAttribute(): ?string
+    {
+        return $this->attributes['awb_number'] ?? null;
+    }
+
+    public function setCarrierTrackingNumberAttribute(?string $value): void
+    {
+        $this->attributes['awb_number'] = $value;
+    }
+
     protected function casts(): array
     {
         return [
             'quoted_price' => 'decimal:2',
         ];
+    }
+
+    public function getTrackingNumberAttribute($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return Shipment::normalizeTrackingNumber((string) $value);
     }
 
 
@@ -133,11 +159,11 @@ class SourcingRequest extends Model
 
     public function getCarrierTrackingUrlAttribute(): string
     {
-        if (empty($this->awb_number)) {
+        if (empty($this->carrier_tracking_number)) {
             return '#';
         }
 
-        $trackingNum = urlencode($this->awb_number);
+        $trackingNum = urlencode($this->carrier_tracking_number);
         $provider = $this->carrier_tracking_provider_name;
 
         return match ($provider) {

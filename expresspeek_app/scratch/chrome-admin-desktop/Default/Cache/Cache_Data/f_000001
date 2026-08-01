@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="7RiRmoQyV5s8FC4NL5v27TWmbIMDb8AqMYF86xIW">
+    <title>ExpressPeek — Admin Dashboard</title>
+    <link rel="icon" href="https://127.0.0.1:8000/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="https://127.0.0.1:8000/favicon.png" type="image/png">
+<link rel="shortcut icon" href="https://127.0.0.1:8000/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://127.0.0.1:8000/build/assets/app-pYtwM-g_.css" /><link rel="modulepreload" as="script" href="https://127.0.0.1:8000/build/assets/app-YkUiYbng.js" /><link rel="stylesheet" href="https://127.0.0.1:8000/build/assets/app-pYtwM-g_.css" /><script type="module" src="https://127.0.0.1:8000/build/assets/app-YkUiYbng.js"></script>    <style>
+        :root { --ops-ink:#0b1739; --ops-muted:#697894; --ops-line:#e5eaf3; --ops-purple:#6534f5; --ops-blue:#2670f5; --ops-green:#12a870; --ops-orange:#f78a19; --ops-red:#ef3152; }
+        * { box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { margin:0; min-width:320px; overflow-x:hidden; color:var(--ops-ink); background:#f7f9fe; font-family:'Manrope',sans-serif; -webkit-font-smoothing:antialiased; }
+        a { color:inherit; text-decoration:none; }
+        button,input { font:inherit; }
+        .ops-icon { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+        .ops-topbar { position:sticky; top:0; z-index:40; height:78px; display:flex; align-items:center; padding:0 30px; border-bottom:1px solid var(--ops-line); background:rgba(255,255,255,.95); backdrop-filter:blur(18px); }
+        .ops-topbar-inner { width:100%; max-width:1780px; min-width:0; margin:0 auto; display:flex; align-items:center; gap:30px; }
+        .ops-logo { width:180px; flex:0 0 auto; }
+        .ops-logo img { display:block; width:158px; height:48px; object-fit:contain; }
+        .ops-nav { min-width:0; flex:1; display:flex; align-items:center; gap:5px; }
+        .ops-nav-link { display:flex; align-items:center; gap:8px; padding:12px 14px; border-radius:12px; color:#536484; font-size:12px; font-weight:650; white-space:nowrap; transition:.2s ease; }
+        .ops-nav-link:hover,.ops-nav-link.active { color:var(--ops-purple); background:#f1edff; }
+        .ops-nav-link .ops-icon { width:18px; height:18px; }
+        .ops-role-pill { padding:5px 9px; border-radius:99px; color:#5f37da; background:#f2edff; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+        .ops-top-actions { min-width:0; display:flex; align-items:center; gap:8px; }
+        .ops-icon-btn { position:relative; width:39px; height:39px; flex:0 0 auto; display:grid; place-items:center; border:0; border-radius:11px; color:#576886; background:transparent; cursor:pointer; transition:.2s; }
+        .ops-icon-btn:hover { color:var(--ops-purple); background:#f3efff; }
+        .ops-notice { position:absolute; top:2px; right:1px; min-width:16px; height:16px; padding:0 4px; display:grid; place-items:center; border:2px solid white; border-radius:99px; color:white; background:var(--ops-red); font-size:7px; font-weight:800; }
+        .ops-profile { min-width:0; max-width:238px; overflow:hidden; display:flex; align-items:center; gap:10px; margin-left:5px; padding-left:14px; border-left:1px solid var(--ops-line); }
+        .ops-avatar { width:42px; height:42px; flex:0 0 auto; display:grid; place-items:center; border-radius:50%; color:white; background:linear-gradient(135deg,#286de1,#6937eb); box-shadow:0 8px 20px rgba(75,56,201,.2); font-size:12px; font-weight:800; }
+        .ops-profile-copy { display:block; width:122px; min-width:0; overflow:hidden; }
+        .ops-profile-name,.ops-profile-email { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .ops-profile-name { color:var(--ops-ink); font-size:12px; font-weight:800; }
+        .ops-profile-email { margin-top:2px; color:#8290a8; font-size:8px; }
+        .ops-main { max-width:1780px; margin:0 auto; padding:24px 30px 38px; }
+        .ops-card { background:rgba(255,255,255,.98); border:1px solid var(--ops-line); border-radius:16px; box-shadow:0 8px 28px rgba(22,42,84,.045); }
+        .ops-title { margin:0; color:var(--ops-ink); font-size:16px; font-weight:800; }
+        .ops-section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+        .ops-link { display:inline-flex; align-items:center; gap:5px; color:var(--ops-purple); font-size:10px; font-weight:800; }
+        .ops-link:hover { color:#3f17bd; }
+        .ops-flash { margin-bottom:14px; padding:13px 16px; border-radius:12px; font-size:11px; }
+        .ops-flash.success { color:#087b52; background:#edfbf5; border:1px solid #ccefe0; }
+        .ops-flash.error { color:#c8203e; background:#fff2f4; border:1px solid #ffd8df; }
+
+        .ops-hero { position:relative; min-height:220px; overflow:hidden; border:1px solid var(--ops-line); border-radius:18px; background:#f5f9ff url('/images/dashboard-logistics-hero-light.png') center/cover no-repeat; box-shadow:0 12px 36px rgba(41,56,132,.08); }
+        .ops-hero::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(250,252,255,.97),rgba(250,252,255,.73) 30%,rgba(250,252,255,.10) 57%,rgba(250,252,255,.22)); }
+        .ops-hero-copy { position:relative; z-index:2; width:43%; min-width:440px; padding:31px 26px; }
+        .ops-kicker { display:inline-flex; align-items:center; gap:7px; margin-bottom:9px; padding:5px 9px; border-radius:99px; color:#5932db; background:rgba(239,234,255,.92); font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+        .ops-hero h1 { margin:0; color:var(--ops-ink); font-size:25px; line-height:1.2; letter-spacing:-.5px; font-weight:800; }
+        .ops-hero p { margin:7px 0 18px; color:#687793; font-size:12px; }
+        .ops-health { width:245px; padding:13px 15px; border:1px solid rgba(225,230,243,.95); border-radius:12px; background:rgba(255,255,255,.92); box-shadow:0 8px 22px rgba(27,43,88,.08); }
+        .ops-health-top { display:flex; align-items:center; justify-content:space-between; gap:10px; color:#5b6a86; font-size:9px; }
+        .ops-health-top strong { color:var(--ops-ink); font-size:15px; }
+        .ops-health-bar { height:5px; margin-top:8px; overflow:hidden; border-radius:99px; background:#e9edf5; }
+        .ops-health-bar span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#6c3bf2,#2e74f6); }
+        .ops-hero-actions { position:absolute; z-index:3; top:34px; right:28px; width:50%; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+        .ops-action { min-height:152px; padding:23px 16px 17px; border:1px solid rgba(224,229,240,.94); border-radius:15px; background:rgba(255,255,255,.95); box-shadow:0 12px 28px rgba(31,47,96,.075); transition:.2s ease; }
+        .ops-action:hover { transform:translateY(-4px); border-color:#d8ceff; box-shadow:0 16px 30px rgba(80,55,190,.13); }
+        .ops-action-icon,.ops-soft-icon { display:grid; place-items:center; border-radius:12px; }
+        .ops-action-icon { width:46px; height:46px; margin-bottom:13px; color:white; }
+        .ops-action-icon.purple { background:linear-gradient(135deg,#7e59fa,#5127e6); }
+        .ops-action-icon.blue { background:linear-gradient(135deg,#62b3ff,#286af4); }
+        .ops-action-icon.green { background:linear-gradient(135deg,#61d9a7,#17aa73); }
+        .ops-action-icon.orange { background:linear-gradient(135deg,#ffc362,#ff901d); }
+        .ops-action strong { display:block; color:#13203f; font-size:12px; }
+        .ops-action small { display:block; margin-top:5px; color:#8290a8; font-size:9px; }
+
+        .ops-stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:14px; margin-top:14px; }
+        .ops-stat { position:relative; min-height:108px; padding:17px; overflow:hidden; }
+        .ops-stat-main { display:flex; align-items:flex-start; gap:11px; }
+        .ops-soft-icon { width:38px; height:38px; flex:0 0 auto; }
+        .ops-soft-icon.purple { color:var(--ops-purple); background:#f1edff; }
+        .ops-soft-icon.blue { color:var(--ops-blue); background:#edf3ff; }
+        .ops-soft-icon.green { color:var(--ops-green); background:#eaf9f3; }
+        .ops-soft-icon.orange { color:var(--ops-orange); background:#fff5e8; }
+        .ops-soft-icon.red { color:var(--ops-red); background:#fff0f3; }
+        .ops-stat-label { margin:0; color:#5e6d88; font-size:10px; font-weight:700; }
+        .ops-stat-value { margin:4px 0 0; color:var(--ops-ink); font-size:25px; line-height:1; font-weight:800; }
+        .ops-stat-note { margin:10px 0 0 49px; color:#71809a; font-size:8px; }
+        .ops-stat-note strong { color:var(--ops-green); }
+        .ops-stat-note.warning strong { color:var(--ops-orange); }
+        .ops-stat-note.danger strong { color:var(--ops-red); }
+        .ops-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) 350px; gap:14px; margin-top:14px; align-items:start; }
+        .ops-panel { padding:18px; }
+        .ops-side { display:grid; gap:12px; }
+        .ops-chart { height:190px; }
+        .ops-chart svg { display:block; width:100%; height:165px; overflow:visible; }
+        .ops-chart-labels { display:grid; grid-template-columns:repeat(7,1fr); color:#7b89a2; font-size:8px; text-align:center; }
+        .ops-legend { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; padding:11px; border:1px solid var(--ops-line); border-radius:10px; }
+        .ops-legend span { color:#687792; font-size:8px; }
+        .ops-legend strong { display:block; margin-top:3px; color:var(--ops-ink); font-size:11px; }
+        .ops-table-wrap { overflow:auto; }
+        .ops-table { width:100%; border-collapse:collapse; font-size:9px; }
+        .ops-table th { padding:0 7px 11px; color:#8290a9; font-size:8px; font-weight:600; text-align:left; white-space:nowrap; }
+        .ops-table td { padding:10px 7px; border-top:1px solid #edf0f5; color:#475774; vertical-align:middle; }
+        .ops-table strong { display:block; color:#273756; font-weight:700; }
+        .ops-table small { display:block; margin-top:2px; color:#8a97ae; font-size:8px; }
+        .ops-tracking { color:#5d39ea!important; font-weight:800; }
+        .ops-status { display:inline-flex; align-items:center; gap:4px; padding:4px 7px; border-radius:99px; font-size:8px; font-weight:800; white-space:nowrap; }
+        .ops-status::before { content:''; width:5px; height:5px; border:1.5px solid currentColor; border-radius:50%; }
+        .ops-status.pending { color:#dd7909; background:#fff4e4; }
+        .ops-status.in_transit,.ops-status.picked_up,.ops-status.out_for_delivery { color:#266fe9; background:#edf4ff; }
+        .ops-status.delivered { color:#059560; background:#e9f9f2; }
+        .ops-status.failed,.ops-status.returned { color:#e82d4b; background:#fff0f2; }
+        .ops-action-link { display:inline-flex; padding:6px 9px; border-radius:7px; color:#5a34d8; background:#f2edff; font-size:8px; font-weight:800; }
+        .ops-quick-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+        .ops-quick { min-height:77px; padding:12px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; border:1px solid #eef0f6; border-radius:11px; color:#324260; background:#fbfcff; text-align:center; font-size:8px; font-weight:800; transition:.2s; }
+        .ops-quick:hover { color:white; border-color:transparent; background:linear-gradient(135deg,#734cf2,#4f27dc); box-shadow:0 10px 20px rgba(82,49,202,.18); }
+        .ops-list { display:grid; }
+        .ops-list-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; padding:10px 0; border-top:1px solid #edf0f5; }
+        .ops-list-row:first-child { padding-top:0; border-top:0; }
+        .ops-list-row span { color:#687792; font-size:9px; }
+        .ops-list-row strong { color:var(--ops-ink); font-size:10px; }
+        .ops-progress { height:5px; margin-top:5px; overflow:hidden; border-radius:99px; background:#eef1f7; }
+        .ops-progress i { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#7141ef,#3977f3); }
+        .ops-empty { padding:58px 18px; color:#7e8ba4; text-align:center; font-size:10px; }
+        .ops-empty .ops-soft-icon { margin:0 auto 11px; }
+        .ops-mobile-header,.ops-bottom-nav { display:none; }
+        .ops-footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:20px 30px; border-top:1px solid var(--ops-line); color:#7b89a2; background:white; font-size:9px; }
+
+        @media (max-width:1450px) {
+            .ops-nav-link { padding-inline:10px; }
+            .ops-nav-link span { display:none; }
+            .ops-hero-actions { width:52%; gap:10px; }
+            .ops-grid { grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) 310px; }
+        }
+        @media (max-width:1120px) {
+            .ops-topbar,.ops-main { padding-left:20px; padding-right:20px; }
+            .ops-logo { width:158px; }
+            .ops-profile-copy { display:none; }
+            .ops-hero { min-height:350px; }
+            .ops-hero-actions { top:auto; left:20px; right:20px; bottom:18px; width:auto; }
+            .ops-action { min-height:123px; padding:14px; }
+            .ops-action-icon { width:38px; height:38px; margin-bottom:8px; }
+            .ops-stats { grid-template-columns:repeat(3,1fr); }
+            .ops-grid { grid-template-columns:1fr 1fr; }
+            .ops-side { grid-column:1/-1; grid-template-columns:1fr 1fr; }
+        }
+        @media (max-width:767px) {
+            body { padding-bottom:76px; }
+            .ops-topbar,.ops-footer { display:none; }
+            .ops-mobile-header { position:sticky; top:0; z-index:40; height:76px; padding:0 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--ops-line); background:rgba(255,255,255,.97); backdrop-filter:blur(16px); }
+            .ops-mobile-header img { width:146px; height:44px; object-fit:contain; }
+            .ops-mobile-actions { display:flex; align-items:center; gap:9px; }
+            .ops-mobile-actions .ops-avatar { width:41px; height:41px; }
+            .ops-main { padding:22px 14px 28px; }
+            .ops-hero { min-height:220px; margin-top:74px; overflow:visible; border:0; background-image:url('/images/dashboard-logistics-hero.png'); background-position:60% center; }
+            .ops-hero::after { background:linear-gradient(90deg,rgba(5,14,61,.96),rgba(12,22,96,.70) 56%,rgba(15,25,105,.18)); }
+            .ops-hero-copy { width:100%; min-width:0; padding:22px 20px; }
+            .ops-kicker { position:absolute; top:-67px; left:0; }
+            .ops-hero h1 { position:absolute; top:-40px; left:0; color:var(--ops-ink); font-size:20px; white-space:nowrap; }
+            .ops-hero p { display:none; }
+            .ops-health { width:250px; color:white; border:0; background:rgba(7,17,76,.58); backdrop-filter:blur(8px); box-shadow:none; }
+            .ops-health-top { color:#e5eaff; }
+            .ops-health-top strong { color:white; }
+            .ops-hero-actions { position:relative; inset:auto; width:auto; margin-top:14px; padding:20px 8px; grid-template-columns:repeat(4,minmax(0,1fr)); border:1px solid var(--ops-line); border-radius:16px; background:white; }
+            .ops-action { min-width:0; min-height:92px; padding:4px; border:0; box-shadow:none; text-align:center; }
+            .ops-action:hover { transform:none; box-shadow:none; }
+            .ops-action:not(:last-child) { border-right:1px solid var(--ops-line); border-radius:0; }
+            .ops-action-icon { width:42px; height:42px; margin:0 auto 9px; }
+            .ops-action strong { font-size:9px; line-height:1.3; }
+            .ops-action small { display:none; }
+            .ops-stats { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+            .ops-stat { min-height:125px; padding:14px; }
+            .ops-stat:last-child { grid-column:1/-1; }
+            .ops-stat-main { display:block; }
+            .ops-stat-label { margin-top:8px; }
+            .ops-stat-value { margin-top:5px; }
+            .ops-stat-note { position:absolute; left:14px; bottom:11px; margin:0; }
+            .ops-grid { display:flex; flex-direction:column; }
+            .ops-panel { width:100%; padding:16px 14px; }
+            .ops-grid > :nth-child(2) { order:-1; }
+            .ops-side { width:100%; display:contents; }
+            .ops-table th { display:none; }
+            .ops-table,.ops-table tbody,.ops-table tr,.ops-table td { display:block; }
+            .ops-table tr { position:relative; min-height:68px; padding:11px 92px 11px 46px; border-top:1px solid #edf0f5; }
+            .ops-table tr:first-child { border-top:0; }
+            .ops-table td { padding:0; border:0; }
+            .ops-table td:first-child { margin-bottom:4px; font-size:10px; }
+            .ops-table td:nth-child(2) { color:#66758e; font-size:9px; }
+            .ops-table td:nth-child(3) { display:none; }
+            .ops-table td:nth-child(4) { position:absolute; right:2px; top:13px; }
+            .ops-table td:last-child { position:absolute; right:2px; bottom:11px; }
+            .ops-table tr::before { content:'□'; position:absolute; left:3px; top:14px; width:34px; height:34px; display:grid; place-items:center; border-radius:10px; color:var(--ops-purple); background:#f1edff; font-size:18px; }
+            .ops-bottom-nav { position:fixed; z-index:50; left:0; right:0; bottom:0; height:76px; display:grid; grid-template-columns:repeat(5,1fr); padding:7px 5px max(7px,env(safe-area-inset-bottom)); border-top:1px solid var(--ops-line); background:rgba(255,255,255,.97); backdrop-filter:blur(16px); box-shadow:0 -8px 26px rgba(25,39,79,.08); }
+            .ops-bottom-link { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#697791; font-size:8px; font-weight:650; }
+            .ops-bottom-link.active { color:var(--ops-purple); }
+            .ops-bottom-link.active::before { content:''; position:absolute; top:-7px; width:36px; height:3px; border-radius:99px; background:var(--ops-purple); }
+            .ops-bottom-link .ops-icon { width:22px; height:22px; }
+        }
+        @media (max-width:420px) {
+            .ops-main { padding-left:11px; padding-right:11px; }
+            .ops-action strong { font-size:8px; }
+            .ops-legend { grid-template-columns:repeat(2,1fr); }
+        }
+    </style>
+    </head>
+<body>
+<div>
+    <header class="ops-topbar">
+        <div class="ops-topbar-inner">
+            <a class="ops-logo" href="https://127.0.0.1:8000/admin/dashboard"><img src="/images/express-peek-logo.webp" alt="Express Peek"></a>
+            <nav class="ops-nav" aria-label="Primary navigation">
+                <a class="ops-nav-link active" href="https://127.0.0.1:8000/admin/dashboard"><svg class="ops-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Dashboard</span></a>
+                <a class="ops-nav-link" href="https://127.0.0.1:8000/admin/shipments"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg><span>Shipments</span></a>
+                <a class="ops-nav-link" href="https://127.0.0.1:8000/admin/shipments/create"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create Shipment</span></a>
+                <a class="ops-nav-link" href="https://127.0.0.1:8000/admin/address-book/manage"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h7M8 13h7"/></svg><span>Address Book</span></a>
+                                    <a class="ops-nav-link" href="https://127.0.0.1:8000/admin/users"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 4a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5"/></svg><span>Users</span></a>
+                    <a class="ops-nav-link" href="https://127.0.0.1:8000/admin/sourcing-requests"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Sourcing Requests</span></a>
+                    <a class="ops-nav-link" href="https://127.0.0.1:8000/admin/rates/import"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 14v6h16v-6"/></svg><span>Rate Upload</span></a>
+                            </nav>
+            <span class="ops-role-pill">Admin</span>
+            <div class="ops-top-actions">
+                <a class="ops-icon-btn" href="https://127.0.0.1:8000/admin/shipments" aria-label="Shipment updates"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="ops-notice">7</span></a>
+                <a class="ops-icon-btn" href="https://127.0.0.1:8000/customer-service" aria-label="Support"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M21 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></a>
+                <a class="ops-profile" href="https://127.0.0.1:8000/profile"><span class="ops-avatar">SA</span><span class="ops-profile-copy"><span class="ops-profile-name">Super Admin</span><span class="ops-profile-email">admin@expresspeek.com</span></span></a>
+                <form method="POST" action="https://127.0.0.1:8000/logout"><input type="hidden" name="_token" value="7RiRmoQyV5s8FC4NL5v27TWmbIMDb8AqMYF86xIW" autocomplete="off"><button class="ops-icon-btn" type="submit" aria-label="Sign out"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg></button></form>
+            </div>
+        </div>
+    </header>
+
+    <header class="ops-mobile-header"><a href="https://127.0.0.1:8000/admin/dashboard"><img src="/images/express-peek-logo.webp" alt="Express Peek"></a><div class="ops-mobile-actions"><span class="ops-role-pill">Admin</span><a class="ops-avatar" href="https://127.0.0.1:8000/profile">SA</a></div></header>
+
+    <main class="ops-main">
+                        
+<section class="ops-hero">
+    <div class="ops-hero-copy">
+        <span class="ops-kicker">Platform control center</span>
+        <h1>Good to see you, Super.</h1>
+        <p>Monitor shipments, customers, agents, and sourcing operations from one place.</p>
+        <div class="ops-health"><div class="ops-health-top"><span>Platform delivery health</span><strong>4%</strong></div><div class="ops-health-bar"><span style="width:8%"></span></div></div>
+    </div>
+    <div class="ops-hero-actions">
+        <a class="ops-action" href="https://127.0.0.1:8000/admin/shipments/create"><span class="ops-action-icon purple"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><strong>Create Shipment</strong><small>Start a new delivery</small></a>
+        <a class="ops-action" href="https://127.0.0.1:8000/admin/shipments"><span class="ops-action-icon blue"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4"/></svg></span><strong>Manage Shipments</strong><small>View the full queue</small></a>
+        <a class="ops-action" href="https://127.0.0.1:8000/admin/users"><span class="ops-action-icon green"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 4a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5"/></svg></span><strong>Manage Users</strong><small>Customers and agents</small></a>
+        <a class="ops-action" href="https://127.0.0.1:8000/admin/sourcing-requests"><span class="ops-action-icon orange"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><strong>Sourcing Requests</strong><small>7 awaiting review</small></a>
+    </div>
+</section>
+
+<section class="ops-stats">
+            <article class="ops-stat ops-card"><div class="ops-stat-main"><span class="ops-soft-icon purple"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4"/></svg></span><div><p class="ops-stat-label">Total Shipments</p><p class="ops-stat-value">27</p></div></div><p class="ops-stat-note up"><strong>All platform shipments</strong></p></article>
+            <article class="ops-stat ops-card"><div class="ops-stat-main"><span class="ops-soft-icon orange"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><p class="ops-stat-label">Pending Pickup</p><p class="ops-stat-value">18</p></div></div><p class="ops-stat-note warning"><strong>Awaiting action</strong></p></article>
+            <article class="ops-stat ops-card"><div class="ops-stat-main"><span class="ops-soft-icon blue"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4"/></svg></span><div><p class="ops-stat-label">In Transit</p><p class="ops-stat-value">7</p></div></div><p class="ops-stat-note up"><strong>Active movements</strong></p></article>
+            <article class="ops-stat ops-card"><div class="ops-stat-main"><span class="ops-soft-icon green"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><div><p class="ops-stat-label">Delivered</p><p class="ops-stat-value">1</p></div></div><p class="ops-stat-note up"><strong>Completed successfully</strong></p></article>
+            <article class="ops-stat ops-card"><div class="ops-stat-main"><span class="ops-soft-icon red"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><div><p class="ops-stat-label">Sourcing Requests</p><p class="ops-stat-value">14</p></div></div><p class="ops-stat-note danger"><strong>7 new requests</strong></p></article>
+    </section>
+
+<section class="ops-grid">
+    <article class="ops-panel ops-card">
+        <div class="ops-section-head"><h2 class="ops-title">Shipment Activity</h2><span class="ops-link">Last 7 days</span></div>
+        <div class="ops-chart">
+            <svg viewBox="0 0 700 165" preserveAspectRatio="none" role="img" aria-label="Seven day shipment activity"><defs><linearGradient id="adminActivityFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7245f4" stop-opacity=".3"/><stop offset="1" stop-color="#7245f4" stop-opacity=".02"/></linearGradient></defs><g stroke="#e9edf4" stroke-width="1" stroke-dasharray="5 5"><line x1="0" y1="38" x2="700" y2="38"/><line x1="0" y1="75" x2="700" y2="75"/><line x1="0" y1="112" x2="700" y2="112"/><line x1="0" y1="150" x2="700" y2="150"/></g><polygon points="10,150 10,118 123.33,86 236.66,94 349.99,54 463.32,78 576.65,38 689.98,62 690,150" fill="url(#adminActivityFill)"/><polyline points="10,118 123.33,86 236.66,94 349.99,54 463.32,78 576.65,38 689.98,62" fill="none" stroke="#6637f1" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="118" r="4" fill="#6637f1"/><circle cx="123.33" cy="86" r="4" fill="#6637f1"/><circle cx="236.66" cy="94" r="4" fill="#6637f1"/><circle cx="349.99" cy="54" r="4" fill="#6637f1"/><circle cx="463.32" cy="78" r="4" fill="#6637f1"/><circle cx="576.65" cy="38" r="4" fill="#6637f1"/><circle cx="689.98" cy="62" r="4" fill="#6637f1"/></svg>
+            <div class="ops-chart-labels"><span>Jul 14</span><span>Jul 15</span><span>Jul 16</span><span>Jul 17</span><span>Jul 18</span><span>Jul 19</span><span>Jul 20</span></div>
+        </div>
+        <div class="ops-legend"><span>Pending<strong>18</strong></span><span>In Transit<strong>7</strong></span><span>Delivered<strong>1</strong></span><span>Total<strong>27</strong></span></div>
+    </article>
+
+    <article class="ops-panel ops-card">
+        <div class="ops-section-head"><h2 class="ops-title">Recent Shipments</h2><a class="ops-link" href="https://127.0.0.1:8000/admin/shipments">View all →</a></div>
+                    <div class="ops-empty"><span class="ops-soft-icon purple"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/></svg></span>No shipments have been created yet.</div>
+            </article>
+
+    <aside class="ops-side">
+        <article class="ops-panel ops-card"><div class="ops-section-head"><h2 class="ops-title">User Overview</h2><a class="ops-link" href="https://127.0.0.1:8000/admin/users">Manage</a></div><div class="ops-list">
+                            <div class="ops-list-row"><div><span>Admins</span><div class="ops-progress"><i style="width:7%"></i></div></div><strong>1</strong></div>
+                            <div class="ops-list-row"><div><span>Customers</span><div class="ops-progress"><i style="width:87%"></i></div></div><strong>13</strong></div>
+                            <div class="ops-list-row"><div><span>Agents</span><div class="ops-progress"><i style="width:7%"></i></div></div><strong>1</strong></div>
+                        <div class="ops-list-row"><span>Total users</span><strong>15</strong></div>
+        </div></article>
+        <article class="ops-panel ops-card"><div class="ops-section-head"><h2 class="ops-title">Quick Access</h2></div><div class="ops-quick-grid">
+            <a class="ops-quick" href="https://127.0.0.1:8000/admin/address-book/manage"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg>Address Book</a>
+            <a class="ops-quick" href="https://127.0.0.1:8000/admin/rates/import"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 14v6h16v-6"/></svg>Rate Upload</a>
+            <a class="ops-quick" href="https://127.0.0.1:8000/admin/sourcing-requests"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/></svg>Sourcing</a>
+            <a class="ops-quick" href="https://127.0.0.1:8000/profile"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>My Profile</a>
+        </div></article>
+    </aside>
+</section>
+    </main>
+
+    <footer class="ops-footer"><span>© 2026 Express Peek. All rights reserved.</span><span>Secure logistics operations</span></footer>
+
+    <nav class="ops-bottom-nav" aria-label="Mobile navigation">
+        <a class="ops-bottom-link active" href="https://127.0.0.1:8000/admin/dashboard"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3V11Z"/></svg><span>Dashboard</span></a>
+        <a class="ops-bottom-link" href="https://127.0.0.1:8000/admin/shipments"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg><span>Shipments</span></a>
+        <a class="ops-bottom-link" href="https://127.0.0.1:8000/admin/shipments/create"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create</span></a>
+        <a class="ops-bottom-link" href="https://127.0.0.1:8000/admin/address-book/manage"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg><span>Addresses</span></a>
+        <a class="ops-bottom-link" href="https://127.0.0.1:8000/profile"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span></a>
+    </nav>
+    </div>
+</body>
+</html>

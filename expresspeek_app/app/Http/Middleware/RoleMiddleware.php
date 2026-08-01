@@ -19,10 +19,20 @@ class RoleMiddleware
             return redirect()->route('login');
         }
 
-        foreach ($roles as $role) {
-            if ($request->user()->hasRole($role)) {
-                return $next($request);
-            }
+        $acceptedRoles = collect($roles)
+            ->flatMap(fn (string $role) => explode('|', $role))
+            ->filter()
+            ->values()
+            ->all();
+
+        if ($request->user()->hasAnyRole($acceptedRoles)) {
+            return $next($request);
+        }
+
+        if (in_array($request->method(), ['GET', 'HEAD'], true) && !$request->expectsJson()) {
+            return redirect()
+                ->route($request->user()->dashboardRouteName())
+                ->with('error', 'That section is not available for your account role.');
         }
 
         abort(403, 'Unauthorized. You do not have the required role to access this page.');

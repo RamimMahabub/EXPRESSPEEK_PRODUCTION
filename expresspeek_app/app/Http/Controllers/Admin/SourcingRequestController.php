@@ -57,7 +57,7 @@ class SourcingRequestController extends Controller
         $data = $request->validate([
             'status'          => ['required', Rule::in(array_keys(SourcingRequest::statuses()))],
             'admin_notes'     => 'nullable|string|max:2000',
-            'awb_number'      => 'nullable|string|max:191',
+            'carrier_tracking_number' => 'nullable|string|max:191',
             'carrier_id'      => 'nullable|exists:carriers,id',
             'shipment_id'     => 'nullable|exists:shipments,id',
         ]);
@@ -81,11 +81,6 @@ class SourcingRequestController extends Controller
             return response()->json(['success' => false, 'message' => 'No data provided.'], 422);
         }
 
-        if (array_key_exists('carrier_tracking_number', $data)) {
-            $data['awb_number'] = $data['carrier_tracking_number'];
-            unset($data['carrier_tracking_number']);
-        }
-
         $sourcingRequest->update($data);
 
         return response()->json([
@@ -93,21 +88,45 @@ class SourcingRequestController extends Controller
             'shipment' => [
                 'id' => $sourcingRequest->id,
                 'status' => $sourcingRequest->status,
-                'carrier_tracking_number' => $sourcingRequest->awb_number,
+                'carrier_tracking_number' => $sourcingRequest->carrier_tracking_number,
                 'status_label' => $sourcingRequest->status_label
             ]
         ]);
     }
 
     /**
-     * Cancel (soft-delete) a sourcing request.
+     * Delete a sourcing request.
      */
     public function destroy(SourcingRequest $sourcingRequest)
     {
-        $sourcingRequest->update(['status' => SourcingRequest::STATUS_CANCELLED]);
+        $reference = $sourcingRequest->reference_number;
+        $sourcingRequest->delete();
 
         return redirect()
             ->route('admin.sourcing-requests.index')
-            ->with('success', "Request {$sourcingRequest->reference_number} has been cancelled.");
+            ->with('success', "Request {$reference} has been deleted successfully.");
+    }
+
+    /**
+     * Delete an item from a sourcing request.
+     */
+    public function destroyItem(SourcingRequest $sourcingRequest, $item)
+    {
+        $sourcingItem = $sourcingRequest->items()->findOrFail($item);
+        $itemDescription = $sourcingItem->product_description;
+        
+        $sourcingItem->delete();
+
+        // Create whatsapp notification link
+        $phone = $sourcingRequest->full_whatsapp;
+        $msg = urlencode(
+            "Hi {$sourcingRequest->customer_name}, this is ExpressPeek regarding your sourcing request {$sourcingRequest->reference_number}. We are sorry to inform you that we could not source the following item:\n\n{$itemDescription}"
+        );
+        $whatsappLink = "https://wa.me/{$phone}?text={$msg}";
+
+        return redirect()
+            ->route('admin.sourcing-requests.show', $sourcingRequest)
+            ->with('success', 'Product removed successfully.')
+            ->with('whatsapp_notify_link', $whatsappLink);
     }
 }

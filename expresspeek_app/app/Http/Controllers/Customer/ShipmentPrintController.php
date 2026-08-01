@@ -30,7 +30,7 @@ class ShipmentPrintController extends Controller
             ->setPaper('a4', 'portrait')
             ->loadView('agent.shipments.waybill', compact('shipment', 'qrSvg'));
 
-        return $pdf->stream('waybill-' . $shipment->awb_number . '.pdf');
+        return $pdf->stream('waybill-' . $shipment->tracking_number . '.pdf');
     }
 
     public function printInvoice(Request $request, Shipment $shipment)

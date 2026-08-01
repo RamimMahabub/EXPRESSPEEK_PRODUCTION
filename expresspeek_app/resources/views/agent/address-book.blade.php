@@ -1,10 +1,16 @@
-@extends('layouts.dashboard')
+@extends('layouts.operations-dashboard')
 
 @section('title', 'Address Book')
 @section('page-title', 'Address Book')
 @section('page-subtitle', 'Manage saved sender and receiver addresses')
 
 @section('content')
+
+<div class="ap-shell">
+<section class="ap-page-head">
+    <div class="ap-head-copy"><span class="ap-eyebrow">Agent contact library</span><h1>Your delivery address library</h1><p>Keep trusted sender and receiver details ready for faster, more accurate shipment creation.</p></div>
+    <div class="ap-head-actions"><a href="{{ route('agent.shipments.create') }}" class="ap-button light">Create shipment</a></div>
+</section>
 
 <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
     <div class="xl:col-span-2">
@@ -42,6 +48,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 
 @endsection

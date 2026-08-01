@@ -1,23 +1,15 @@
-@extends('layouts.dashboard')
+@extends('layouts.operations-dashboard')
 
 @section('title', 'Sourcing Requests')
 @section('page-title', 'Sourcing Requests')
 @section('page-subtitle', 'Track the status of your shop-from-BD sourcing requests.')
 
 @section('content')
-<section class="max-w-7xl mx-auto px-6 py-6">
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-        <div>
-            <p class="text-xs font-semibold uppercase tracking-widest text-violet-600 mb-2">Customer Portal</p>
-            <h1 class="text-3xl md:text-4xl font-black text-slate-100">Sourcing Requests</h1>
-            <p class="text-sm text-slate-400 mt-2">Track the status of your shop-from-BD sourcing requests.</p>
-        </div>
-
-        <a href="{{ route('sourcing.create') }}"
-           class="inline-flex items-center justify-center px-5 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:border-violet-300 hover:text-violet-700 hover:bg-violet-50 transition-colors">
-            New Sourcing Request
-        </a>
-    </div>
+<div class="ap-shell">
+    <section class="ap-page-head">
+        <div class="ap-head-copy"><span class="ap-eyebrow">Shop from Bangladesh</span><h1>Your sourcing request journey</h1><p>Follow each product request from review through payment, sourcing, and final shipment.</p></div>
+        <div class="ap-head-actions"><a href="{{ route('sourcing.create') }}" class="ap-button light">New sourcing request</a></div>
+    </section>
 
     <div class="neon-card rounded-2xl overflow-hidden">
         @forelse($sourcingRequests as $request)
@@ -61,10 +53,10 @@
                                 Tracking: {{ $request->tracking_number }}
                             </span>
                         @endif
-                        @if($request->awb_number)
+                        @if($request->carrier_tracking_number)
                             <span class="font-mono text-amber-400 font-semibold flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                                {{ $request->carrier_tracking_provider_name }} AWB: {{ $request->awb_number }}
+                                {{ $request->carrier_tracking_provider_name }} tracking: {{ $request->carrier_tracking_number }}
                             </span>
                         @endif
                         <span>To {{ $request->destination_country }}</span>
@@ -124,5 +116,5 @@
     <div class="mt-6">
         {{ $sourcingRequests->links() }}
     </div>
-</section>
+</div>
 @endsection

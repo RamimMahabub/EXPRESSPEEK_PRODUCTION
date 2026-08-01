@@ -47,19 +47,23 @@
                 </button>
                 <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute top-full left-0 bg-white border border-gray-100 rounded-xl shadow-xl py-2 w-48 z-50" style="margin-top:4px">
                     @auth
-                        @if(auth()->user()->isCustomer())
+                        @if(auth()->user()->primaryRoleName() === 'customer')
                             <a href="{{ route('customer.shipments.create') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">Create Shipment</a>
                             <a href="{{ route('customer.shipments.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">My Shipments</a>
-                        @elseif(auth()->user()->isAgent())
+                        @elseif(auth()->user()->primaryRoleName() === 'agent')
                             <a href="{{ route('agent.shipments.create') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">Create Shipment</a>
                             <a href="{{ route('agent.shipments.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">My Shipments</a>
-                        @elseif(auth()->user()->isAdmin())
+                        @elseif(auth()->user()->primaryRoleName() === 'admin')
                             <a href="{{ route('admin.shipments.create') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">Create Shipment</a>
                             <a href="{{ route('admin.shipments.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">All Shipments</a>
                         @endif
                     @else
-                        <a href="{{ route('login') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">Create Shipment</a>
+                        <a href="{{ route('shipment.guest.create') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">Create Shipment</a>
                     @endauth
+                    <a href="{{ route('volumetric-weight-calculator') }}" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">
+                        <svg class="h-4 w-4 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21M7 4v4M17 4v4"/></svg>
+                        Weight Calculator
+                    </a>
                     <a href="{{ route('customer-service') }}#schedule-pickup" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">Schedule Pickup</a>
                 </div>
             </div>
@@ -119,9 +123,11 @@
             {{-- Logged-in user dropdown --}}
             <div class="relative hidden lg:block" x-data="{ open: false, timer: null }" @mouseenter="clearTimeout(timer); open = true" @mouseleave="timer = setTimeout(() => open = false, 150)">
                 <button class="flex items-center gap-2 px-4 py-2 rounded-xl border border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors text-sm font-semibold text-violet-700" @click="open = !open">
-                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold select-none">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                    </div>
+                    @if(auth()->user()->avatarUrl())
+                        <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-6 h-6 rounded-lg object-cover shadow-sm">
+                    @else
+                        <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold select-none">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
+                    @endif
                     {{ auth()->user()->name }}
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
@@ -132,7 +138,7 @@
                         <p class="text-xs font-semibold text-slate-900">{{ auth()->user()->name }}</p>
                         <p class="text-xs text-slate-500 mt-0.5">{{ auth()->user()->email }}</p>
                     </div>
-                    @if(auth()->user()->isCustomer())
+                    @if(auth()->user()->primaryRoleName() === 'customer')
                     <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                         Dashboard
@@ -142,13 +148,13 @@
                         My Shipments
                     </a>
                     @endif
-                    @if(auth()->user()->isAdmin())
+                    @if(auth()->user()->primaryRoleName() === 'admin')
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                         Admin Panel
                     </a>
                     @endif
-                    @if(auth()->user()->isAgent())
+                    @if(auth()->user()->primaryRoleName() === 'agent')
                     <a href="{{ route('agent.dashboard') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         Agent Panel
@@ -190,6 +196,7 @@
         <div class="px-4 py-3 space-y-1">
             <a href="{{ route('home') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Home</a>
             <a href="{{ route('track') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Track</a>
+            <a href="{{ route('volumetric-weight-calculator') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Weight Calculator</a>
             <a href="{{ route('quote') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Quote</a>
             <a href="{{ route('customer-service') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Customer Service</a>
             <a href="{{ route('blog.index') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Resources</a>
@@ -201,14 +208,14 @@
                     <p class="text-sm font-bold text-slate-900">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-slate-500">{{ auth()->user()->email }}</p>
                 </div>
-                @if(auth()->user()->isCustomer())
+                @if(auth()->user()->primaryRoleName() === 'customer')
                     <a href="{{ route('customer.dashboard') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Dashboard</a>
                     <a href="{{ route('customer.shipments.index') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">My Shipments</a>
                 @endif
-                @if(auth()->user()->isAdmin())
+                @if(auth()->user()->primaryRoleName() === 'admin')
                     <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Admin Panel</a>
                 @endif
-                @if(auth()->user()->isAgent())
+                @if(auth()->user()->primaryRoleName() === 'agent')
                     <a href="{{ route('agent.dashboard') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Agent Panel</a>
                 @endif
                 <a href="{{ route('profile.edit') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Profile Settings</a>

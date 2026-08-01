@@ -4,7 +4,7 @@ use App\Http\Controllers\Agent\DashboardController as AgentDashboard;
 use App\Http\Controllers\Agent\ShipmentController as AgentShipment;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])
+Route::middleware(['auth', 'verified', 'role:agent'])
     ->prefix('agent')
     ->name('agent.')
     ->group(function () {

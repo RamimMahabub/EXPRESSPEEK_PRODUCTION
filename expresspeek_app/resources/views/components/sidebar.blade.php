@@ -30,7 +30,7 @@
     <nav class="flex-1 px-4 pb-4 overflow-y-auto">
 
         {{-- ---- ADMIN MENU ---- --}}
-        @if(auth()->user()->isAdmin())
+        @if(auth()->user()->primaryRoleName() === 'admin')
         {{-- Create Shipment CTA --}}
         <div class="mb-4">
             <a href="{{ route('admin.shipments.create') }}"
@@ -79,11 +79,18 @@
                 </x-slot:icon>
                 Rate Upload
             </x-nav-link>
+            <x-nav-link href="{{ route('admin.sourcing-requests.index') }}" :active="request()->routeIs('admin.sourcing-requests.*')">
+                <x-slot:icon>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </x-slot:icon>
+                Sourcing Requests
+            </x-nav-link>
         </div>
         @endif
 
         {{-- ---- CUSTOMER MENU ---- --}}
-        @if(auth()->user()->isCustomer())
+        @if(auth()->user()->primaryRoleName() === 'customer')
         {{-- Create Shipment CTA --}}
         <div class="mb-4">
             <a href="{{ route('customer.shipments.create') }}"
@@ -126,7 +133,7 @@
         @endif
 
         {{-- ---- AGENT MENU ---- --}}
-        @if(auth()->user()->isAgent())
+        @if(auth()->user()->primaryRoleName() === 'agent')
         {{-- Create Shipment CTA --}}
         <div class="mb-4">
             <a href="{{ route('agent.shipments.create') }}"

@@ -12,6 +12,7 @@ use App\Models\Carrier;
 use App\Models\Shipment;
 use App\Services\QuoteService;
 use App\Services\ShipmentService;
+use App\Support\PackageWeightCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -289,18 +290,19 @@ class ShipmentController extends Controller
             // Packages
             'packages'               => 'required|array|min:1',
             'packages.*.weight'      => 'required|numeric|min:0.01',
+            'packages.*.length'      => 'nullable|numeric|min:0.01',
+            'packages.*.width'       => 'nullable|numeric|min:0.01',
+            'packages.*.height'      => 'nullable|numeric|min:0.01',
             'packages.*.quantity'    => 'required|integer|min:1',
             // Carrier
             'carrier_id'             => 'required|exists:carriers,id',
         ]);
 
         // Calculate totals
-        $totalPackages = 0;
-        $totalWeight   = 0;
-        foreach ($data['packages'] as $pkg) {
-            $totalPackages += (int) $pkg['quantity'];
-            $totalWeight   += (float) $pkg['weight'] * (int) $pkg['quantity'];
-        }
+        $data['packages'] = PackageWeightCalculator::normalize($data['packages']);
+        $packageTotals = PackageWeightCalculator::totals($data['packages']);
+        $totalPackages = $packageTotals['packages'];
+        $totalWeight = $packageTotals['weight'];
 
         $carrier = Carrier::findOrFail($data['carrier_id']);
 
@@ -309,7 +311,6 @@ class ShipmentController extends Controller
 
         $shipmentData = array_merge($data, [
             'tracking_number'     => $this->generateTrackingNumber(),
-            'awb_number'          => Shipment::generateAwbNumber(),
             'invoice_number'      => 'INV-' . strtoupper(Str::random(6)) . '-' . now()->format('Ymd'),
             'total_packages'      => $totalPackages,
             'total_weight'        => $totalWeight,
@@ -326,7 +327,7 @@ class ShipmentController extends Controller
         $shipment->trackingEvents()->create([
             'location'    => $shipmentData['sender_city'] . ', ' . $shipmentData['sender_country'],
             'status'      => Shipment::STATUS_PENDING,
-            'notes'       => 'Shipment created by customer.',
+            'notes'       => $shipment->creation_note,
             'occurred_at' => now(),
         ]);
 
@@ -358,14 +359,11 @@ class ShipmentController extends Controller
     }
 
     /**
-     * Generate unique EP tracking number.
+     * Generate a unique numeric tracking number.
      */
     private function generateTrackingNumber(): string
     {
-        do {
-            $number = 'EP' . strtoupper(Str::random(2)) . now()->format('ymd') . rand(1000, 9999);
-        } while (Shipment::where('tracking_number', $number)->exists());
-        return $number;
+        return Shipment::generateTrackingNumber();
     }
 
 }

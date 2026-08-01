@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\UserService;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -13,7 +15,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $role  = $request->query('role', 'all');
+        $role = $request->query('role', 'all');
         $users = $role !== 'all'
             ? $this->userService->getUsersByRole($role)
             : User::with('roles')->latest()->paginate(20);
@@ -31,11 +33,15 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role'     => 'required|in:admin,customer,agent',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone_country_code' => ['required', 'string', 'regex:/^\+[1-9]\d{0,3}$/'],
+            'phone' => ['required', 'string', 'regex:/^[0-9\s().-]{6,20}$/'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => 'required|in:admin,customer,agent',
         ]);
+
+        $validated['phone'] = $this->validatedPhone($validated);
 
         $user = $this->userService->createUser($validated, $validated['role']);
 
@@ -51,12 +57,21 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role'  => 'required|in:admin,customer,agent',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'phone_country_code' => ['required', 'string', 'regex:/^\+[1-9]\d{0,3}$/'],
+            'phone' => ['required', 'string', 'regex:/^[0-9\s().+-]{6,24}$/'],
+            'role' => 'required|in:admin,customer,agent',
         ]);
 
-        $user->update(['name' => $validated['name'], 'email' => $validated['email']]);
+        $validated['phone'] = $this->validatedPhone($validated, $user);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone_country_code' => $validated['phone_country_code'],
+            'phone' => $validated['phone'],
+        ]);
         $this->userService->changeRole($user, $validated['role']);
 
         return redirect()->route('admin.users.index')
@@ -69,5 +84,29 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User deleted successfully.');
+    }
+
+    private function validatedPhone(array $data, ?User $except = null): string
+    {
+        $phone = User::normalizePhone($data['phone_country_code'], $data['phone']);
+
+        if (! preg_match('/^\+[1-9]\d{7,14}$/', $phone)) {
+            throw ValidationException::withMessages([
+                'phone' => 'Enter a valid mobile number including the correct country code.',
+            ]);
+        }
+
+        $query = User::query()->where('phone', $phone);
+        if ($except) {
+            $query->whereKeyNot($except->getKey());
+        }
+
+        if ($query->exists()) {
+            throw ValidationException::withMessages([
+                'phone' => 'This phone number is already connected to another user.',
+            ]);
+        }
+
+        return $phone;
     }
 }

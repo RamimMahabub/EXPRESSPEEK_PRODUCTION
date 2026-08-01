@@ -71,7 +71,7 @@
                         </div>
                         <div>
                             <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Phone</label>
-                            <input type="text" name="sender_phone" value="{{ old('sender_phone') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" placeholder="01XXXXXXXXX">
+                            <input type="text" name="sender_phone" value="{{ old('sender_phone') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" placeholder="1968524222">
                         </div>
                     </div>
                 </div>
@@ -112,7 +112,7 @@
                         </div>
                         <div>
                             <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Phone</label>
-                            <input type="text" name="receiver_phone" value="{{ old('receiver_phone') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" placeholder="01XXXXXXXXX">
+                            <input type="text" name="receiver_phone" value="{{ old('receiver_phone') }}" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100" placeholder="1968524222">
                         </div>
                     </div>
                 </div>

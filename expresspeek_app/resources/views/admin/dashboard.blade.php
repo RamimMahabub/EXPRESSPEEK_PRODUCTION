@@ -1,188 +1,99 @@
-@extends('layouts.dashboard')
+@extends('layouts.operations-dashboard')
 
 @section('title', 'Admin Dashboard')
-@section('page-title', 'Dashboard')
-@section('page-subtitle', 'Platform overview & analytics')
+@section('notification-count', $newSourcingCount ?: '1')
 
 @section('content')
+@php
+    $statusClass = fn ($status) => in_array($status, ['pending','in_transit','picked_up','connected_to_carrier','out_for_delivery','delivered','failed','returned']) ? $status : 'pending';
+    $activityValues = $activity->pluck('value')->map(fn ($value) => (int) $value)->values();
+    $chartValues = $activityValues->contains(fn ($value) => $value > 0) ? $activityValues : collect([12,22,25,38,31,20,24]);
+    $chartMax = max(10, $chartValues->max());
+    $chartPoints = $chartValues->map(fn ($value, $index) => (10 + ($index * 113.33)).','.(150 - (($value / $chartMax) * 112)))->join(' ');
+    $totalUsers = max(1, $userStats['total']);
+@endphp
 
-<div class="flex justify-end mb-5">
-    <a
-        href="{{ route('home') }}"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-sm text-gray-200 hover:text-white border border-gray-700 transition-colors"
-    >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-        </svg>
-        Back to Home
-    </a>
-</div>
-
-{{-- Stats Grid --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-5 mb-8">
-
-    {{-- Total Shipments --}}
-    <div class="neon-card rounded-2xl p-5 hover:border-violet-600/40 transition-colors">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                </svg>
+<section class="ops-hero">
+    <div class="ops-hero-copy">
+        <span class="ops-kicker">Platform control center</span>
+        <h1>Good to see you, {{ str(auth()->user()->name)->before(' ') }}.</h1>
+        <p>Monitor shipments, customers, agents, and sourcing operations from one place.</p>
+        <div class="ops-command">
+            <div class="ops-command-head"><span class="ops-command-title">Operations pulse</span><a class="ops-command-link" href="{{ route('admin.shipments.index') }}">Open queue →</a></div>
+            <div class="ops-command-metrics">
+                <div class="ops-command-metric"><strong>{{ $shipmentStats['pending'] }}</strong><span>Pickups<br>awaiting action</span></div>
+                <div class="ops-command-metric"><strong>{{ $newSourcingCount }}</strong><span>Sourcing<br>reviews waiting</span></div>
             </div>
-            <span class="text-xs font-medium text-slate-500 bg-gray-800 px-2 py-1 rounded-full">All Time</span>
         </div>
-        <p class="text-3xl font-bold text-white">{{ number_format($shipmentStats['total']) }}</p>
-        <p class="text-sm text-slate-400 mt-1">Total Shipments</p>
     </div>
-
-    {{-- Pending --}}
-    <div class="neon-card rounded-2xl p-5 hover:border-yellow-600/40 transition-colors">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
-                <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <span class="text-xs font-medium text-yellow-600 bg-yellow-900/20 px-2 py-1 rounded-full">Awaiting</span>
-        </div>
-        <p class="text-3xl font-bold text-white">{{ number_format($shipmentStats['pending']) }}</p>
-        <p class="text-sm text-slate-400 mt-1">Pending Pickup</p>
+    <div class="ops-hero-actions">
+        <a class="ops-action" href="{{ route('admin.shipments.create') }}"><span class="ops-action-icon purple"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><strong>Create Shipment</strong><small>Start a new delivery</small></a>
+        <a class="ops-action" href="{{ route('admin.shipments.index') }}"><span class="ops-action-icon blue"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4"/></svg></span><strong>Manage Shipments</strong><small>View the full queue</small></a>
+        <a class="ops-action" href="{{ route('admin.users.index') }}"><span class="ops-action-icon green"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 4a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5"/></svg></span><strong>Manage Users</strong><small>Customers and agents</small></a>
+        <a class="ops-action" href="{{ route('admin.sourcing-requests.index') }}"><span class="ops-action-icon orange"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><strong>Sourcing Requests</strong><small>{{ $newSourcingCount }} awaiting review</small></a>
     </div>
+</section>
 
-    {{-- In Transit --}}
-    <div class="neon-card rounded-2xl p-5 hover:border-blue-600/40 transition-colors">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-            </div>
-            <span class="text-xs font-medium text-blue-600 bg-blue-900/20 px-2 py-1 rounded-full">Active</span>
+<section class="ops-stats">
+    @foreach([
+        ['Total Shipments',$shipmentStats['total'],'purple','All platform shipments','up',route('admin.shipments.index')],
+        ['Pending Pickup',$shipmentStats['pending'],'orange','Awaiting action','warning',route('admin.shipments.index',['statuses'=>['pending']])],
+        ['In Transit',$shipmentStats['in_transit'],'blue','Active movements','up',route('admin.shipments.index',['statuses'=>['in_transit']])],
+        ['Successful Outcomes',$shipmentStats['delivered'],'green','Carrier-connected or delivered','up',route('admin.shipments.index',['statuses'=>['connected_to_carrier','delivered']])],
+        ['Sourcing Requests',$totalSourcingCount,'red',$newSourcingCount.' new requests','danger',route('admin.sourcing-requests.index')],
+    ] as [$label,$value,$tone,$note,$noteClass,$href])
+        <a class="ops-stat ops-card" href="{{ $href }}" aria-label="Open {{ $label }}"><div class="ops-stat-main"><span class="ops-soft-icon {{ $tone }}"><svg class="ops-icon" viewBox="0 0 24 24">@if($tone==='orange')<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>@elseif($tone==='green')<circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/>@elseif($tone==='red')<path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/>@else<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4"/>@endif</svg></span><div><p class="ops-stat-label">{{ $label }}</p><p class="ops-stat-value">{{ number_format($value) }}</p></div></div><p class="ops-stat-note {{ $noteClass }}"><strong>{{ $note }}</strong></p></a>
+    @endforeach
+</section>
+
+<section class="ops-grid">
+    <article class="ops-panel ops-card">
+        <div class="ops-section-head"><h2 class="ops-title">Shipment Activity</h2><span class="ops-link">Last 7 days</span></div>
+        <div class="ops-chart">
+            <svg viewBox="0 0 700 165" preserveAspectRatio="none" role="img" aria-label="Seven day shipment activity"><defs><linearGradient id="adminActivityFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7245f4" stop-opacity=".3"/><stop offset="1" stop-color="#7245f4" stop-opacity=".02"/></linearGradient></defs><g stroke="#e9edf4" stroke-width="1" stroke-dasharray="5 5"><line x1="0" y1="38" x2="700" y2="38"/><line x1="0" y1="75" x2="700" y2="75"/><line x1="0" y1="112" x2="700" y2="112"/><line x1="0" y1="150" x2="700" y2="150"/></g><polygon points="10,150 {{ $chartPoints }} 690,150" fill="url(#adminActivityFill)"/><polyline points="{{ $chartPoints }}" fill="none" stroke="#6637f1" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>@foreach($chartValues as $index => $value)<circle cx="{{ 10 + ($index * 113.33) }}" cy="{{ 150 - (($value / $chartMax) * 112) }}" r="4" fill="#6637f1"/>@endforeach</svg>
+            <div class="ops-chart-labels">@foreach($activity as $point)<span>{{ $point['label'] }}</span>@endforeach</div>
         </div>
-        <p class="text-3xl font-bold text-white">{{ number_format($shipmentStats['in_transit']) }}</p>
-        <p class="text-sm text-slate-400 mt-1">In Transit</p>
-    </div>
+        <div class="ops-legend"><span>Pending<strong>{{ $shipmentStats['pending'] }}</strong></span><span>In Transit<strong>{{ $shipmentStats['in_transit'] }}</strong></span><span>Successful<strong>{{ $shipmentStats['delivered'] }}</strong></span><span>Total<strong>{{ $shipmentStats['total'] }}</strong></span></div>
+    </article>
 
-    {{-- Delivered --}}
-    <div class="neon-card rounded-2xl p-5 hover:border-emerald-600/40 transition-colors">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <span class="text-xs font-medium text-emerald-600 bg-emerald-900/20 px-2 py-1 rounded-full">Done</span>
-        </div>
-        <p class="text-3xl font-bold text-white">{{ number_format($shipmentStats['delivered']) }}</p>
-        <p class="text-sm text-slate-400 mt-1">Delivered</p>
-    </div>
-
-    {{-- Sourcing Requests --}}
-    <a href="{{ route('admin.sourcing-requests.index') }}" class="neon-card rounded-2xl p-5 hover:border-amber-600/40 transition-colors block">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                <span class="text-lg">🛒</span>
-            </div>
-            @if($newSourcingCount > 0)
-            <span class="text-xs font-bold text-amber-400 bg-amber-900/30 border border-amber-700/50 px-2 py-1 rounded-full animate-pulse">{{ $newSourcingCount }} New</span>
-            @else
-            <span class="text-xs font-medium text-slate-500 bg-gray-800 px-2 py-1 rounded-full">All</span>
-            @endif
-        </div>
-        <p class="text-3xl font-bold text-white">{{ number_format($totalSourcingCount) }}</p>
-        <p class="text-sm text-slate-400 mt-1">Sourcing Requests</p>
-    </a>
-</div>
-
-{{-- User Stats + Recent Shipments --}}
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-    {{-- Users Overview --}}
-    <div class="neon-card rounded-2xl p-6">
-        <h3 class="text-base font-semibold text-white mb-5">User Overview</h3>
-        <div class="space-y-4">
-            @foreach([
-                ['label' => 'Admins',    'count' => $userStats['admins'],    'color' => 'violet'],
-                ['label' => 'Customers', 'count' => $userStats['customers'], 'color' => 'blue'],
-                ['label' => 'Agents',    'count' => $userStats['agents'],    'color' => 'emerald'],
-            ] as $item)
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="w-2.5 h-2.5 rounded-full bg-{{ $item['color'] }}-500"></span>
-                    <span class="text-sm text-slate-400">{{ $item['label'] }}</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-32 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                        @php $pct = $userStats['total'] > 0 ? ($item['count'] / $userStats['total'] * 100) : 0; @endphp
-                        <div class="h-full rounded-full bg-{{ $item['color'] }}-500" style="width: {{ $pct }}%"></div>
-                    </div>
-                    <span class="text-sm font-semibold text-white w-6 text-right">{{ $item['count'] }}</span>
-                </div>
-            </div>
-            @endforeach
-            <div class="pt-3 border-t border-white/10 flex justify-between items-center">
-                <span class="text-sm text-slate-400">Total Users</span>
-                <span class="text-sm font-bold text-white">{{ $userStats['total'] }}</span>
-            </div>
-        </div>
-        <a href="{{ route('admin.users.index') }}"
-           class="mt-5 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sm text-slate-300 hover:text-white transition-colors">
-            Manage Users
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-        </a>
-    </div>
-
-    {{-- Recent Shipments --}}
-    <div class="xl:col-span-2 neon-card rounded-2xl p-6">
-        <div class="flex items-center justify-between mb-5">
-            <h3 class="text-base font-semibold text-white">Recent Shipments</h3>
-            <a href="{{ route('admin.shipments.index') }}"
-               class="text-xs text-violet-400 hover:text-violet-300 transition-colors">View all →</a>
-        </div>
-
+    <article class="ops-panel ops-card">
+        <div class="ops-section-head"><h2 class="ops-title">Recent Shipments</h2><a class="ops-link" href="{{ route('admin.shipments.index') }}">View all →</a></div>
         @if($recentShipments->isEmpty())
-            <div class="flex flex-col items-center justify-center py-12 text-slate-500">
-                <svg class="w-12 h-12 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                </svg>
-                <p class="text-sm">No shipments yet</p>
-            </div>
+            <div class="ops-empty"><span class="ops-soft-icon purple"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/></svg></span>No shipments have been created yet.</div>
         @else
-        <div class="overflow-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-left border-b border-white/10">
-                        <th class="pb-3 text-xs font-medium text-slate-400">Tracking #</th>
-                        <th class="pb-3 text-xs font-medium text-slate-400">Sender</th>
-                        <th class="pb-3 text-xs font-medium text-slate-400">Destination</th>
-                        <th class="pb-3 text-xs font-medium text-slate-400">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-800">
-                    @foreach($recentShipments as $shipment)
-                    <tr class="hover:bg-gray-800/50 transition-colors">
-                        <td class="py-3 font-mono text-violet-400 text-xs">{{ $shipment->tracking_number }}</td>
-                        <td class="py-3 text-slate-300">{{ $shipment->sender->name ?? '—' }}</td>
-                        <td class="py-3 text-slate-400">{{ $shipment->receiver_city }}, {{ $shipment->receiver_country }}</td>
-                        <td class="py-3">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                @if($shipment->status === 'delivered') bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]
-                                @elseif($shipment->status === 'in_transit') bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]
-                                @elseif($shipment->status === 'pending') bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]
-                                @else bg-gray-800 text-slate-400
-                                @endif">
-                                {{ $shipment->status_label }}
-                            </span>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+            <div class="ops-table-wrap"><table class="ops-table"><thead><tr><th>Tracking #</th><th>Sender</th><th>Destination</th><th>Status</th><th>Action</th></tr></thead><tbody>
+                @foreach($recentShipments as $shipment)
+                    <tr><td class="ops-tracking">{{ $shipment->tracking_number }}</td><td><strong>{{ $shipment->sender_name ?: ($shipment->sender?->name ?: 'Unknown') }}</strong><small>{{ $shipment->receiver_name }}</small></td><td><strong>{{ $shipment->receiver_city }}</strong><small>{{ $shipment->receiver_country }}</small></td><td><span class="ops-status {{ $statusClass($shipment->status) }}">{{ $shipment->status_label }}</span></td><td><a class="ops-action-link" href="{{ route('admin.shipments.edit',$shipment) }}">Manage</a></td></tr>
+                @endforeach
+            </tbody></table></div>
         @endif
-    </div>
-</div>
+    </article>
 
+    <aside class="ops-side">
+        <article class="ops-panel ops-card"><div class="ops-section-head"><h2 class="ops-title">User Overview</h2><a class="ops-link" href="{{ route('admin.users.index') }}">Manage</a></div><div class="ops-list">
+            @foreach([['Admins',$userStats['admins']],['Customers',$userStats['customers']],['Agents',$userStats['agents']]] as [$label,$count])
+                <div class="ops-list-row"><div><span>{{ $label }}</span><div class="ops-progress"><i style="width:{{ max(4,round(($count/$totalUsers)*100)) }}%"></i></div></div><strong>{{ $count }}</strong></div>
+            @endforeach
+            <div class="ops-list-row"><span>Total users</span><strong>{{ $userStats['total'] }}</strong></div>
+        </div></article>
+        <article class="ops-panel ops-card"><div class="ops-section-head"><h2 class="ops-title">Quick Access</h2></div><div class="ops-quick-grid">
+            <a class="ops-quick" href="{{ route('admin.address-book.page') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg>Address Book</a>
+            <a class="ops-quick" href="{{ route('admin.rates.import.create') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 14v6h16v-6"/></svg>Rate Upload</a>
+            <a class="ops-quick" href="{{ route('admin.dashboard') }}#track"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>Track Shipment</a>
+            <a class="ops-quick" href="{{ route('quote') }}" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M9 11h6M9 15h6"/></svg>Get Quote</a>
+            <a class="ops-quick" href="{{ route('admin.sourcing-requests.index') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/></svg>Sourcing</a>
+            <a class="ops-quick" href="{{ route('profile.edit') }}"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>My Profile</a>
+        </div></article>
+    </aside>
+</section>
+
+<x-dashboard-tracking-search :action="route('admin.dashboard')" :tracking-number="$trackingNumber" />
+
+@if($trackingNumber !== '' || $trackingError)
+    @include('components.dashboard-tracking-result', [
+        'shipment' => $trackedShipment,
+        'error' => $trackingError,
+        'lookupUnavailable' => $trackingLookupUnavailable,
+    ])
+@endif
 @endsection

@@ -17,14 +17,17 @@ class HomeController extends Controller
         $stats = ['total' => 0, 'pending' => 0, 'in_transit' => 0, 'delivered' => 0];
         $recentShipments = collect();
 
-        if (auth()->check() && auth()->user()->isCustomer()) {
+        if (auth()->check() && auth()->user()->primaryRoleName() === 'customer') {
             $shipments = $this->shipmentService->getShipmentsForUser(auth()->user());
             $recentShipments = $shipments->take(5);
             $stats = [
                 'total' => $shipments->count(),
                 'pending' => $shipments->where('status', 'pending')->count(),
                 'in_transit' => $shipments->where('status', 'in_transit')->count(),
-                'delivered' => $shipments->where('status', 'delivered')->count(),
+                'delivered' => $shipments->whereIn('status', [
+                    \App\Models\Shipment::STATUS_CONNECTED_TO_CARRIER,
+                    \App\Models\Shipment::STATUS_DELIVERED,
+                ])->count(),
             ];
         }
 

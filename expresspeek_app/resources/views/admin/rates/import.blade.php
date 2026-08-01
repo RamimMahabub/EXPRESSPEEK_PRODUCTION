@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+@extends('layouts.operations-dashboard')
 
 @section('title', 'Rate Import')
 @section('page-title', 'Rate Upload')

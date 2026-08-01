@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CountryHelper;
 use App\Models\CountryZone;
+use App\Models\Shipment;
 use App\Models\SourcingRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\ImageManager;
@@ -17,10 +20,18 @@ class SourcingRequestController extends Controller
      */
     public function create()
     {
-        $countries = CountryZone::select('country_name', 'country_code')
-            ->distinct()
-            ->orderBy('country_name')
-            ->get();
+        $countries = CountryZone::query()
+            ->select('country_code', DB::raw('MAX(country_name) as original_name'))
+            ->whereNotNull('country_code')
+            ->groupBy('country_code')
+            ->get()
+            ->map(fn ($country) => (object) [
+                'country_code' => $country->country_code,
+                'country_name' => CountryHelper::getCanonicalName($country->country_code),
+            ])
+            ->filter(fn ($country) => $country->country_name !== '')
+            ->sortBy('country_name')
+            ->values();
 
         return view('sourcing.create', compact('countries'));
     }
@@ -48,7 +59,7 @@ class SourcingRequestController extends Controller
 
         $sourcing = SourcingRequest::create([
             'reference_number'       => SourcingRequest::generateReferenceNumber(),
-            'tracking_number'        => 'EP' . strtoupper(Str::random(2)) . now()->format('ymd') . rand(1000, 9999),
+            'tracking_number'        => Shipment::generateTrackingNumber(),
             'customer_name'          => $data['customer_name'],
             'whatsapp_country_code'  => $data['whatsapp_country_code'],
             'whatsapp_number'        => $data['whatsapp_number'],

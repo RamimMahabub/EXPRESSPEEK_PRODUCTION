@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboard;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 Route::middleware(['auth', 'verified', 'role:customer'])
     ->prefix('customer')
@@ -18,7 +19,15 @@ Route::middleware(['auth', 'verified', 'role:customer'])
 
         // Shipments
         Route::get('/shipments', function () {
-            $shipments = auth()->user()->shipments()->with('trackingEvents')->latest()->paginate(15);
+            $allowedStatuses = array_keys(\App\Models\Shipment::statuses());
+            $statuses = array_values(array_intersect((array) request()->query('statuses', []), $allowedStatuses));
+            $query = auth()->user()->shipments()->with('trackingEvents')->latest();
+
+            if ($statuses !== []) {
+                $query->whereIn('status', $statuses);
+            }
+
+            $shipments = $query->paginate(15)->withQueryString();
             return view('customer.shipments.index', compact('shipments'));
         })->name('shipments.index');
 
@@ -34,12 +43,21 @@ Route::middleware(['auth', 'verified', 'role:customer'])
 
         Route::get('/shipments/{shipment}', function (\App\Models\Shipment $shipment) {
             abort_if($shipment->sender_id !== auth()->id(), 403);
+            $shipment->load('trackingEvents');
+
+            if (Schema::hasTable('shipment_invoices')) {
+                $shipment->load('invoices');
+            } else {
+                $shipment->setRelation('invoices', collect());
+            }
+
             return view('customer.shipments.show', compact('shipment'));
         })->name('shipments.show');
 
         // Allow customers to print their own documents
         Route::get('/shipments/{shipment}/waybill', [\App\Http\Controllers\Customer\ShipmentPrintController::class, 'printWaybill'])->name('shipments.waybill');
         Route::get('/shipments/{shipment}/invoice', [\App\Http\Controllers\Customer\ShipmentPrintController::class, 'printInvoice'])->name('shipments.invoice');
+        Route::get('/shipment-invoices/{shipmentInvoice}/download', [\App\Http\Controllers\Customer\ShipmentInvoiceController::class, 'downloadPdf'])->name('shipment-invoices.download');
 
         // Sourcing Invoices
         Route::get('/sourcing-invoices/{sourcingInvoice}/download', [\App\Http\Controllers\Customer\SourcingInvoiceController::class, 'downloadPdf'])->name('sourcing-invoices.download');

@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Models\Shipment;
+use App\Models\SourcingRequest;
 use App\Models\TrackingEvent;
 use App\Models\User;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class ShipmentService
 {
@@ -77,7 +77,10 @@ class ShipmentService
             'total'       => Shipment::count(),
             'pending'     => Shipment::where('status', Shipment::STATUS_PENDING)->count(),
             'in_transit'  => Shipment::where('status', Shipment::STATUS_IN_TRANSIT)->count(),
-            'delivered'   => Shipment::where('status', Shipment::STATUS_DELIVERED)->count(),
+            'delivered'   => Shipment::whereIn('status', [
+                Shipment::STATUS_CONNECTED_TO_CARRIER,
+                Shipment::STATUS_DELIVERED,
+            ])->count(),
             'failed'      => Shipment::where('status', Shipment::STATUS_FAILED)->count(),
         ];
     }
@@ -87,11 +90,7 @@ class ShipmentService
      */
     private function generateTrackingNumber(): string
     {
-        do {
-            $number = 'EP' . strtoupper(Str::random(2)) . now()->format('ymd') . rand(1000, 9999);
-        } while (Shipment::where('tracking_number', $number)->exists());
-
-        return $number;
+        return Shipment::generateTrackingNumber();
     }
 
     /**
@@ -99,8 +98,17 @@ class ShipmentService
      */
     public function findByTrackingNumber(string $trackingNumber): ?Shipment
     {
+        $numericTrackingNumber = Shipment::normalizeTrackingNumber($trackingNumber);
+
         $shipment = Shipment::with(['trackingEvents', 'sender', 'agent'])
-            ->where('tracking_number', $trackingNumber)
+            ->where(function ($query) use ($trackingNumber, $numericTrackingNumber) {
+                $query->where('tracking_number', $trackingNumber);
+
+                if ($numericTrackingNumber !== '') {
+                    $query->orWhere('tracking_number', $numericTrackingNumber)
+                        ->orWhere('tracking_number', 'like', '%' . $numericTrackingNumber);
+                }
+            })
             ->orWhere('carrier_tracking_number', $trackingNumber)
             ->first();
 
@@ -108,12 +116,21 @@ class ShipmentService
             return $shipment;
         }
 
-        $sourcing = \App\Models\SourcingRequest::with('items', 'carrier')->where('tracking_number', $trackingNumber)->first();
+        $sourcing = \App\Models\SourcingRequest::with('items', 'carrier')
+            ->where(function ($query) use ($trackingNumber, $numericTrackingNumber) {
+                $query->where('tracking_number', $trackingNumber);
+
+                if ($numericTrackingNumber !== '') {
+                    $query->orWhere('tracking_number', $numericTrackingNumber)
+                        ->orWhere('tracking_number', 'like', '%' . $numericTrackingNumber);
+                }
+            })
+            ->first();
         if ($sourcing) {
             $mockShipment = new Shipment([
                 'tracking_number' => $sourcing->tracking_number,
                 'status' => in_array($sourcing->status, ['completed', 'shipped']) ? 'in_transit' : 'pending',
-                'carrier_tracking_number' => $sourcing->awb_number,
+                'carrier_tracking_number' => $sourcing->carrier_tracking_number,
                 'carrier_name' => $sourcing->carrier ? $sourcing->carrier->name : null,
                 'receiver_country' => $sourcing->destination_country,
                 'sender_country' => 'Bangladesh',
@@ -139,113 +156,82 @@ class ShipmentService
      */
     public function getAnalytics(array $filters): array
     {
-        $query = Shipment::query();
+        $recordType = in_array($filters['record_type'] ?? 'shipment', ['shipment', 'sourcing', 'all'], true)
+            ? ($filters['record_type'] ?? 'shipment')
+            : 'shipment';
+        $grouping = in_array($filters['grouping'] ?? 'daily', ['daily', 'weekly', 'monthly'], true)
+            ? ($filters['grouping'] ?? 'daily')
+            : 'daily';
 
-        if (!empty($filters['start_date'])) {
-            $query->whereDate('shipments.created_at', '>=', $filters['start_date']);
-        }
-        if (!empty($filters['end_date'])) {
-            $query->whereDate('shipments.created_at', '<=', $filters['end_date']);
-        }
-        if (!empty($filters['carriers'])) {
-            $query->whereIn('carrier_id', $filters['carriers']);
-        }
-        if (!empty($filters['agents'])) {
-            $query->whereIn('agent_id', $filters['agents']);
-        }
-        if (!empty($filters['statuses'])) {
-            $query->whereIn('status', $filters['statuses']);
-        }
+        $records = collect();
 
-        $summaryQuery = clone $query;
-        $total = $summaryQuery->count();
-        $pending = (clone $query)->where('status', Shipment::STATUS_PENDING)->count();
-        $delivered = (clone $query)->where('status', Shipment::STATUS_DELIVERED)->count();
-        $returned = (clone $query)->where('status', Shipment::STATUS_RETURNED)->count();
-        
-        $resolved = $total - $pending;
-        $successRate = $resolved > 0 ? round(($delivered / $resolved) * 100, 1) : 0;
+        if (in_array($recordType, ['shipment', 'all'], true)) {
+            $shipmentQuery = Shipment::query()->with(['carrier:id,name', 'agent:id,name']);
+            $this->applyAnalyticsFilters($shipmentQuery, $filters, 'shipment');
 
-        $grouping = $filters['grouping'] ?? 'daily';
-        $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
-        $dateExpr = $driver === 'sqlite' 
-            ? "date(shipments.created_at)" 
-            : "DATE(shipments.created_at)";
-
-        if ($grouping === 'monthly') {
-            $dateExpr = $driver === 'sqlite'
-                ? "strftime('%Y-%m', shipments.created_at)"
-                : "DATE_FORMAT(shipments.created_at, '%Y-%m')";
-        } elseif ($grouping === 'weekly') {
-            $dateExpr = $driver === 'sqlite'
-                ? "strftime('%Y-%W', shipments.created_at)"
-                : "DATE_FORMAT(shipments.created_at, '%x-%v')";
-        }
-        
-        $concatExpr = ($driver === 'sqlite') 
-            ? "receiver_city || ', ' || receiver_country" 
-            : "CONCAT(receiver_city, ', ', receiver_country)";
-
-        $volumeTrend = (clone $query)
-            ->selectRaw("{$dateExpr} as date, COUNT(*) as count")
-            ->whereNotNull('shipments.created_at')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('count', 'date');
-
-        $statusDistribution = (clone $query)
-            ->selectRaw("status, COUNT(*) as count")
-            ->groupBy('status')
-            ->pluck('count', 'status');
-
-        $carrierVolume = (clone $query)
-            ->leftJoin('carriers', 'shipments.carrier_id', '=', 'carriers.id')
-            ->selectRaw("COALESCE(carriers.name, shipments.carrier_name, 'Unknown') as carrier, COUNT(shipments.id) as count")
-            ->groupBy('carrier')
-            ->orderByDesc('count')
-            ->pluck('count', 'carrier');
-
-        $topDestinations = (clone $query)
-            ->selectRaw("{$concatExpr} as destination, COUNT(*) as count")
-            ->whereNotNull('receiver_city')
-            ->where('receiver_city', '!=', '')
-            ->groupBy('destination')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->pluck('count', 'destination');
-
-        $agentPerformance = (clone $query)
-            ->leftJoin('users', 'shipments.agent_id', '=', 'users.id')
-            ->selectRaw("COALESCE(users.name, 'Unassigned') as agent, COUNT(shipments.id) as count")
-            ->groupBy('agent')
-            ->orderByDesc('count')
-            ->pluck('count', 'agent');
-
-        $outcomeTrendData = (clone $query)
-            ->selectRaw("{$dateExpr} as date, status, COUNT(*) as count")
-            ->whereIn('status', [Shipment::STATUS_DELIVERED, Shipment::STATUS_RETURNED, Shipment::STATUS_PENDING])
-            ->whereNotNull('shipments.created_at')
-            ->groupBy('date', 'status')
-            ->orderBy('date')
-            ->get();
-            
-        $outcomeTrend = [];
-        foreach ($outcomeTrendData as $row) {
-            if ($row->date === null) continue;
-            if (!isset($outcomeTrend[$row->date])) {
-                $outcomeTrend[$row->date] = [
-                    Shipment::STATUS_DELIVERED => 0,
-                    Shipment::STATUS_RETURNED => 0,
-                    Shipment::STATUS_PENDING => 0,
+            $records = $records->concat($shipmentQuery->get()->map(function (Shipment $shipment) {
+                return [
+                    'date' => $shipment->created_at,
+                    'status' => $this->normaliseAnalyticsStatus($shipment->status, 'shipment'),
+                    'carrier' => $shipment->carrier?->name ?: ($shipment->carrier_name ?: 'Unassigned'),
+                    'destination' => $this->formatDestination($shipment->receiver_city, $shipment->receiver_country),
+                    'agent' => $shipment->agent?->name ?: 'Unassigned',
+                    'source' => 'Standard shipment',
                 ];
-            }
-            $outcomeTrend[$row->date][$row->status] = $row->count;
+            }));
         }
+
+        if (in_array($recordType, ['sourcing', 'all'], true)) {
+            $sourcingQuery = SourcingRequest::query()->with('carrier:id,name');
+            $this->applyAnalyticsFilters($sourcingQuery, $filters, 'sourcing');
+
+            $records = $records->concat($sourcingQuery->get()->map(function (SourcingRequest $request) {
+                return [
+                    'date' => $request->created_at,
+                    'status' => $this->normaliseAnalyticsStatus($request->status, 'sourcing'),
+                    'carrier' => $request->carrier?->name ?: ($request->carrier_name ?: 'Unassigned'),
+                    'destination' => $this->formatDestination($request->destination_city, $request->destination_country),
+                    'agent' => 'Sourcing desk',
+                    'source' => 'Sourcing request',
+                ];
+            }));
+        }
+
+        $total = $records->count();
+        $pending = $records->where('status', 'pending')->count();
+        $inTransit = $records->where('status', 'in_transit')->count();
+        $delivered = $records->where('status', 'delivered')->count();
+        $returned = $records->where('status', 'returned')->count();
+
+        $completed = $delivered + $returned;
+        $successRate = $completed > 0 ? round(($delivered / $completed) * 100, 1) : 0;
+
+        $volumeTrend = $this->countAnalyticsValues($records, fn (array $record) => $this->analyticsDateKey($record['date'], $grouping));
+        ksort($volumeTrend);
+        $statusDistribution = $this->countAnalyticsValues($records, fn (array $record) => $record['status']);
+        $carrierVolume = $this->countAnalyticsValues($records, fn (array $record) => $record['carrier']);
+        $topDestinations = $this->countAnalyticsValues($records, fn (array $record) => $record['destination'], 8);
+        $agentPerformance = $this->countAnalyticsValues($records, fn (array $record) => $record['agent'], 8);
+        $sourceDistribution = $this->countAnalyticsValues($records, fn (array $record) => $record['source']);
+
+        $outcomeTrend = [];
+        foreach ($records as $record) {
+            $date = $this->analyticsDateKey($record['date'], $grouping);
+            $outcomeTrend[$date] ??= [
+                'delivered' => 0,
+                'in_transit' => 0,
+                'returned' => 0,
+                'pending' => 0,
+            ];
+            $outcomeTrend[$date][$record['status']]++;
+        }
+        ksort($outcomeTrend);
 
         return [
             'summary' => [
                 'total' => $total,
                 'pending' => $pending,
+                'inTransit' => $inTransit,
                 'delivered' => $delivered,
                 'returned' => $returned,
                 'successRate' => $successRate,
@@ -256,6 +242,94 @@ class ShipmentService
             'topDestinations' => $topDestinations,
             'agentPerformance' => $agentPerformance,
             'outcomeTrend' => $outcomeTrend,
+            'sourceDistribution' => $sourceDistribution,
+            'meta' => [
+                'recordType' => $recordType,
+                'grouping' => $grouping,
+                'generatedAt' => now()->toIso8601String(),
+            ],
         ];
+    }
+
+    private function applyAnalyticsFilters($query, array $filters, string $type): void
+    {
+        if (!empty($filters['start_date'])) {
+            $query->whereDate('created_at', '>=', $filters['start_date']);
+        }
+        if (!empty($filters['end_date'])) {
+            $query->whereDate('created_at', '<=', $filters['end_date']);
+        }
+        if (!empty($filters['carriers'])) {
+            $query->whereIn('carrier_id', (array) $filters['carriers']);
+        }
+        if (!empty($filters['statuses'])) {
+            $query->whereIn('status', (array) $filters['statuses']);
+        }
+
+        if ($type === 'shipment' && !empty($filters['agents'])) {
+            $query->whereIn('agent_id', (array) $filters['agents']);
+        } elseif ($type === 'sourcing' && !empty($filters['agents'])) {
+            // Sourcing requests are handled by the shared sourcing desk and have no agent_id.
+            $query->whereRaw('1 = 0');
+        }
+    }
+
+    private function normaliseAnalyticsStatus(string $status, string $type): string
+    {
+        if ($type === 'sourcing') {
+            return match ($status) {
+                SourcingRequest::STATUS_SHIPPED => 'in_transit',
+                SourcingRequest::STATUS_COMPLETED => 'delivered',
+                SourcingRequest::STATUS_CANCELLED => 'returned',
+                default => 'pending',
+            };
+        }
+
+        return match ($status) {
+            Shipment::STATUS_PICKED_UP,
+            Shipment::STATUS_IN_TRANSIT,
+            Shipment::STATUS_OUT_FOR_DELIVERY => 'in_transit',
+            Shipment::STATUS_CONNECTED_TO_CARRIER,
+            Shipment::STATUS_DELIVERED => 'delivered',
+            Shipment::STATUS_FAILED,
+            Shipment::STATUS_RETURNED => 'returned',
+            default => 'pending',
+        };
+    }
+
+    private function analyticsDateKey($date, string $grouping): string
+    {
+        if ($grouping === 'monthly') {
+            return $date->format('Y-m');
+        }
+
+        if ($grouping === 'weekly') {
+            return $date->format('o-\\WW');
+        }
+
+        return $date->format('Y-m-d');
+    }
+
+    private function formatDestination(?string $city, ?string $country): string
+    {
+        $parts = array_values(array_filter([trim((string) $city), trim((string) $country)]));
+
+        return $parts ? implode(', ', array_unique($parts)) : 'Unknown destination';
+    }
+
+    private function countAnalyticsValues(Collection $records, callable $keyResolver, ?int $limit = null): array
+    {
+        $counts = [];
+        foreach ($records as $record) {
+            $key = (string) $keyResolver($record);
+            $counts[$key] = ($counts[$key] ?? 0) + 1;
+        }
+
+        arsort($counts);
+        if ($limit !== null) {
+            $counts = array_slice($counts, 0, $limit, true);
+        }
+
+        return $counts;
     }
 }

@@ -6,39 +6,48 @@ use App\Http\Controllers\Controller;
 use App\Models\SourcingRequest;
 use App\Models\SourcingInvoice;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class SourcingInvoiceController extends Controller
 {
     public function create(SourcingRequest $sourcingRequest)
     {
+        $sourcingRequest->load('items');
+
         return view('admin.sourcing.invoice-create', compact('sourcingRequest'));
     }
 
     public function store(Request $request, SourcingRequest $sourcingRequest)
     {
         $data = $request->validate([
-            'currency' => 'required|string|max:10',
-            'due_date' => 'nullable|date',
-            'notes' => 'nullable|string|max:2000',
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string|max:255',
-            'items.*.amount' => 'required|numeric|min:0',
+            'currency' => ['required', 'string', 'max:10'],
+            'due_date' => ['nullable', 'date'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+            'items' => ['required', 'array', 'min:1', 'max:30'],
+            'items.*.description' => ['required', 'string', 'max:255'],
+            'items.*.amount' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
         ]);
 
-        $totalAmount = 0;
-        $items = [];
-        foreach ($data['items'] as $item) {
-            $amount = (float) $item['amount'];
-            $totalAmount += $amount;
-            $items[] = [
-                'description' => $item['description'],
-                'amount' => $amount,
+        $items = collect($data['items'])->map(function (array $item) {
+            return [
+                'description' => trim($item['description']),
+                'amount' => round((float) $item['amount'], 2),
             ];
+        })->values()->all();
+
+        $totalAmount = round(collect($items)->sum(function (array $item) {
+            return (float) $item['amount'];
+        }), 2);
+
+        if ($totalAmount > 9999999999.99) {
+            throw ValidationException::withMessages([
+                'items' => 'The combined sourcing charges exceed the maximum invoice amount.',
+            ]);
         }
 
         $sourcingRequest->invoices()->create([
             'invoice_number' => SourcingInvoice::generateInvoiceNumber(),
-            'currency' => $data['currency'],
+            'currency' => strtoupper($data['currency']),
             'total_amount' => $totalAmount,
             'status' => 'unpaid',
             'due_date' => $data['due_date'] ?? null,
@@ -65,6 +74,8 @@ class SourcingInvoiceController extends Controller
 
     public function downloadPdf(SourcingInvoice $sourcingInvoice)
     {
+        $sourcingInvoice->load('sourcingRequest.items');
+
         $pdf = app('dompdf.wrapper')->loadView('sourcing.invoice-pdf', compact('sourcingInvoice'));
         return $pdf->stream($sourcingInvoice->invoice_number . '.pdf');
     }
