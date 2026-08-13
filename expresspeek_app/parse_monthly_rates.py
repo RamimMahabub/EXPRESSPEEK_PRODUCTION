@@ -840,20 +840,22 @@ def parse_fedex_rates(path):
             mode = 'non_document'
             previous_weight = None
             continue
-        if '10kg+' in first or '10 kg+' in first:
+            
+        band_match = re.match(r'^(\d{2,})(?:\s*-\s*\d+|\s*kg|\s*\+|k\+)', first.replace(' ', ''))
+        if band_match or ('10kg+' in first or '10 kg+' in first):
             mode = 'per_kg'
             previous_weight = None
-            continue
-
-        if mode == 'per_kg':
-            # Rows like '10-19', '20-29', '30-39', '40-49', '50-70', '71-100', '101kg+'
-            match = re.search(r'(\d+)', first)
-            if not match:
+            
+            # If this is just a section label with no data, skip to next row
+            if ('10kg+' in first or '10 kg+' in first) and (len(row) == 1 or not any(row[1:])):
                 continue
-            from_weight = float(match.group(1))
-            zones = row_to_zone_rates(row)
-            if zones:
-                per_kg_bands.append({'from_weight': from_weight, 'zones': zones})
+
+            match = re.search(r'^(\d+)', first)
+            if match:
+                from_weight = float(match.group(1))
+                zones = row_to_zone_rates(row)
+                if zones:
+                    per_kg_bands.append({'from_weight': from_weight, 'zones': zones})
             continue
 
         # Numeric weight slab row
@@ -896,7 +898,8 @@ def main():
     parser.add_argument('--ocs', help='Path to OCS Japan rate file')
     parser.add_argument('--tge', help='Path to TGE (Australia) rate file')
     parser.add_argument('--fedex-zone', help='Path to FedEx Bangladesh zone file')
-    parser.add_argument('--fedex-rates', help='Path to FedEx Bangladesh rate file')
+    parser.add_argument('--fedex-below10', help='Path to FedEx Bangladesh rate file (Up to 10kg)')
+    parser.add_argument('--fedex-above10', help='Path to FedEx Bangladesh rate file (10kg+)')
     args = parser.parse_args()
 
     dhl_rate_path = Path(args.dhl_rate or args.dhl) if (args.dhl_rate or args.dhl) else None
@@ -910,7 +913,8 @@ def main():
     ocs_path = Path(args.ocs) if args.ocs else None
     tge_path = Path(args.tge) if args.tge else None
     fedex_zone_path = Path(args.fedex_zone) if args.fedex_zone else None
-    fedex_rates_path = Path(args.fedex_rates) if args.fedex_rates else None
+    fedex_below10_path = Path(args.fedex_below10) if args.fedex_below10 else None
+    fedex_above10_path = Path(args.fedex_above10) if args.fedex_above10 else None
 
     if dhl_rate_path is not None and not dhl_rate_path.exists():
         raise FileNotFoundError(f'DHL rate file not found: {dhl_rate_path}')
@@ -932,7 +936,8 @@ def main():
         'ocs': parse_ocs(str(ocs_path)) if ocs_path else {'country_code': 'JP', 'country_name': 'Japan', 'rates': []},
         'tge': parse_tge(str(tge_path)) if tge_path else [],
         'fedex_zones': parse_fedex_zones(str(fedex_zone_path)) if fedex_zone_path else {'zones': [], 'total_zones': 0},
-        'fedex': parse_fedex_rates(str(fedex_rates_path)) if fedex_rates_path else {'document': [], 'non_document': [], 'per_kg_bands': []},
+        'fedex_below10': parse_fedex_rates(str(fedex_below10_path)) if fedex_below10_path else {'document': [], 'non_document': [], 'per_kg_bands': []},
+        'fedex_above10': parse_fedex_rates(str(fedex_above10_path)) if fedex_above10_path else {'document': [], 'non_document': [], 'per_kg_bands': []},
     }
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -944,9 +949,9 @@ def main():
     print(f"DHL zone mappings: {parsed['dhl_zones']['total_zones']}")
     print(f"Master entries: {parsed['master']['total_rates']}")
     print(f"FedEx zone mappings: {parsed['fedex_zones']['total_zones']}")
-    print(f"FedEx document slabs: {len(parsed['fedex']['document'])}")
-    print(f"FedEx non-document slabs: {len(parsed['fedex']['non_document'])}")
-    print(f"FedEx per-kg bands: {len(parsed['fedex']['per_kg_bands'])}")
+    print(f"FedEx below10 document slabs: {len(parsed['fedex_below10']['document'])}")
+    print(f"FedEx below10 non-document slabs: {len(parsed['fedex_below10']['non_document'])}")
+    print(f"FedEx above10 per-kg bands: {len(parsed['fedex_above10']['per_kg_bands'])}")
 
 
 if __name__ == '__main__':

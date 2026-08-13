@@ -13,7 +13,7 @@
                class="ap-button light">
                 Print Waybill
             </a>
-            <a href="{{ route('customer.shipments.invoice', $shipment) }}" target="_blank" class="ap-button light">Commercial Invoice</a>
+            <a href="{{ route('customer.shipments.invoice', $shipment) }}" target="_blank" class="ap-button light">{{ $shipment->shipment_purpose === 'Commercial' ? 'Commercial' : 'Proforma' }} Invoice</a>
             <a href="{{ route('customer.shipments.index') }}"
                class="ap-button ghost">
                 Back

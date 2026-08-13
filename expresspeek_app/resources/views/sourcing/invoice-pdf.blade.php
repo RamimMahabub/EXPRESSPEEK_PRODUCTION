@@ -179,7 +179,7 @@
         $sourcingRequest->destination_state,
         $sourcingRequest->destination_postal_code,
     ])->filter()->join(', ');
-    $trackingReference = $sourcingRequest->carrier_tracking_number ?: $sourcingRequest->tracking_number;
+    $trackingReference = str_replace(' ', '', $sourcingRequest->carrier_tracking_number ?: $sourcingRequest->tracking_number);
     $logoPath = resource_path('images/express-peek-logo-pdf.png');
     $logoDataUri = is_file($logoPath) && is_readable($logoPath)
         ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))

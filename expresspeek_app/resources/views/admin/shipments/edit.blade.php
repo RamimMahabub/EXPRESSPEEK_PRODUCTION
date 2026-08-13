@@ -55,21 +55,27 @@
             </div>
             <div class="flex gap-2">
                 @if($shipment->carrier_tracking_number || $shipment->status === 'connected_to_carrier')
-                    <a href="{{ route('admin.shipments.label', $shipment) }}" target="_blank"
+                    <a href="{{ route('admin.shipments.label', $shipment) }}"
+                        onclick="openPrintWindow(this.href); return false;"
                         class="text-xs bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-lg px-3 py-1.5 transition-colors">Print Label</a>
                 @endif
-                <a href="{{ route('admin.shipments.waybill', $shipment) }}" target="_blank"
+                <a href="{{ route('admin.shipments.waybill', $shipment) }}"
+                    onclick="openPrintWindow(this.href); return false;"
                     class="text-xs neon-button text-white rounded-lg px-3 py-1.5 transition-colors">Waybill</a>
-                <a href="{{ route('admin.shipments.invoice', $shipment) }}" target="_blank"
-                    class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3 py-1.5 transition-colors">Commercial Invoice</a>
-                @if($invoiceSystemReady)
-                    <a href="{{ route('admin.shipments.invoice.create', $shipment) }}"
-                        class="text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-3 py-1.5 transition-colors">Create Invoice</a>
-                @else
-                    <a href="{{ route('admin.system-update') }}"
-                        class="text-xs bg-amber-600 hover:bg-amber-500 text-white rounded-lg px-3 py-1.5 transition-colors">Enable Invoices</a>
-                @endif
+                <a href="{{ route('admin.shipments.invoice', $shipment) }}"
+                    onclick="openPrintWindow(this.href); return false;"
+                    class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3 py-1.5 transition-colors">{{ $shipment->shipment_purpose === 'Commercial' ? 'Commercial' : 'Proforma' }} Invoice</a>
+                <a href="{{ route('admin.shipments.invoice.create', $shipment) }}"
+                    class="text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-3 py-1.5 transition-colors">Create Invoice</a>
             </div>
+            <script>
+            function openPrintWindow(url) {
+                var w = 900, h = 700;
+                var left = Math.round((screen.width - w) / 2);
+                var top  = Math.round((screen.height - h) / 2);
+                window.open(url, '_blank', 'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes');
+            }
+            </script>
         </div>
     </div>
 

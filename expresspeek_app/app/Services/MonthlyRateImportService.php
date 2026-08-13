@@ -32,7 +32,8 @@ class MonthlyRateImportService
         ?string $ocsFilePath = null,
         ?string $tgeFilePath = null,
         ?string $fedexZoneFilePath = null,
-        ?string $fedexRatesFilePath = null
+        ?string $fedexBelow10FilePath = null,
+        ?string $fedexAbove10FilePath = null
     ): array
     {
         $parsed = $this->runParser([
@@ -46,10 +47,11 @@ class MonthlyRateImportService
             'ocs'           => $ocsFilePath,
             'tge'           => $tgeFilePath,
             'fedex_zone'    => $fedexZoneFilePath,
-            'fedex_rates'   => $fedexRatesFilePath,
+            'fedex_below10' => $fedexBelow10FilePath,
+            'fedex_above10' => $fedexAbove10FilePath,
         ]);
 
-        $summary = DB::transaction(function () use ($parsed, $dhlZoneFilePath, $ocsFilePath, $tgeFilePath, $fedexZoneFilePath, $fedexRatesFilePath) {
+        $summary = DB::transaction(function () use ($parsed, $dhlZoneFilePath, $ocsFilePath, $tgeFilePath, $fedexZoneFilePath, $fedexBelow10FilePath, $fedexAbove10FilePath) {
             $summary = $this->blankSummary();
 
             if ($dhlZoneFilePath !== null) {
@@ -78,8 +80,17 @@ class MonthlyRateImportService
             if ($fedexZoneFilePath !== null && !empty($parsed['fedex_zones']['zones'] ?? [])) {
                 $summary['fedex_zones'] = $this->importFedexZones($parsed['fedex_zones']);
             }
-            if ($fedexRatesFilePath !== null && (!empty($parsed['fedex']['document'] ?? []) || !empty($parsed['fedex']['non_document'] ?? []))) {
-                $summary['fedex'] = $this->importFedexRates($parsed['fedex']);
+            
+            $hasFedexBelow = isset($parsed['fedex_below10']) && (!empty($parsed['fedex_below10']['document']) || !empty($parsed['fedex_below10']['non_document']) || !empty($parsed['fedex_below10']['per_kg_bands']));
+            $hasFedexAbove = isset($parsed['fedex_above10']) && (!empty($parsed['fedex_above10']['document']) || !empty($parsed['fedex_above10']['non_document']) || !empty($parsed['fedex_above10']['per_kg_bands']));
+            
+            if ($hasFedexBelow || $hasFedexAbove) {
+                $fedexMerged = [
+                    'document' => array_merge($parsed['fedex_below10']['document'] ?? [], $parsed['fedex_above10']['document'] ?? []),
+                    'non_document' => array_merge($parsed['fedex_below10']['non_document'] ?? [], $parsed['fedex_above10']['non_document'] ?? []),
+                    'per_kg_bands' => array_merge($parsed['fedex_below10']['per_kg_bands'] ?? [], $parsed['fedex_above10']['per_kg_bands'] ?? []),
+                ];
+                $summary['fedex'] = $this->importFedexRates($fedexMerged);
             }
 
             Log::info('Monthly rate import (all carriers) completed.', ['summary' => $summary]);
@@ -245,21 +256,31 @@ class MonthlyRateImportService
     /**
      * Import FedEx Bangladesh rates (zones + rates) in isolation.
      */
-    public function importFedexCarrier(?string $fedexZoneFilePath, ?string $fedexRatesFilePath): array
+    public function importFedexCarrier(?string $fedexZoneFilePath, ?string $fedexBelow10FilePath, ?string $fedexAbove10FilePath): array
     {
         $parsed = $this->runParser([
-            'fedex_zone'  => $fedexZoneFilePath,
-            'fedex_rates' => $fedexRatesFilePath,
+            'fedex_zone'    => $fedexZoneFilePath,
+            'fedex_below10' => $fedexBelow10FilePath,
+            'fedex_above10' => $fedexAbove10FilePath,
         ]);
 
-        $summary = DB::transaction(function () use ($parsed, $fedexZoneFilePath, $fedexRatesFilePath) {
+        $summary = DB::transaction(function () use ($parsed, $fedexZoneFilePath, $fedexBelow10FilePath, $fedexAbove10FilePath) {
             $summary = $this->blankSummary();
 
             if ($fedexZoneFilePath !== null && !empty($parsed['fedex_zones']['zones'] ?? [])) {
                 $summary['fedex_zones'] = $this->importFedexZones($parsed['fedex_zones']);
             }
-            if ($fedexRatesFilePath !== null && (!empty($parsed['fedex']['document'] ?? []) || !empty($parsed['fedex']['non_document'] ?? []))) {
-                $summary['fedex'] = $this->importFedexRates($parsed['fedex']);
+            
+            $hasFedexBelow = isset($parsed['fedex_below10']) && (!empty($parsed['fedex_below10']['document']) || !empty($parsed['fedex_below10']['non_document']) || !empty($parsed['fedex_below10']['per_kg_bands']));
+            $hasFedexAbove = isset($parsed['fedex_above10']) && (!empty($parsed['fedex_above10']['document']) || !empty($parsed['fedex_above10']['non_document']) || !empty($parsed['fedex_above10']['per_kg_bands']));
+            
+            if ($hasFedexBelow || $hasFedexAbove) {
+                $fedexMerged = [
+                    'document' => array_merge($parsed['fedex_below10']['document'] ?? [], $parsed['fedex_above10']['document'] ?? []),
+                    'non_document' => array_merge($parsed['fedex_below10']['non_document'] ?? [], $parsed['fedex_above10']['non_document'] ?? []),
+                    'per_kg_bands' => array_merge($parsed['fedex_below10']['per_kg_bands'] ?? [], $parsed['fedex_above10']['per_kg_bands'] ?? []),
+                ];
+                $summary['fedex'] = $this->importFedexRates($fedexMerged);
             }
 
             Log::info('FedEx rate import completed.', ['summary' => $summary]);
@@ -310,7 +331,8 @@ class MonthlyRateImportService
             'ocs'            => '--ocs',
             'tge'            => '--tge',
             'fedex_zone'     => '--fedex-zone',
-            'fedex_rates'    => '--fedex-rates',
+            'fedex_below10'  => '--fedex-below10',
+            'fedex_above10'  => '--fedex-above10',
         ];
 
         $processArgs = [$pythonBinary, $scriptPath];
@@ -325,7 +347,12 @@ class MonthlyRateImportService
         $processArgs[] = '--output';
         $processArgs[] = $tempOutputPath;
 
-        $process = new Process($processArgs);
+        $env = $_SERVER;
+        if (empty($env['HOME'])) {
+            $env['HOME'] = getenv('HOME') ?: base_path();
+        }
+
+        $process = new Process($processArgs, null, $env);
         $process->setTimeout(120);
         $process->run();
 

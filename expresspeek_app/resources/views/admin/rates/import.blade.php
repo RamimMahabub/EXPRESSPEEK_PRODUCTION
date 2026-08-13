@@ -127,7 +127,8 @@
                 @csrf
                 <input type="hidden" name="carrier" value="fedex">
                 <x-rate-file-input id="fedex_zone_file" name="fedex_zone_file" label="Zone List (optional)" color="purple" />
-                <x-rate-file-input id="fedex_rates_file" name="fedex_rates_file" label="Rate File — Doc + Non-Doc + 10 kg+ (optional)" color="purple" />
+                <x-rate-file-input id="fedex_rates_below_10_file" name="fedex_rates_below_10_file" label="Rates Up to 10 kg (optional)" color="purple" />
+                <x-rate-file-input id="fedex_rates_above_10_file" name="fedex_rates_above_10_file" label="Rates 10 kg+ (optional)" color="purple" />
                 <x-import-button />
             </form>
         </div>

@@ -102,6 +102,7 @@ class PublicShipmentController extends Controller
 
             'shipment_type'          => 'required|in:document,non_document',
             'document_description'   => 'nullable|string|max:500',
+            'shipment_purpose'       => 'nullable|string|max:191',
             'items'                  => 'nullable|array',
             'items.*.name'           => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|string|max:191',
             'items.*.quantity'       => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|integer|min:1',

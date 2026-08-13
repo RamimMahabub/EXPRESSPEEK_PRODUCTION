@@ -353,9 +353,12 @@ class QuoteService
             });
 
             $rate = $zoneRates
-                ->filter(function (Rate $r) use ($weight): bool {
+                ->filter(function (Rate $r) use ($weight, $carrier): bool {
                     $slab = (float) $r->weight_slab;
                     if ($r->rate_type === 'per_kg' && in_array($slab, [5.0, 10.0, 15.0, 20.0, 21.0, 30.0, 31.0, 40.0, 50.0, 70.0], true)) {
+                        if ($this->isFedexBangladeshCarrier($carrier)) {
+                            return $slab <= $weight;
+                        }
                         return $slab < $weight;
                     }
                     return $slab <= $weight;
@@ -399,9 +402,12 @@ class QuoteService
         });
 
         $countryRate = $countryRates
-            ->filter(function (Rate $r) use ($weight): bool {
+            ->filter(function (Rate $r) use ($weight, $carrier): bool {
                 $slab = (float) $r->weight_slab;
                 if ($r->rate_type === 'per_kg' && in_array($slab, [5.0, 10.0, 15.0, 20.0, 21.0, 30.0, 31.0, 40.0, 50.0, 70.0], true)) {
+                    if ($this->isFedexBangladeshCarrier($carrier)) {
+                        return $slab <= $weight;
+                    }
                     return $slab < $weight;
                 }
                 return $slab <= $weight;

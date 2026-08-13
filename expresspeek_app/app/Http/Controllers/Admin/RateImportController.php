@@ -145,20 +145,25 @@ class RateImportController extends Controller
     private function storeFedex(Request $request): array
     {
         $request->validate([
-            'fedex_zone_file'  => ['nullable', 'file', 'mimes:xlsx'],
-            'fedex_rates_file' => ['nullable', 'file', 'mimes:xlsx'],
+            'fedex_zone_file'           => ['nullable', 'file', 'mimes:xlsx'],
+            'fedex_rates_below_10_file' => ['nullable', 'file', 'mimes:xlsx'],
+            'fedex_rates_above_10_file' => ['nullable', 'file', 'mimes:xlsx'],
         ]);
 
-        $fedexZonePath  = $request->hasFile('fedex_zone_file')
+        $fedexZonePath = $request->hasFile('fedex_zone_file')
             ? $request->file('fedex_zone_file')->storeAs('rate-import/uploads', 'fedex_zone_' . time() . '.xlsx')
             : null;
-        $fedexRatesPath = $request->hasFile('fedex_rates_file')
-            ? $request->file('fedex_rates_file')->storeAs('rate-import/uploads', 'fedex_rates_' . time() . '.xlsx')
+        $fedexBelow10Path = $request->hasFile('fedex_rates_below_10_file')
+            ? $request->file('fedex_rates_below_10_file')->storeAs('rate-import/uploads', 'fedex_rates_below_10_' . time() . '.xlsx')
+            : null;
+        $fedexAbove10Path = $request->hasFile('fedex_rates_above_10_file')
+            ? $request->file('fedex_rates_above_10_file')->storeAs('rate-import/uploads', 'fedex_rates_above_10_' . time() . '.xlsx')
             : null;
 
         return $this->rateImportService->importFedexCarrier(
-            $fedexZonePath  ? storage_path('app/private/' . $fedexZonePath)  : null,
-            $fedexRatesPath ? storage_path('app/private/' . $fedexRatesPath) : null
+            $fedexZonePath    ? storage_path('app/private/' . $fedexZonePath)    : null,
+            $fedexBelow10Path ? storage_path('app/private/' . $fedexBelow10Path) : null,
+            $fedexAbove10Path ? storage_path('app/private/' . $fedexAbove10Path) : null
         );
     }
 
@@ -175,7 +180,8 @@ class RateImportController extends Controller
             'ocs_file'                   => ['nullable', 'file', 'mimes:xlsx'],
             'tge_file'                   => ['nullable', 'file', 'mimes:xlsx'],
             'fedex_zone_file'            => ['nullable', 'file', 'mimes:xlsx'],
-            'fedex_rates_file'           => ['nullable', 'file', 'mimes:xlsx'],
+            'fedex_rates_below_10_file'  => ['nullable', 'file', 'mimes:xlsx'],
+            'fedex_rates_above_10_file'  => ['nullable', 'file', 'mimes:xlsx'],
         ]);
 
         $dhlPath      = $request->file('dhl_file')->storeAs('rate-import/uploads', 'dhl_' . time() . '.xlsx');
@@ -203,8 +209,11 @@ class RateImportController extends Controller
         $fedexZonePath     = $request->hasFile('fedex_zone_file')
             ? $request->file('fedex_zone_file')->storeAs('rate-import/uploads', 'fedex_zone_' . time() . '.xlsx')
             : null;
-        $fedexRatesPath    = $request->hasFile('fedex_rates_file')
-            ? $request->file('fedex_rates_file')->storeAs('rate-import/uploads', 'fedex_rates_' . time() . '.xlsx')
+        $fedexBelow10Path  = $request->hasFile('fedex_rates_below_10_file')
+            ? $request->file('fedex_rates_below_10_file')->storeAs('rate-import/uploads', 'fedex_rates_below_10_' . time() . '.xlsx')
+            : null;
+        $fedexAbove10Path  = $request->hasFile('fedex_rates_above_10_file')
+            ? $request->file('fedex_rates_above_10_file')->storeAs('rate-import/uploads', 'fedex_rates_above_10_' . time() . '.xlsx')
             : null;
 
         return $this->rateImportService->importFromExcelFiles(
@@ -218,7 +227,8 @@ class RateImportController extends Controller
             $ocsPath           ? storage_path('app/private/' . $ocsPath)           : null,
             $tgePath           ? storage_path('app/private/' . $tgePath)           : null,
             $fedexZonePath     ? storage_path('app/private/' . $fedexZonePath)     : null,
-            $fedexRatesPath    ? storage_path('app/private/' . $fedexRatesPath)    : null
+            $fedexBelow10Path  ? storage_path('app/private/' . $fedexBelow10Path)  : null,
+            $fedexAbove10Path  ? storage_path('app/private/' . $fedexAbove10Path)  : null
         );
     }
 }

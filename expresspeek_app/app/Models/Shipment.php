@@ -48,6 +48,7 @@ class Shipment extends Model
         // Shipment content
         'shipment_type',
         'document_description',
+        'shipment_purpose',
         'items',
         'packages',
         'total_packages',
