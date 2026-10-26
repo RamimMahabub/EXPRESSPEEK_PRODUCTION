@@ -8,7 +8,6 @@ use App\Models\Rate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
-use Symfony\Component\Process\Process;
 
 class MonthlyRateImportService
 {
@@ -335,29 +334,23 @@ class MonthlyRateImportService
             'fedex_above10'  => '--fedex-above10',
         ];
 
-        $processArgs = [$pythonBinary, $scriptPath];
+        $command = escapeshellarg($pythonBinary) . ' ' . escapeshellarg($scriptPath);
 
         foreach ($flagMap as $key => $flag) {
             if (!empty($files[$key])) {
-                $processArgs[] = $flag;
-                $processArgs[] = $files[$key];
+                $command .= ' ' . escapeshellarg($flag) . ' ' . escapeshellarg($files[$key]);
             }
         }
 
-        $processArgs[] = '--output';
-        $processArgs[] = $tempOutputPath;
+        $command .= ' --output ' . escapeshellarg($tempOutputPath);
 
-        $env = $_SERVER;
-        if (empty($env['HOME'])) {
-            $env['HOME'] = getenv('HOME') ?: base_path();
-        }
+        $output = [];
+        $returnCode = 0;
+        
+        exec($command . ' 2>&1', $output, $returnCode);
 
-        $process = new Process($processArgs, null, $env);
-        $process->setTimeout(120);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new RuntimeException('Excel parsing failed: ' . trim($process->getErrorOutput() ?: $process->getOutput()));
+        if ($returnCode !== 0) {
+            throw new RuntimeException('Excel parsing failed (Code: ' . $returnCode . '): ' . implode("\n", $output));
         }
 
         $parsed = json_decode((string) file_get_contents($tempOutputPath), true);
@@ -1597,11 +1590,11 @@ class MonthlyRateImportService
         ])));
 
         foreach ($candidates as $candidate) {
-            $process = new Process([$candidate, '--version']);
-            $process->setTimeout(10);
-            $process->run();
+            $output = [];
+            $returnCode = 0;
+            exec(escapeshellarg($candidate) . ' --version 2>&1', $output, $returnCode);
 
-            if ($process->isSuccessful()) {
+            if ($returnCode === 0) {
                 return $candidate;
             }
         }

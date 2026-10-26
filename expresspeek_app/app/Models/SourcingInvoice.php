@@ -18,6 +18,9 @@ class SourcingInvoice extends Model
         'due_date',
         'items',
         'notes',
+        'payment_method',
+        'transaction_id',
+        'proof_of_payment_path',
     ];
 
     protected $casts = [
@@ -43,6 +46,7 @@ class SourcingInvoice extends Model
     {
         return [
             'unpaid' => 'Unpaid',
+            'processing' => 'Processing',
             'paid'   => 'Paid',
             'cancelled' => 'Cancelled',
         ];

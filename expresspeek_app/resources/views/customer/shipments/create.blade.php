@@ -31,7 +31,7 @@
                 ['icon'=>'🚚','label'=>'Carrier'],
                 ['icon'=>'🧾','label'=>'Review & Print'],
             ] as $i => $step)
-            <div class="step-indicator relative z-10 flex flex-col items-center gap-2" data-step="{{ $i+1 }}">
+            <div class="step-indicator relative z-10 flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105" data-step="{{ $i+1 }}" onclick="goToStep({{ $i+1 }})">
                 <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300
                     {{ $i===0 ? 'bg-violet-600 border-violet-600 text-white' : 'bg-gray-900 border-gray-700 text-slate-400' }}">
                     <span class="step-number">{{ $i+1 }}</span>
@@ -97,41 +97,41 @@
             <div class="neon-card rounded-2xl p-6">
                 <h3 class="text-base font-semibold text-white mb-6">What are you shipping?</h3>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
                     <label class="shipment-type-card block cursor-pointer" for="type_document" data-shipment-type-card="document">
                         <input type="radio" id="type_document" name="shipment_type" value="document" class="sr-only" onchange="onShipmentTypeChange()">
-                        <div class="rounded-2xl p-6 transition-all duration-300" style="border: 2px solid #e2e8f0; cursor:pointer;" data-shipment-type-panel="document">
+                        <div class="rounded-2xl p-4 sm:p-6 transition-all duration-300" style="border: 2px solid #e2e8f0; cursor:pointer;" data-shipment-type-panel="document">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                                <div style="font-size:2.5rem; line-height:1;">📄</div>
+                                <div style="font-size:2rem; line-height:1;" class="sm:text-[2.5rem]">📄</div>
                                 <div style="width:22px; height:22px; border-radius:50%; border:2px solid #94a3b8; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0;" data-shipment-type-badge="document">
                                     <svg style="width:12px; height:12px; color:white; opacity:0; transition:opacity 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                                 </div>
                             </div>
-                            <h4 style="font-weight:600; font-size:1.1rem; margin-bottom:4px;" data-shipment-type-title="document">Document</h4>
-                            <p style="font-size:0.875rem; color:#94a3b8; margin:0;">Letters, contracts, certificates, papers</p>
-                            <p style="font-size:0.75rem; color:#a78bfa; margin-top:10px; display:none;" data-shipment-type-note="document">This shipment will be created as a document.</p>
+                            <h4 style="font-weight:600; font-size:1rem; margin-bottom:4px;" class="sm:text-[1.1rem]" data-shipment-type-title="document">Document</h4>
+                            <p style="font-size:0.75rem; color:#94a3b8; margin:0;" class="sm:text-[0.875rem]">Letters, contracts, certificates</p>
+                            <p style="font-size:0.7rem; color:#a78bfa; margin-top:10px; display:none;" data-shipment-type-note="document">Created as a document.</p>
                         </div>
                     </label>
                     <label class="shipment-type-card block cursor-pointer" for="type_non_document" data-shipment-type-card="non_document">
                         <input type="radio" id="type_non_document" name="shipment_type" value="non_document" class="sr-only" onchange="onShipmentTypeChange()" checked>
-                        <div class="rounded-2xl p-6 transition-all duration-300" style="border: 2px solid #e2e8f0; cursor:pointer;" data-shipment-type-panel="non_document">
+                        <div class="rounded-2xl p-4 sm:p-6 transition-all duration-300" style="border: 2px solid #e2e8f0; cursor:pointer;" data-shipment-type-panel="non_document">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                                <div style="font-size:2.5rem; line-height:1;">📦</div>
+                                <div style="font-size:2rem; line-height:1;" class="sm:text-[2.5rem]">📦</div>
                                 <div style="width:22px; height:22px; border-radius:50%; border:2px solid #94a3b8; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0;" data-shipment-type-badge="non_document">
                                     <svg style="width:12px; height:12px; color:white; opacity:0; transition:opacity 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                                 </div>
                             </div>
-                            <h4 style="font-weight:600; font-size:1.1rem; margin-bottom:4px;" data-shipment-type-title="non_document">Non-Document</h4>
-                            <p style="font-size:0.875rem; color:#94a3b8; margin:0;">Goods, merchandise, gifts, samples</p>
-                            <p style="font-size:0.75rem; color:#a78bfa; margin-top:10px; display:none;" data-shipment-type-note="non_document">This shipment will be created as a non-document parcel.</p>
+                            <h4 style="font-weight:600; font-size:1rem; margin-bottom:4px;" class="sm:text-[1.1rem]" data-shipment-type-title="non_document">Non-Document</h4>
+                            <p style="font-size:0.75rem; color:#94a3b8; margin:0;" class="sm:text-[0.875rem]">Goods, merchandise, gifts</p>
+                            <p style="font-size:0.7rem; color:#a78bfa; margin-top:10px; display:none;" data-shipment-type-note="non_document">Created as a parcel.</p>
                         </div>
                     </label>
                 </div>
 
-                {{-- Document description (optional) --}}
+                {{-- Document description (required) --}}
                 <div id="docDescSection" class="hidden mb-6">
-                    <label class="block text-sm font-medium text-slate-400 mb-2">Document Description <span class="text-slate-500">(optional)</span></label>
-                    <textarea name="document_description" rows="3" placeholder="E.g. Commercial Invoice, Legal Agreement..."
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Document Description <span class="text-red-400">*</span></label>
+                    <textarea name="document_description" rows="3" placeholder="E.g. Documents, Commercial Invoice, Legal Agreement..."
                         class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500 transition-colors"></textarea>
                 </div>
 
@@ -144,7 +144,8 @@
                                 <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                             </span>
                         </label>
-                        <select name="shipment_purpose" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-500 transition-colors appearance-none" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394A3B8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
+                        <select name="shipment_purpose" required class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-500 transition-colors appearance-none" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394A3B8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
+                            <option value="" disabled selected>Select purpose...</option>
                             <option value="Gift">Gift</option>
                             <option value="Commercial">Commercial</option>
                             <option value="Personal, Not for Resale">Personal, Not for Resale</option>
@@ -155,17 +156,126 @@
                         </select>
                     </div>
 
+                    <div class="mb-6" x-data="{ showRemarks: false }">
+                        <label class="flex items-center gap-2 cursor-pointer mb-2">
+                            <input type="checkbox" x-model="showRemarks" class="rounded border-gray-700 bg-gray-900 text-violet-600 focus:ring-violet-500">
+                            <span class="text-sm font-medium text-slate-400">Add Remarks <span class="text-slate-500">(optional)</span></span>
+                        </label>
+                        <div x-show="showRemarks" x-transition.opacity>
+                            <textarea name="remarks" rows="2" placeholder="e.g. SAMPLE OF NO COMMERCIAL VALUE, THIS VALUE CUSTOMS PURPOSE ONLY."
+                                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500 transition-colors"></textarea>
+                        </div>
+                    </div>
+
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-sm font-semibold text-white">Item Details</h4>
                     </div>
-                    <div id="itemsList" class="space-y-3">
-                        {{-- First item row --}}
+                    <div id="itemsListContainer" x-data="{
+                        items: [],
+                        editingId: null,
+                        init() {
+                            this.addItem(); // add first item
+                        },
+                        addItem() {
+                            const id = Date.now().toString();
+                            this.items.push({ id, name: '', quantity: '', value: '' });
+                            this.editingId = id;
+                        },
+                        editItem(id) {
+                            this.editingId = id;
+                        },
+                        removeItem(id) {
+                            if (this.items.length > 1) {
+                                this.items = this.items.filter(i => i.id !== id);
+                            }
+                        },
+                        copyItem(item) {
+                            const id = Date.now().toString();
+                            this.items.push({ id, name: item.name, quantity: item.quantity, value: item.value });
+                        },
+                        closeItem() {
+                            this.editingId = null;
+                        }
+                    }">
+                        <div class="space-y-3">
+                            <template x-for="(item, index) in items" :key="item.id">
+                                <div class="item-row rounded-xl border border-white/10 bg-gray-900/30 overflow-hidden transition-all shadow-sm">
+                                    
+                                    <!-- SUMMARY VIEW (Collapsed) -->
+                                    <div x-show="editingId !== item.id" class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                        <div class="flex-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-slate-300">
+                                            <div class="flex items-start gap-2 min-w-0">
+                                                <span class="font-bold text-slate-500 whitespace-nowrap" x-text="(index + 1) + '.'"></span>
+                                                <span class="font-semibold text-white truncate" x-text="item.name || 'Unnamed Item'"></span>
+                                            </div>
+                                            <div class="hidden sm:block w-px h-4 bg-gray-700"></div>
+                                            <div class="flex items-center gap-4 text-slate-400">
+                                                <span>Qty: <span class="font-mono text-white" x-text="item.quantity"></span></span>
+                                                <span>Value: <span class="font-mono text-white" x-text="item.value"></span> <span class="text-xs">USD</span></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center gap-2 self-start md:self-auto shrink-0">
+                                            <button type="button" @click="editItem(item.id)" class="text-xs font-semibold text-violet-400 hover:text-violet-300 bg-violet-400/10 hover:bg-violet-400/20 px-3 py-1.5 rounded-lg transition-colors">Edit</button>
+                                            <button type="button" @click="copyItem(item)" class="text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-400/10 hover:bg-blue-400/20 px-3 py-1.5 rounded-lg transition-colors">Copy</button>
+                                            <button type="button" x-show="items.length > 1" @click="removeItem(item.id)" class="text-xs font-semibold text-red-400 hover:text-red-300 bg-red-400/10 hover:bg-red-400/20 px-3 py-1.5 rounded-lg transition-colors">Remove</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- EDIT VIEW (Expanded) -->
+                                    <div x-show="editingId === item.id" x-transition.opacity class="p-5 bg-gray-800/50 border-l-2 border-violet-500">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                                <span class="w-6 h-6 rounded-full bg-violet-600/30 text-violet-400 flex items-center justify-center text-xs" x-text="index + 1"></span>
+                                                Item Description
+                                            </h4>
+                                        </div>
+
+                                        <div class="grid grid-cols-12 gap-4">
+                                            <div class="col-span-12 md:col-span-6">
+                                                <label class="mb-1.5 block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">What is the item?</label>
+                                                <input type="text" data-field="name" :name="'items['+index+'][name]'" x-model="item.name" placeholder="E.g. RICE SKIN CARE CREAM GEL" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all">
+                                            </div>
+                                            <div class="col-span-12 sm:col-span-6 md:col-span-3">
+                                                <label class="mb-1.5 block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Quantity</label>
+                                                <input type="number" data-field="quantity" min="1" :name="'items['+index+'][quantity]'" x-model="item.quantity" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all">
+                                            </div>
+                                            <div class="col-span-12 sm:col-span-6 md:col-span-3">
+                                                <label class="mb-1.5 block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Value (Per Item) USD</label>
+                                                <input type="number" data-field="value_per_item" min="0" step="0.01" :name="'items['+index+'][value_per_item]'" x-model="item.value" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all">
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-5 flex items-center justify-between border-t border-gray-700 pt-4">
+                                            <button type="button" x-show="items.length > 1" @click="removeItem(item.id)" class="text-xs font-semibold text-red-400 hover:text-red-300 flex items-center gap-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                Remove Item
+                                            </button>
+                                            <div x-show="items.length <= 1"></div>
+
+                                            <button type="button" @click="closeItem()" class="text-sm font-bold text-white bg-violet-600 hover:bg-violet-500 px-5 py-2 rounded-xl transition-colors shadow-lg shadow-violet-500/20">
+                                                Save Item Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- HIDDEN INPUTS FOR FORM SUBMISSION WHEN COLLAPSED -->
+                                    <div x-show="editingId !== item.id">
+                                        <input type="hidden" data-field="name-hidden" :name="'items['+index+'][name]'" :value="item.name">
+                                        <input type="hidden" data-field="quantity-hidden" :name="'items['+index+'][quantity]'" :value="item.quantity">
+                                        <input type="hidden" data-field="value_per_item-hidden" :name="'items['+index+'][value_per_item]'" :value="item.value">
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="mt-4 flex justify-end border-t border-white/10 pt-4">
+                            <button type="button" @click="addItem()" class="flex items-center gap-2 text-sm font-bold text-violet-300 hover:text-violet-200 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 rounded-xl px-5 py-2.5 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                Add Another Item
+                            </button>
+                        </div>
                     </div>
-                    <button type="button" onclick="addItem()"
-                        class="mt-4 flex items-center gap-2 text-sm text-violet-400 hover:text-violet-300 border border-violet-600/40 hover:border-violet-500 rounded-xl px-4 py-2.5 transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        Add Another Item
-                    </button>
                 </div>
             </div>
         </div>
@@ -499,7 +609,12 @@ function useAddressBookEntry(id) {
     setValue('name', entry.name);
     setValue('company', entry.company);
     setValue('country', entry.country_name || '');
-    setValue('country_code', entry.country_code || '');
+    let cCode = entry.country_code || '';
+    if (!cCode && entry.country_name && typeof window !== 'undefined' && window.COUNTRIES) {
+        const found = window.COUNTRIES.find(c => c.name.toLowerCase() === entry.country_name.toLowerCase().trim());
+        if (found) cCode = found.code;
+    }
+    setValue('country_code', cCode);
     setValue('address', entry.address);
     setValue('address2', entry.address2);
     setValue('address3', entry.address3);
@@ -528,6 +643,59 @@ function useAddressBookEntry(id) {
 // ============================================================
 // WIZARD NAVIGATION
 // ============================================================
+let draftShipmentId = null;
+
+function autoSaveDraft() {
+    // Only save draft if they've at least filled something (like Sender Name) or we are past step 1.
+    // We will just post the current form
+    const form = document.getElementById('createShipmentForm');
+    const fd = new FormData(form);
+    
+    if (draftShipmentId) {
+        fd.set('shipment_id', draftShipmentId);
+    }
+    
+    // Add receiver_country_code from hidden field
+    const rcc = document.querySelector('[name="receiver_country_code"]')?.value;
+    if (rcc) fd.set('receiver_country_code', rcc);
+
+    fetch('{{ $guestMode ? route("shipment.draft.store", [], false) : route("customer.shipments.draft.store", [], false) }}', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'X-CSRF-TOKEN': getCSRF(),
+            'Accept': 'application/json'
+        },
+        body: fd,
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success && data.shipment_id) {
+            draftShipmentId = data.shipment_id;
+        }
+    })
+    .catch(err => console.error('Draft auto-save failed', err));
+}
+
+function goToStep(targetStep) {
+    if (targetStep === currentStep) return;
+    
+    if (targetStep > currentStep) {
+        for (let s = currentStep; s < targetStep; s++) {
+            if (!validateStep(s)) return;
+        }
+    }
+    
+    if (targetStep >= 4 && currentStep < 4) {
+        loadCarriers();
+    }
+    
+    autoSaveDraft();
+    currentStep = targetStep;
+    showStep(currentStep);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function showStep(step) {
     document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('hidden'));
     document.querySelector(`.wizard-step[data-step="${step}"]`).classList.remove('hidden');
@@ -589,6 +757,7 @@ function nextStep() {
         loadCarriers();
     }
 
+    autoSaveDraft();
     currentStep++;
     showStep(currentStep);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -596,6 +765,7 @@ function nextStep() {
 
 function prevStep() {
     if (currentStep > 1) {
+        autoSaveDraft();
         currentStep--;
         showStep(currentStep);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -607,9 +777,9 @@ function resetWizard() {
     document.getElementById('createShipmentForm').reset();
     createdShipment = null;
     // Reset items & packages
-    document.getElementById('itemsList').innerHTML = '';
+    // document.getElementById('itemsList').innerHTML = ''; // handled by alpine
     document.getElementById('packagesList').innerHTML = '';
-    addItem();
+    packageCount = 0; // reset counter
     addPackage();
     showStep(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -620,8 +790,8 @@ function resetWizard() {
 // ============================================================
 function validateStep(step) {
     if (step === 1) {
-        const required = ['sender_name','sender_country','sender_address','sender_city',
-                          'receiver_name','receiver_country','receiver_address','receiver_city'];
+        const required = ['sender_name','sender_country','sender_address','sender_city','sender_phone',
+                          'receiver_name','receiver_country','receiver_address','receiver_city','receiver_phone'];
         for (const f of required) {
             const el = document.querySelector(`[name="${f}"]`);
             if (!el || !el.value.trim()) {
@@ -634,13 +804,39 @@ function validateStep(step) {
     if (step === 2) {
         const type = document.querySelector('[name="shipment_type"]:checked');
         if (!type) { alert('Please select a shipment type.'); return false; }
+        if (type.value === 'document') {
+            const docDesc = document.querySelector('[name="document_description"]');
+            if (!docDesc || !docDesc.value.trim()) {
+                docDesc && docDesc.focus();
+                showFieldError(docDesc, 'Document description is required');
+                return false;
+            }
+        }
         if (type.value === 'non_document') {
+            const purpose = document.querySelector('[name="shipment_purpose"]');
+            if (!purpose || !purpose.value.trim()) {
+                purpose && purpose.focus();
+                showFieldError(purpose, 'Shipment purpose is required');
+                return false;
+            }
             const rows = document.querySelectorAll('.item-row');
             for (const row of rows) {
                 const name = row.querySelector('[data-field="name"]');
                 if (!name || !name.value.trim()) {
                     name && name.focus();
                     showFieldError(name, 'Item name is required');
+                    return false;
+                }
+                const quantity = row.querySelector('[data-field="quantity"]');
+                if (!quantity || !quantity.value.trim() || quantity.value <= 0) {
+                    quantity && quantity.focus();
+                    showFieldError(quantity, 'Quantity is required');
+                    return false;
+                }
+                const value = row.querySelector('[data-field="value_per_item"]');
+                if (!value || !value.value.trim() || value.value <= 0) {
+                    value && value.focus();
+                    showFieldError(value, 'Value is required');
                     return false;
                 }
             }
@@ -757,62 +953,8 @@ function updateShipmentTypeSelectionStyles() {
 }
 
 // ============================================================
-// ITEMS (Step 2 - Non Document)
+// ITEMS (Step 2 - Non Document) handled by Alpine.js
 // ============================================================
-let itemCount = 0;
-
-function addItem(data = {}) {
-    itemCount++;
-    const idx = itemCount;
-    const row = document.createElement('div');
-    row.className = 'item-row bg-gray-800/50 border border-gray-700/50 rounded-xl p-4';
-    row.dataset.idx = idx;
-    row.innerHTML = `
-        <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Item ${idx}</span>
-            <div class="flex gap-2">
-                <button type="button" onclick="copyItem(${idx})" class="text-xs text-blue-400 hover:text-blue-300 border border-blue-600/30 rounded-lg px-2.5 py-1 transition-all">Copy</button>
-                <button type="button" onclick="removeItem(this)" class="text-xs text-red-400 hover:text-red-300 border border-red-600/30 rounded-lg px-2.5 py-1 transition-all">Remove</button>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="sm:col-span-1">
-                <label class="block text-xs text-slate-400 mb-1">Item Name *</label>
-                <input type="text" name="items[${idx}][name]" data-field="name" value="${data.name||''}"
-                    placeholder="e.g. Cotton Shirt"
-                    class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500">
-            </div>
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">Quantity *</label>
-                <input type="number" name="items[${idx}][quantity]" data-field="quantity" value="${data.quantity||1}" min="1"
-                    class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500">
-            </div>
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">Value per Item (USD) *</label>
-                <input type="number" name="items[${idx}][value_per_item]" data-field="value_per_item" value="${data.value_per_item||''}" min="0" step="0.01"
-                    placeholder="0.00"
-                    class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500">
-            </div>
-        </div>`;
-    document.getElementById('itemsList').appendChild(row);
-}
-
-function removeItem(btn) {
-    const rows = document.querySelectorAll('.item-row');
-    if (rows.length <= 1) { alert('At least one item is required.'); return; }
-    btn.closest('.item-row').remove();
-}
-
-function copyItem(idx) {
-    const row = document.querySelector(`.item-row[data-idx="${idx}"]`);
-    if (!row) return;
-    const data = {
-        name: row.querySelector('[data-field="name"]').value,
-        quantity: row.querySelector('[data-field="quantity"]').value,
-        value_per_item: row.querySelector('[data-field="value_per_item"]').value,
-    };
-    addItem(data);
-}
 
 // ============================================================
 // PACKAGES (Step 3)
@@ -1002,7 +1144,16 @@ function hydrateWizardFromQuery() {
 
 function loadCarriers() {
     const country = document.querySelector('[name="receiver_country"]')?.value || '';
-    const code    = document.querySelector('[name="receiver_country_code"]')?.value || '';
+    let code    = document.querySelector('[name="receiver_country_code"]')?.value || '';
+    
+    if (!code && country && typeof window !== 'undefined' && window.COUNTRIES) {
+        const found = window.COUNTRIES.find(c => c.name.toLowerCase() === country.toLowerCase().trim());
+        if (found) {
+            code = found.code;
+            const codeInput = document.querySelector('[name="receiver_country_code"]');
+            if (codeInput) codeInput.value = code;
+        }
+    }
     const shipmentType = document.querySelector('[name="shipment_type"]:checked')?.value || 'non_document';
     const totalWeight = parseFloat(document.getElementById('totalWeightDisplay')?.textContent || '0') || 0;
     selectedCarrierId = document.getElementById('selectedCarrierId')?.value || '';
@@ -1042,7 +1193,7 @@ function loadCarriers() {
                                 <svg style="width: 10px; height: 10px; color: white; opacity: ${String(selectedCarrierId) === String(c.id) ? '1' : '0'}; transition: opacity 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                             </div>
                             <div style="min-width: 0;">
-                            <h4 style="font-weight: 600; font-size: 0.875rem; color: ${String(selectedCarrierId) === String(c.id) ? '#7c3aed' : '#334155'}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" data-carrier-title="${c.id}">${c.name}</h4>
+                            <h4 style="font-weight: 600; font-size: 0.875rem; color: ${String(selectedCarrierId) === String(c.id) ? '#7c3aed' : '#334155'}; white-space: normal; word-break: break-word;" data-carrier-title="${c.id}">${c.name}</h4>
                             <p style="font-size: 0.6875rem; color: #a78bfa; margin-top: 4px; display: ${String(selectedCarrierId) === String(c.id) ? 'block' : 'none'};" data-carrier-selected-text="${c.id}">This carrier is selected</p>
                         </div>
                         <span style="flex-shrink: 0; font-size: 0.75rem; border-radius: 0.5rem; padding: 4px 8px; font-weight: 500; ${String(selectedCarrierId) === String(c.id) ? 'background-color: rgba(139,92,246,0.15); color: #8b5cf6;' : 'background-color: #f1f5f9; color: #64748b'};" data-carrier-currency="${c.id}">${c.currency}</span>
@@ -1130,20 +1281,37 @@ function submitShipment() {
     const rcc = document.querySelector('[name="receiver_country_code"]')?.value;
     if (rcc) fd.set('receiver_country_code', rcc);
 
+    if (draftShipmentId) {
+        fd.set('shipment_id', draftShipmentId);
+    }
+
     currentStep = 5;
     showStep(5);
     document.getElementById('reviewLoading').classList.remove('hidden');
     document.getElementById('reviewContent').classList.add('hidden');
 
-    fetch('{{ $guestMode ? route("shipment.store", [], false) : route("customer.shipments.store", [], false) }}', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-            'X-CSRF-TOKEN': getCSRF(),
-            'Accept': 'application/json'
-        },
-        body: fd,
-    })
+    // Refresh CSRF token before submission to avoid 419 Page Expired on long-lived sessions
+    fetch('/csrf-token')
+        .then(r => r.json())
+        .then(data => {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta) meta.setAttribute('content', data.token);
+            const input = document.querySelector('[name="_token"]');
+            if (input) input.value = data.token;
+            return data.token;
+        })
+        .catch(e => getCSRF()) // fallback to existing token
+        .then(token => {
+            return fetch('{{ $guestMode ? route("shipment.store", [], false) : route("customer.shipments.store", [], false) }}', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json'
+                },
+                body: fd,
+            });
+        })
     .then(r => {
         if (!r.ok) return r.json().then(e => Promise.reject(e));
         return r.json();
@@ -1162,7 +1330,7 @@ function submitShipment() {
             } else {
                 waybillBtn.classList.add('hidden');
             }
-            if (data.invoice_url) {
+            if (data.invoice_url && fd.get('shipment_type') !== 'document') {
                 invoiceBtn.href = data.invoice_url;
                 invoiceBtn.classList.remove('hidden');
             } else {
@@ -1326,7 +1494,6 @@ function showToast(msg) {
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
     showStep(1);
-    addItem();
     addPackage();
     hydrateWizardFromQuery();
     // Initial type state

@@ -1,435 +1,259 @@
 @extends('layouts.operations-dashboard')
 
-@section('title', 'Freight Invoice - ' . $shipment->tracking_number)
-@section('page-title', 'Create Freight Invoice')
-@section('page-subtitle', 'Prepare a customer freight receipt for shipment ' . $shipment->tracking_number)
+@section('title', 'Shipment Receipt - ' . $shipment->tracking_number)
+@section('page-title', 'Create Shipment Receipt')
+@section('page-subtitle', 'Prepare a shipment receipt for ' . $shipment->tracking_number)
 
 @section('content')
 @php
     $baseFreight = (float) old('base_freight', 0);
-    $otherCharges = old('other_charges', []);
-    $otherChargesForJs = collect($otherCharges)->values()->map(fn ($charge, $index) => [
+    $otherChargesForJs = collect(old('other_charges', []))->values()->map(fn ($charge, $index) => [
         'id' => 'other-charge-' . $index,
         'description' => $charge['description'] ?? '',
         'amount' => (float) ($charge['amount'] ?? 0),
     ])->all();
-
-    $receiverLocality = collect([
-        $shipment->receiver_city,
-        $shipment->receiver_state,
-        $shipment->receiver_postal_code,
-    ])->filter()->join(', ');
-    $senderLocality = collect([
-        $shipment->sender_city,
-        $shipment->sender_state,
-        $shipment->sender_postal_code,
-    ])->filter()->join(', ');
+    $packages = collect($shipment->packages ?? []);
+    $goods = collect($shipment->items ?? []);
+    $isDocument = $shipment->shipment_type === 'document';
+    $chargeableWeight = (float) ($shipment->total_weight ?: $shipment->weight);
+    $actualWeight = $packages->isNotEmpty()
+        ? $packages->sum(fn ($package) => (float) ($package['actual_weight'] ?? $package['weight'] ?? 0) * max(1, (int) ($package['quantity'] ?? 1)))
+        : $chargeableWeight;
+    $hasDimensions = $packages->contains(fn ($package) => isset($package['volumetric_weight'])
+        || (!empty($package['length']) && !empty($package['width']) && !empty($package['height'])));
+    $dimensionalWeight = $packages->sum(fn ($package) => (float) ($package['volumetric_weight']
+        ?? (($package['length'] ?? 0) * ($package['width'] ?? 0) * ($package['height'] ?? 0) / \App\Support\PackageWeightCalculator::DIVISOR))
+        * max(1, (int) ($package['quantity'] ?? 1)));
+    $declaredValue = $goods->sum(fn ($item) => (float) ($item['value_per_item'] ?? 0) * (int) ($item['quantity'] ?? 1));
+    $senderLocality = collect([$shipment->sender_city, $shipment->sender_state, $shipment->sender_postal_code])->filter()->join(', ');
+    $receiverLocality = collect([$shipment->receiver_city, $shipment->receiver_state, $shipment->receiver_postal_code])->filter()->join(', ');
 @endphp
 
-<div class="freight-page">
-    <a href="{{ route('admin.shipments.edit', $shipment) }}" class="freight-back">
-        <span aria-hidden="true">‹</span> Back to shipment
-    </a>
+<div class="receipt-create">
+    <a href="{{ route('admin.shipments.edit', $shipment) }}" class="receipt-back">&lsaquo; Back to shipment</a>
 
     @if($errors->any())
-        <div class="freight-errors" role="alert">
-            <strong>Correct the following before generating the invoice:</strong>
+        <div class="receipt-errors" role="alert">
+            <strong>Correct the following before generating the receipt:</strong>
             <ul>
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
+                @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
             </ul>
         </div>
     @endif
 
-    <form
-        action="{{ route('admin.shipments.invoice.store', $shipment) }}"
-        method="POST"
-        class="freight-document"
-        x-data="shipmentInvoiceCharges"
-    >
+    <form action="{{ route('admin.shipments.invoice.store', $shipment) }}" method="POST" x-data="shipmentInvoiceCharges">
         @csrf
-
-        <header class="freight-document-head">
-            <div class="freight-company">
-                <img src="/images/express-peek-logo.svg" alt="Express Peek">
+        <article class="receipt-sheet" aria-label="Shipment receipt creation preview">
+            <header class="receipt-header">
+                <img src="/images/express-peek-logo.webp" alt="Express Peek" width="168" height="47">
                 <div>
-                    <strong>EXPRESS PEEK</strong>
-                    <span>International courier and freight services</span>
+                    <h1>Shipment Receipt</h1>
+                    <p class="receipt-meta">Draft &nbsp; | &nbsp; {{ now()->format('Y-m-d') }}</p>
                 </div>
-            </div>
-            <div class="freight-document-title">
-                <p>Freight Invoice</p>
-                <span>Shipment receipt / customer copy</span>
-            </div>
-        </header>
+            </header>
 
-        <section class="freight-reference-grid" aria-label="Invoice references">
-            <div><span>Tracking number</span><strong>{{ $shipment->tracking_number }}</strong></div>
-            <div><span>Carrier</span><strong>{{ $shipment->carrier_name ?: 'Not assigned' }}</strong></div>
-            <div><span>Pieces</span><strong>{{ $shipment->total_packages ?: 1 }}</strong></div>
-            <div><span>Chargeable weight</span><strong>{{ number_format((float) ($shipment->total_weight ?: $shipment->weight), 2) }} kg</strong></div>
-        </section>
-
-        <section class="freight-parties">
-            <div class="freight-party">
-                <h2>Shipper / From</h2>
-                <strong>{{ $shipment->sender_name ?: 'Not provided' }}</strong>
-                @if($shipment->sender_company)<p>{{ $shipment->sender_company }}</p>@endif
-                <p>{{ $shipment->sender_address }}</p>
-                @if($shipment->sender_address2)<p>{{ $shipment->sender_address2 }}</p>@endif
-                <p>{{ $senderLocality }}</p>
-                <p>{{ $shipment->sender_country }}</p>
-                @if($shipment->sender_phone)<p>Tel: {{ $shipment->sender_phone_code }}{{ $shipment->sender_phone }}</p>@endif
-            </div>
-            <div class="freight-party">
-                <h2>Consignee / Bill To</h2>
-                <strong>{{ $shipment->receiver_name ?: 'Not provided' }}</strong>
-                @if($shipment->receiver_company)<p>{{ $shipment->receiver_company }}</p>@endif
-                <p>{{ $shipment->receiver_address }}</p>
-                @if($shipment->receiver_address2)<p>{{ $shipment->receiver_address2 }}</p>@endif
-                <p>{{ $receiverLocality }}</p>
-                <p>{{ $shipment->receiver_country }}</p>
-                @if($shipment->receiver_phone)<p>Tel: {{ $shipment->receiver_phone_code }}{{ $shipment->receiver_phone }}</p>@endif
-            </div>
-        </section>
-
-        <section class="freight-settings">
-            <div class="freight-field">
-                <label for="invoice_currency">Currency</label>
-                <select id="invoice_currency" name="currency" x-model="currency">
-                    @foreach(['BDT','USD','GBP','EUR','AUD','AED','SGD','CAD'] as $currency)
-                        <option value="{{ $currency }}" @selected(old('currency', 'BDT') === $currency)>{{ $currency }}</option>
+            <section class="receipt-parties receipt-columns" aria-label="Sender and receiver">
+                <div>
+                    <h2>Shipment From</h2>
+                    <p>{{ $shipment->sender_name }}</p>
+                    @if($shipment->sender_company)<p>{{ $shipment->sender_company }}</p>@endif
+                    @foreach([$shipment->sender_address, $shipment->sender_address2, $shipment->sender_address3, $senderLocality, $shipment->sender_country] as $line)
+                        @if($line)<p>{{ $line }}</p>@endif
                     @endforeach
-                </select>
-            </div>
-            <div class="freight-field">
-                <label for="invoice_due_date">Payment due date <span>(optional)</span></label>
-                <input id="invoice_due_date" type="date" name="due_date" value="{{ old('due_date') }}">
-            </div>
-        </section>
-
-        <section class="freight-charges">
-            <div class="freight-section-head">
-                <div>
-                    <h2>Freight and service charges</h2>
-                    <p>Enter the agreed transportation price and any additional service fees.</p>
+                    @if($shipment->sender_phone)<p>{{ $shipment->sender_phone_code }}{{ $shipment->sender_phone }}</p>@endif
+                    @if($shipment->sender_email)<p class="receipt-email">{{ $shipment->sender_email }}</p>@endif
                 </div>
-                <button type="button" class="freight-add" @click="addCharge()">+ Add charge</button>
+                <div>
+                    <h2>Shipment To</h2>
+                    <p>{{ $shipment->receiver_name }}</p>
+                    @if($shipment->receiver_company)<p>{{ $shipment->receiver_company }}</p>@endif
+                    @foreach([$shipment->receiver_address, $shipment->receiver_address2, $shipment->receiver_address3, $receiverLocality, $shipment->receiver_country] as $line)
+                        @if($line)<p>{{ $line }}</p>@endif
+                    @endforeach
+                    @if($shipment->receiver_phone)<p>{{ $shipment->receiver_phone_code }}{{ $shipment->receiver_phone }}</p>@endif
+                    @if($shipment->receiver_email)<p class="receipt-email">{{ $shipment->receiver_email }}</p>@endif
+                </div>
+            </section>
+
+            <div class="receipt-columns receipt-information">
+                <section>
+                    <h2>Shipment Details</h2>
+                    <dl class="receipt-details">
+                        <dt>Shipment Date:</dt><dd>{{ $shipment->created_at?->format('Y-m-d') ?? '' }}</dd>
+                        <dt>Waybill Number:</dt><dd>{{ $shipment->carrier_tracking_number ?: $shipment->tracking_number }}</dd>
+                        <dt>Tracking Number:</dt><dd>{{ $shipment->tracking_number }}</dd>
+                        <dt>Service Type:</dt><dd>{{ $shipment->carrier_name }}</dd>
+                        <dt>Packaging Type:</dt><dd>{{ $isDocument ? 'Documents' : 'Parcel (Non-Document)' }}</dd>
+                        <dt>Number of Pieces:</dt><dd>{{ $shipment->total_packages ?: max(1, $packages->sum(fn ($package) => max(1, (int) ($package['quantity'] ?? 1)))) }}</dd>
+                        <dt>Total Weight:</dt><dd>{{ number_format($actualWeight, 2) }} kg</dd>
+                        <dt>Dimensional:</dt><dd>{{ $hasDimensions ? number_format($dimensionalWeight, 2) . ' kg' : '' }}</dd>
+                        <dt>Chargeable:</dt><dd>{{ number_format($chargeableWeight, 2) }} kg</dd>
+                    </dl>
+                </section>
+                <section>
+                    <h2>International Information</h2>
+                    <dl class="receipt-details">
+                        <dt>Declared Value:</dt><dd>{{ !$isDocument && $goods->isNotEmpty() ? number_format($declaredValue, 2) . ' USD' : '' }}</dd>
+                        <dt>Shipment Purpose:</dt><dd>{{ $shipment->shipment_purpose ?? '' }}</dd>
+                        <dt>Destination:</dt><dd>{{ $shipment->receiver_country }}</dd>
+                        <dt>Estimated Del date:</dt><dd>{{ $shipment->estimated_delivery?->format('l, d M, Y') ?? '' }}</dd>
+                        <dt>Remarks:</dt><dd class="receipt-remarks">{{ $shipment->remarks ?? '' }}</dd>
+                    </dl>
+                </section>
             </div>
 
-            <div class="freight-table-wrap">
-                <table class="freight-charge-table">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th class="freight-amount-heading">Amount</th>
-                            <th class="freight-action-heading">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <strong>Base Freight</strong>
-                                <span>Main transport charge</span>
-                            </td>
-                            <td class="freight-amount-cell">
-                                <div class="freight-money">
-                                    <span x-text="currency"></span>
-                                    <input
-                                        id="base_freight"
-                                        type="number"
-                                        name="base_freight"
-                                        x-model.number="baseFreight"
-                                        step="0.01"
-                                        min="0"
-                                        max="9999999999.99"
-                                        placeholder="0.00"
-                                        aria-label="Base freight amount"
-                                        required
-                                    >
-                                </div>
-                            </td>
-                            <td></td>
-                        </tr>
-                        <template x-for="(charge, index) in otherCharges" :key="charge.id">
+            <div class="receipt-columns receipt-billing">
+                <section>
+                    <h2>Billing Information</h2>
+                    <dl class="receipt-details receipt-billing-fields">
+                        <dt>Courier:</dt><dd>{{ $shipment->carrier_name }}</dd>
+                        <dt>Receipt Number:</dt><dd class="receipt-muted">Draft</dd>
+                        <dt><label for="invoice_currency">Currency:</label></dt>
+                        <dd>
+                            <select id="invoice_currency" name="currency" x-model="currency">
+                                @foreach(['BDT','USD','GBP','EUR','AUD','AED','SGD','CAD'] as $currency)
+                                    <option value="{{ $currency }}" @selected(old('currency', 'BDT') === $currency)>{{ $currency }}</option>
+                                @endforeach
+                            </select>
+                        </dd>
+                        <dt>Payment Status:</dt><dd>Unpaid</dd>
+                        <dt><label for="invoice_due_date">Payment Due:</label><small>Optional</small></dt>
+                        <dd><input id="invoice_due_date" type="date" name="due_date" value="{{ old('due_date') }}" aria-label="Payment due date (optional)"></dd>
+                    </dl>
+                </section>
+                <section class="receipt-charge-section">
+                    <h2>Charge Breakdown</h2>
+                    <table class="receipt-charges">
+                        <thead><tr><th>Service / description</th><th class="receipt-amount">Amount (<span x-text="currency">{{ old('currency', 'BDT') }}</span>)</th><th class="receipt-remove-column"><span class="receipt-sr-only">Action</span></th></tr></thead>
+                        <tbody>
                             <tr>
-                                <td>
-                                    <input
-                                        type="text"
-                                        :name="`other_charges[${index}][description]`"
-                                        x-model="charge.description"
-                                        placeholder="Fuel surcharge, handling, insurance..."
-                                        aria-label="Other charge description"
-                                        required
-                                    >
-                                </td>
-                                <td class="freight-amount-cell">
-                                    <div class="freight-money">
-                                        <span x-text="currency"></span>
-                                        <input
-                                            type="number"
-                                            :name="`other_charges[${index}][amount]`"
-                                            x-model.number="charge.amount"
-                                            step="0.01"
-                                            min="0"
-                                            max="9999999999.99"
-                                            placeholder="0.00"
-                                            aria-label="Other charge amount"
-                                            required
-                                        >
-                                    </div>
-                                </td>
-                                <td class="freight-action-cell">
-                                    <button type="button" @click="removeCharge(charge.id)" aria-label="Remove charge">Remove</button>
-                                </td>
+                                <td><label for="base_freight">Base Freight</label></td>
+                                <td class="receipt-amount"><input id="base_freight" type="number" name="base_freight" x-model.number="baseFreight" value="{{ $baseFreight }}" min="0" max="9999999999.99" step="0.01" placeholder="0.00" aria-label="Base freight amount" required></td>
+                                <td></td>
                             </tr>
-                        </template>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="2">
-                                <span>Total payable</span>
-                                <strong><span x-text="currency"></span> <span x-text="totalFormatted()"></span></strong>
-                            </td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                            <tr x-show="otherCharges.length" x-cloak><td colspan="3" class="receipt-services-title">Special Services</td></tr>
+                            <template x-for="(charge, index) in otherCharges" :key="charge.id">
+                                <tr>
+                                    <td><input type="text" :name="`other_charges[${index}][description]`" x-model="charge.description" maxlength="255" placeholder="Service name" aria-label="Other charge description" required></td>
+                                    <td class="receipt-amount"><input type="number" :name="`other_charges[${index}][amount]`" x-model.number="charge.amount" min="0" max="9999999999.99" step="0.01" placeholder="0.00" aria-label="Other charge amount" required></td>
+                                    <td class="receipt-remove-column"><button type="button" class="receipt-remove" @click="removeCharge(charge.id)" aria-label="Remove charge">&times;</button></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                        <tfoot>
+                            <tr><th>Total (<span x-text="currency">{{ old('currency', 'BDT') }}</span>)</th><td class="receipt-amount"><output aria-live="polite" x-text="totalFormatted()">{{ number_format($baseFreight, 2) }}</output></td><td></td></tr>
+                        </tfoot>
+                    </table>
+                    <button type="button" class="receipt-add" @click="addCharge()" :disabled="otherCharges.length >= 20">+ Add special service</button>
+                </section>
             </div>
-        </section>
 
-        <section class="freight-notes">
-            <label for="invoice_notes">Payment instructions / customer notes</label>
-            <textarea id="invoice_notes" name="notes" rows="4" placeholder="Payment instructions or other notes">{{ old('notes', 'Please deposit the total amount to our bank account or via bKash. Contact us on WhatsApp if you have any questions.') }}</textarea>
-        </section>
+            <section class="receipt-reference">
+                <h2>Reference Information</h2>
+                <dl class="receipt-details"><dt>Reference:</dt><dd>{{ $shipment->invoice_number ?? '' }}</dd></dl>
+            </section>
 
-        <footer class="freight-form-footer">
-            <p>The generated PDF will be saved with this shipment and made available to the customer.</p>
-            <div>
-                <a href="{{ route('admin.shipments.edit', $shipment) }}">Cancel</a>
-                <button type="submit">Generate freight invoice</button>
-            </div>
+            <section class="receipt-contents">
+                <h2>Description of Contents</h2>
+                @if($isDocument)
+                    <p>{{ $shipment->document_description ?? '' }}</p>
+                @else
+                    @foreach($goods as $item)
+                        <p>{{ $item['name'] ?? $item['description'] ?? '' }}{{ isset($item['quantity']) ? ' - ' . $item['quantity'] . ' pcs' : '' }}</p>
+                    @endforeach
+                @endif
+            </section>
+
+            <section class="receipt-notes">
+                <label for="invoice_notes">Payment instructions / notes <small>(optional)</small></label>
+                <textarea id="invoice_notes" name="notes" rows="3" maxlength="2000" placeholder="Add payment instructions or a note">{{ old('notes') }}</textarea>
+            </section>
+
+            <div class="receipt-paper-footer"><span>Express Peek | Shipment Receipt</span><span>{{ $shipment->tracking_number }}</span></div>
+        </article>
+
+        <footer class="receipt-actions">
+            <p>Review the receipt details and charges before generating.</p>
+            <div><a href="{{ route('admin.shipments.edit', $shipment) }}">Cancel</a><button type="submit">Generate shipment receipt</button></div>
         </footer>
     </form>
 </div>
 
 @push('styles')
 <style>
-    .freight-page {
-        width: min(1160px, 100%);
-        margin: 0 auto;
-        color: #172033;
-    }
-    .freight-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        margin: 0 0 18px;
-        color: #52627a;
-        font-size: 14px;
-        font-weight: 650;
-        text-decoration: none;
-    }
-    .freight-back span { font-size: 24px; line-height: 14px; }
-    .freight-back:hover { color: #153b75; }
-    .freight-errors {
-        margin-bottom: 16px;
-        padding: 14px 16px;
-        border: 1px solid #d9a2a2;
-        border-left: 4px solid #a52a2a;
-        background: #fff7f7;
-        color: #7a2020;
-        font-size: 13px;
-    }
-    .freight-errors ul { margin: 7px 0 0 18px; }
-    .freight-document {
-        overflow: hidden;
-        border: 1px solid #cbd3df;
-        border-top: 5px solid #123e78;
-        border-radius: 3px;
-        background: #fff;
-        box-shadow: 0 8px 22px rgba(31, 45, 68, .08);
-    }
-    .freight-document-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 32px;
-        padding: 24px 28px 20px;
-        border-bottom: 1px solid #cbd3df;
-    }
-    .freight-company { display: flex; align-items: center; gap: 14px; }
-    .freight-company img { display: block; width: 150px; height: auto; }
-    .freight-company div { padding-left: 14px; border-left: 1px solid #cbd3df; }
-    .freight-company strong { display: block; color: #123e78; font-size: 15px; letter-spacing: .06em; }
-    .freight-company span { display: block; margin-top: 3px; color: #68758a; font-size: 11px; }
-    .freight-document-title { text-align: right; }
-    .freight-document-title p {
-        margin: 0;
-        color: #172033;
-        font-family: Arial, sans-serif;
-        font-size: 26px;
-        font-weight: 800;
-        letter-spacing: .035em;
-        text-transform: uppercase;
-    }
-    .freight-document-title span { display: block; margin-top: 4px; color: #68758a; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
-    .freight-reference-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        border-bottom: 1px solid #cbd3df;
-        background: #f4f6f9;
-    }
-    .freight-reference-grid div { min-width: 0; padding: 12px 18px; border-right: 1px solid #cbd3df; }
-    .freight-reference-grid div:last-child { border-right: 0; }
-    .freight-reference-grid span, .freight-reference-grid strong { display: block; }
-    .freight-reference-grid span { color: #69768a; font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
-    .freight-reference-grid strong { overflow: hidden; margin-top: 4px; color: #172033; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-    .freight-parties { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #cbd3df; }
-    .freight-party { min-height: 164px; padding: 20px 28px; }
-    .freight-party + .freight-party { border-left: 1px solid #cbd3df; }
-    .freight-party h2, .freight-section-head h2 {
-        margin: 0 0 10px;
-        color: #123e78;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: .075em;
-        text-transform: uppercase;
-    }
-    .freight-party strong { display: block; margin-bottom: 5px; color: #172033; font-size: 14px; }
-    .freight-party p { min-height: 1px; margin: 2px 0; color: #556277; font-size: 12px; line-height: 1.4; }
-    .freight-settings {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 18px;
-        padding: 18px 28px;
-        border-bottom: 1px solid #cbd3df;
-        background: #fafbfc;
-    }
-    .freight-field label, .freight-notes label {
-        display: block;
-        margin-bottom: 6px;
-        color: #38465a;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: .035em;
-        text-transform: uppercase;
-    }
-    .freight-field label span { color: #7c8798; font-weight: 500; text-transform: none; }
-    .freight-field select, .freight-field input, .freight-notes textarea,
-    .freight-charge-table input {
-        width: 100%;
-        border: 1px solid #aeb9c8;
-        border-radius: 2px;
-        background: #fff;
-        color: #172033;
-        font: inherit;
-        outline: none;
-        box-shadow: none;
-    }
-    .freight-field select, .freight-field input { height: 40px; padding: 0 11px; font-size: 13px; }
-    .freight-field select:focus, .freight-field input:focus, .freight-notes textarea:focus,
-    .freight-charge-table input:focus { border-color: #245b9f; box-shadow: 0 0 0 2px rgba(36, 91, 159, .12); }
-    .freight-charges { padding: 22px 28px 26px; border-bottom: 1px solid #cbd3df; }
-    .freight-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 12px; }
-    .freight-section-head h2 { margin-bottom: 3px; }
-    .freight-section-head p { margin: 0; color: #69768a; font-size: 12px; }
-    .freight-add {
-        flex: 0 0 auto;
-        padding: 8px 12px;
-        border: 1px solid #7e8b9e;
-        border-radius: 2px;
-        background: #fff;
-        color: #24364e;
-        font-size: 12px;
-        font-weight: 750;
-        cursor: pointer;
-    }
-    .freight-add:hover { border-color: #123e78; color: #123e78; background: #f4f7fb; }
-    .freight-table-wrap { overflow-x: auto; border: 1px solid #aeb9c8; }
-    .freight-charge-table { width: 100%; min-width: 650px; border-collapse: collapse; table-layout: fixed; }
-    .freight-charge-table th {
-        padding: 9px 12px;
-        border-bottom: 1px solid #7f8b9b;
-        background: #e9edf2;
-        color: #354257;
-        font-size: 10px;
-        font-weight: 800;
-        letter-spacing: .055em;
-        text-align: left;
-        text-transform: uppercase;
-    }
-    .freight-charge-table td { padding: 10px 12px; border-bottom: 1px solid #d6dce5; vertical-align: middle; }
-    .freight-charge-table tbody tr:last-child td { border-bottom: 0; }
-    .freight-charge-table td > strong { display: block; color: #172033; font-size: 13px; }
-    .freight-charge-table td > span { display: block; margin-top: 2px; color: #748095; font-size: 11px; }
-    .freight-amount-heading, .freight-amount-cell { width: 260px; }
-    .freight-action-heading, .freight-action-cell { width: 90px; text-align: center !important; }
-    .freight-charge-table input { height: 38px; padding: 0 10px; font-size: 13px; }
-    .freight-money { display: flex; align-items: stretch; }
-    .freight-money > span {
-        display: flex;
-        min-width: 48px;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #aeb9c8;
-        border-right: 0;
-        background: #f2f4f7;
-        color: #4d5a6e;
-        font-size: 10px;
-        font-weight: 800;
-    }
-    .freight-money input { border-radius: 0 2px 2px 0; text-align: right; }
-    .freight-action-cell button {
-        border: 0;
-        background: transparent;
-        color: #a12626;
-        font-size: 11px;
-        font-weight: 700;
-        text-decoration: underline;
-        cursor: pointer;
-    }
-    .freight-charge-table tfoot td { padding: 13px 12px; border-top: 2px solid #526174; background: #f4f6f9; text-align: right; }
-    .freight-charge-table tfoot span { display: inline; color: #536176; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
-    .freight-charge-table tfoot strong { display: inline-block; min-width: 190px; margin-left: 26px; color: #172033; font-size: 19px; }
-    .freight-notes { padding: 20px 28px; border-bottom: 1px solid #cbd3df; }
-    .freight-notes textarea { min-height: 88px; padding: 10px 11px; resize: vertical; font-size: 12px; line-height: 1.5; }
-    .freight-form-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        padding: 18px 28px;
-        background: #f4f6f9;
-    }
-    .freight-form-footer p { margin: 0; color: #68758a; font-size: 11px; }
-    .freight-form-footer div { display: flex; align-items: center; gap: 10px; }
-    .freight-form-footer a { padding: 10px 14px; color: #526176; font-size: 12px; font-weight: 700; text-decoration: none; }
-    .freight-form-footer button {
-        padding: 10px 18px;
-        border: 1px solid #0d3262;
-        border-radius: 2px;
-        background: #123e78;
-        color: #fff;
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: .025em;
-        cursor: pointer;
-        text-transform: uppercase;
-    }
-    .freight-form-footer button:hover { background: #0d3262; }
-    @media (max-width: 760px) {
-        .freight-document-head, .freight-section-head, .freight-form-footer { align-items: flex-start; flex-direction: column; }
-        .freight-document-title { text-align: left; }
-        .freight-reference-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .freight-reference-grid div:nth-child(2) { border-right: 0; }
-        .freight-reference-grid div:nth-child(-n+2) { border-bottom: 1px solid #cbd3df; }
-        .freight-parties, .freight-settings { grid-template-columns: 1fr; }
-        .freight-party + .freight-party { border-top: 1px solid #cbd3df; border-left: 0; }
-        .freight-company div { display: none; }
-        .freight-company img { width: 135px; }
-        .freight-form-footer div { width: 100%; justify-content: flex-end; }
+    .receipt-create { width:min(920px,100%); margin:0 auto; color:#111; }
+    .receipt-create [x-cloak] { display:none!important; }
+    .receipt-create .receipt-back { display:inline-block; margin-bottom:16px; color:#526176; font-size:13px; text-decoration:none; }
+    .receipt-create .receipt-errors { padding:16px 20px; margin-bottom:18px; border:1px solid #e2b3b3; background:#fff7f7; color:#8b2525; font-size:13px; }
+    .receipt-create .receipt-errors ul { margin:8px 0 0; padding-left:20px; }
+    .receipt-create .receipt-sheet { padding:32px 38px 22px; border:1px solid #e1e3e7; background:#fff; box-shadow:0 6px 24px #1720330a; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.45; }
+    .receipt-create .receipt-sheet p { margin:0; color:#111; font-size:inherit; line-height:inherit; }
+    .receipt-create .receipt-sheet h1 { margin:0; color:#111; font-family:inherit; font-size:30px; font-weight:700; letter-spacing:0; line-height:1.2; text-transform:none; }
+    .receipt-create .receipt-sheet h2 { margin:0 0 17px; color:#111; font-family:inherit; font-size:19px; font-weight:700; letter-spacing:0; line-height:1.25; text-transform:none; }
+    .receipt-create .receipt-header { display:flex; align-items:center; justify-content:space-between; gap:24px; padding-bottom:16px; border-bottom:1px solid #aaa; }
+    .receipt-create .receipt-header img { width:168px; height:auto; max-width:30%; object-fit:contain; }
+    .receipt-create .receipt-header > div { text-align:right; }
+    .receipt-create .receipt-header .receipt-meta { margin-top:10px; color:#666; font-size:10px; }
+    .receipt-create .receipt-columns { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:42px; padding-inline:14px; }
+    .receipt-create .receipt-columns > * { min-width:0; }
+    .receipt-create .receipt-parties { min-height:235px; padding-top:25px; padding-bottom:26px; border-bottom:1px solid #bbb; }
+    .receipt-create .receipt-parties p { overflow-wrap:anywhere; }
+    .receipt-create .receipt-parties .receipt-email { margin-top:12px; }
+    .receipt-create .receipt-information { margin-top:28px; }
+    .receipt-create .receipt-details { display:grid; grid-template-columns:minmax(0,46%) minmax(0,54%); gap:7px 0; margin:0; align-items:start; }
+    .receipt-create .receipt-details dt { min-width:0; margin:0; padding-right:12px; color:#111; font-weight:400; }
+    .receipt-create .receipt-details dd { min-width:0; min-height:17px; margin:0; color:#111; overflow-wrap:anywhere; }
+    .receipt-create .receipt-details small { display:block; color:#777; font-size:10px; }
+    .receipt-create .receipt-remarks { white-space:pre-line; }
+    .receipt-create .receipt-billing { margin-top:32px; }
+    .receipt-create .receipt-billing-fields { align-items:center; }
+    .receipt-create .receipt-muted { color:#777!important; }
+    .receipt-create .receipt-sheet input, .receipt-create .receipt-sheet select, .receipt-create .receipt-sheet textarea { display:block; width:100%; min-width:0; max-width:100%; margin:0; border:1px solid #d2d6dc; border-radius:3px; background:#fff; color:#111; font:inherit; box-shadow:none; }
+    .receipt-create .receipt-sheet input, .receipt-create .receipt-sheet select { height:33px; padding:5px 7px; font-size:12px; }
+    .receipt-create .receipt-sheet select { padding-right:24px; }
+    .receipt-create .receipt-sheet input:focus, .receipt-create .receipt-sheet select:focus, .receipt-create .receipt-sheet textarea:focus { outline:2px solid #c8d5ef; outline-offset:1px; border-color:#627da8; }
+    .receipt-create .receipt-charges { width:100%; border-collapse:collapse; table-layout:fixed; color:#111; font-size:12px; }
+    .receipt-create .receipt-charges th { padding:0 0 9px; border-bottom:1px solid #aaa; background:transparent; color:#111; font-size:10px; font-weight:700; letter-spacing:0; text-align:left; text-transform:none; }
+    .receipt-create .receipt-charges td { padding:9px 0; border-bottom:1px solid #e4e4e4; vertical-align:middle; }
+    .receipt-create .receipt-charges td:first-child { padding-right:10px; }
+    .receipt-create .receipt-charges .receipt-amount { width:118px; text-align:right; }
+    .receipt-create .receipt-charges .receipt-remove-column { width:24px; text-align:right; }
+    .receipt-create .receipt-charges .receipt-services-title { padding-top:13px; font-weight:700; }
+    .receipt-create .receipt-charges input[type=number] { text-align:right; appearance:textfield; -moz-appearance:textfield; }
+    .receipt-create .receipt-charges input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
+    .receipt-create .receipt-charges tfoot th, .receipt-create .receipt-charges tfoot td { padding-top:12px; border-top:1px solid #777; border-bottom:0; color:#111; font-size:12px; font-weight:700; }
+    .receipt-create .receipt-remove { padding:3px; border:0; background:transparent; color:#a22; font-size:19px; cursor:pointer; }
+    .receipt-create .receipt-add { display:block; margin-top:12px; padding:5px 0; border:0; background:transparent; color:#294d81; font:inherit; font-size:12px; font-weight:600; cursor:pointer; }
+    .receipt-create .receipt-add:hover { text-decoration:underline; }
+    .receipt-create .receipt-add:disabled { color:#888; cursor:default; }
+    .receipt-create .receipt-reference { margin:38px 14px 0; }
+    .receipt-create .receipt-reference .receipt-details { grid-template-columns:25% 75%; }
+    .receipt-create .receipt-contents { margin:32px 14px 0; }
+    .receipt-create .receipt-contents p { margin-bottom:4px; overflow-wrap:anywhere; }
+    .receipt-create .receipt-notes { margin:24px 14px 0; }
+    .receipt-create .receipt-notes label { display:block; margin-bottom:8px; color:#111; font-size:12px; font-weight:700; text-transform:none; }
+    .receipt-create .receipt-notes small { color:#777; font-size:11px; font-weight:400; }
+    .receipt-create .receipt-notes textarea { padding:9px; resize:vertical; line-height:1.5; }
+    .receipt-create .receipt-paper-footer { display:flex; justify-content:space-between; gap:20px; margin-top:36px; padding-top:9px; border-top:1px solid #e2e2e2; color:#666; font-size:10px; }
+    .receipt-create .receipt-actions { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:20px 0; }
+    .receipt-create .receipt-actions p { margin:0; color:#69768a; font-size:12px; }
+    .receipt-create .receipt-actions > div { display:flex; align-items:center; gap:16px; }
+    .receipt-create .receipt-actions a { color:#526176; font-size:13px; text-decoration:none; }
+    .receipt-create .receipt-actions button { padding:11px 18px; border:1px solid #123e78; border-radius:5px; background:#123e78; color:#fff; font-size:13px; font-weight:700; cursor:pointer; }
+    .receipt-create .receipt-actions button:hover { background:#0d3262; }
+    .receipt-create .receipt-sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(max-width:700px) {
+        .receipt-create .receipt-sheet { padding:22px 18px 18px; }
+        .receipt-create .receipt-header { gap:12px; }
+        .receipt-create .receipt-header img { width:130px; max-width:35%; }
+        .receipt-create .receipt-sheet h1 { font-size:23px; }
+        .receipt-create .receipt-sheet h2 { font-size:18px; }
+        .receipt-create .receipt-columns { grid-template-columns:minmax(0,1fr); row-gap:26px; padding-inline:0; }
+        .receipt-create .receipt-parties { min-height:0; }
+        .receipt-create .receipt-details { grid-template-columns:46% 54%; }
+        .receipt-create .receipt-reference, .receipt-create .receipt-contents, .receipt-create .receipt-notes { margin-left:0; margin-right:0; }
+        .receipt-create .receipt-actions { flex-direction:column; align-items:stretch; }
+        .receipt-create .receipt-actions > div { justify-content:flex-end; }
     }
 </style>
 @endpush
@@ -442,6 +266,7 @@ document.addEventListener('alpine:init', () => {
         baseFreight: @json($baseFreight),
         otherCharges: @json($otherChargesForJs),
         addCharge() {
+            if (this.otherCharges.length >= 20) return;
             this.otherCharges.push({
                 id: `other-charge-${Date.now()}-${Math.random()}`,
                 description: '',

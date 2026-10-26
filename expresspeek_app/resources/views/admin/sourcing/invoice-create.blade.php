@@ -43,7 +43,7 @@
 
 <div class="freight-page">
     <a href="{{ route('admin.sourcing-requests.show', $sourcingRequest) }}" class="freight-back">
-        <span aria-hidden="true">&larr;</span> Back to sourcing request
+        <span aria-hidden="true">&larr;</span> Back to Shop From Bangladesh
     </a>
 
     @if($errors->any())
@@ -113,6 +113,12 @@
                 <strong>{{ $sourcingRequest->customer_name ?: 'Not provided' }}</strong>
                 @if($sourcingRequest->destination_address)
                     <p>{{ $sourcingRequest->destination_address }}</p>
+                    @if($sourcingRequest->destination_address2)
+                        <p>{{ $sourcingRequest->destination_address2 }}</p>
+                    @endif
+                    @if($sourcingRequest->destination_address3)
+                        <p>{{ $sourcingRequest->destination_address3 }}</p>
+                    @endif
                 @endif
                 @if($destinationLocality)
                     <p>{{ $destinationLocality }}</p>

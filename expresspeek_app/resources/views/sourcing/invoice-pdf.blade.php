@@ -248,6 +248,12 @@
             <div class="party-name">{{ $sourcingRequest->customer_name ?: 'Not provided' }}</div>
             @if($sourcingRequest->destination_address)
                 <p class="party-line">{{ $sourcingRequest->destination_address }}</p>
+                @if($sourcingRequest->destination_address2)
+                    <p class="party-line">{{ $sourcingRequest->destination_address2 }}</p>
+                @endif
+                @if($sourcingRequest->destination_address3)
+                    <p class="party-line">{{ $sourcingRequest->destination_address3 }}</p>
+                @endif
             @endif
             @if($destinationLocality)
                 <p class="party-line">{{ $destinationLocality }}</p>
@@ -261,7 +267,7 @@
 </table>
 
 <table class="particulars">
-    <tr class="section-heading"><th colspan="5">Sourcing request particulars</th></tr>
+    <tr class="section-heading"><th colspan="5">Shop From Bangladesh particulars</th></tr>
     <tr>
         <td>
             <span class="field-label">Destination</span>

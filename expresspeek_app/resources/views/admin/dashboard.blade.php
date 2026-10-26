@@ -30,7 +30,7 @@
         <a class="ops-action" href="{{ route('admin.shipments.create') }}"><span class="ops-action-icon purple"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><strong>Create Shipment</strong><small>Start a new delivery</small></a>
         <a class="ops-action" href="{{ route('admin.shipments.index') }}"><span class="ops-action-icon blue"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4"/></svg></span><strong>Manage Shipments</strong><small>View the full queue</small></a>
         <a class="ops-action" href="{{ route('admin.users.index') }}"><span class="ops-action-icon green"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 4a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5"/></svg></span><strong>Manage Users</strong><small>Customers and agents</small></a>
-        <a class="ops-action" href="{{ route('admin.sourcing-requests.index') }}"><span class="ops-action-icon orange"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><strong>Sourcing Requests</strong><small>{{ $newSourcingCount }} awaiting review</small></a>
+        <a class="ops-action" href="{{ route('admin.sourcing-requests.index') }}"><span class="ops-action-icon orange"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><strong>Shop From Bangladesh</strong><small>{{ $newSourcingCount }} awaiting review</small></a>
     </div>
 </section>
 
@@ -80,20 +80,20 @@
             <a class="ops-quick" href="{{ route('admin.address-book.page') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg>Address Book</a>
             <a class="ops-quick" href="{{ route('admin.rates.import.create') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 14v6h16v-6"/></svg>Rate Upload</a>
             <a class="ops-quick" href="{{ route('admin.dashboard') }}#track"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>Track Shipment</a>
-            <a class="ops-quick" href="{{ route('quote') }}" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M9 11h6M9 15h6"/></svg>Get Quote</a>
+            <a class="ops-quick" href="{{ route('quote') }}" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M9 11h6M9 15h6"/></svg>Get Check Delivery Cost</a>
             <a class="ops-quick" href="{{ route('admin.sourcing-requests.index') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/></svg>Sourcing</a>
             <a class="ops-quick" href="{{ route('profile.edit') }}"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>My Profile</a>
         </div></article>
     </aside>
 </section>
 
-<x-dashboard-tracking-search :action="route('admin.dashboard')" :tracking-number="$trackingNumber" />
+<x-dashboard-tracking-search 
+    :action="route('admin.dashboard')" 
+    :tracking-number="$trackingNumber" 
+    :shipment="$trackedShipment" 
+    :error="$trackingError" 
+    :lookup-unavailable="$trackingLookupUnavailable" 
+/>
 
-@if($trackingNumber !== '' || $trackingError)
-    @include('components.dashboard-tracking-result', [
-        'shipment' => $trackedShipment,
-        'error' => $trackingError,
-        'lookupUnavailable' => $trackingLookupUnavailable,
-    ])
-@endif
+
 @endsection

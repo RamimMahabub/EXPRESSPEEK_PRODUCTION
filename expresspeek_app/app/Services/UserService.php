@@ -15,6 +15,8 @@ class UserService
     {
         $user = User::create([
             'name' => $data['name'],
+            'is_business' => $data['is_business'] ?? false,
+            'company_name' => $data['company_name'] ?? null,
             'email' => $data['email'],
             'phone_country_code' => $data['phone_country_code'],
             'phone' => $data['phone'],
@@ -31,7 +33,11 @@ class UserService
      */
     public function getUsersByRole(string $role, int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return User::with('roles')->role($role)->latest()->paginate($perPage);
+        return User::with('roles')
+            ->role($role)
+            ->where('email', 'not like', '%@expresspeek.local')
+            ->latest()
+            ->paginate($perPage);
     }
 
     /**
@@ -39,11 +45,13 @@ class UserService
      */
     public function getUserStats(): array
     {
+        $query = User::where('email', 'not like', '%@expresspeek.local');
+        
         return [
-            'total' => User::count(),
-            'admins' => User::role('admin')->count(),
-            'customers' => User::role('customer')->count(),
-            'agents' => User::role('agent')->count(),
+            'total' => (clone $query)->count(),
+            'admins' => (clone $query)->role('admin')->count(),
+            'customers' => (clone $query)->role('customer')->count(),
+            'agents' => (clone $query)->role('agent')->count(),
         ];
     }
 

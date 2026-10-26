@@ -32,13 +32,19 @@ Route::middleware(['auth', 'verified', 'role:customer'])
         })->name('shipments.index');
 
         // Sourcing Requests
-        Route::get('/sourcing-requests', function () {
-            $sourcingRequests = \App\Models\SourcingRequest::with(['items', 'invoices'])->where('user_id', auth()->id())->latest()->paginate(15);
-            return view('customer.sourcing-requests.index', compact('sourcingRequests'));
-        })->name('sourcing-requests.index');
+        Route::get('/sourcing-requests', [\App\Http\Controllers\Customer\SourcingRequestController::class, 'index'])->name('sourcing-requests.index');
+        Route::get('/sourcing-requests/create', [\App\Http\Controllers\Customer\SourcingRequestController::class, 'create'])->name('sourcing-requests.create');
+        Route::post('/sourcing-requests', [\App\Http\Controllers\Customer\SourcingRequestController::class, 'store'])->name('sourcing-requests.store');
+        Route::get('/sourcing-requests/{sourcingRequest}', [\App\Http\Controllers\Customer\SourcingRequestController::class, 'show'])->name('sourcing-requests.show');
+        Route::get('/sourcing-requests/{sourcingRequest}/edit', [\App\Http\Controllers\Customer\SourcingRequestController::class, 'edit'])->name('sourcing-requests.edit');
+        Route::put('/sourcing-requests/{sourcingRequest}', [\App\Http\Controllers\Customer\SourcingRequestController::class, 'update'])->name('sourcing-requests.update');
+        Route::post('/sourcing-requests/draft', [\App\Http\Controllers\Customer\SourcingRequestController::class, 'saveDraft'])->name('sourcing-requests.draft.store');
+        Route::delete('/sourcing-requests/{sourcingRequest}', [\App\Http\Controllers\Customer\SourcingRequestController::class, 'destroy'])->name('sourcing-requests.destroy');
 
         Route::get('/shipments/create', [\App\Http\Controllers\Customer\ShipmentController::class, 'create'])->name('shipments.create');
         Route::post('/shipments', [\App\Http\Controllers\Customer\ShipmentController::class, 'store'])->name('shipments.store');
+        Route::post('/shipments/draft', [\App\Http\Controllers\Customer\ShipmentController::class, 'saveDraft'])->name('shipments.draft.store');
+        Route::delete('/shipments/{shipment}', [\App\Http\Controllers\Customer\ShipmentController::class, 'destroy'])->name('shipments.destroy');
         Route::get('/api/carriers', [\App\Http\Controllers\Customer\ShipmentController::class, 'getCarriers'])->name('carriers.api.index');
 
         Route::get('/shipments/{shipment}', function (\App\Models\Shipment $shipment) {
@@ -61,4 +67,6 @@ Route::middleware(['auth', 'verified', 'role:customer'])
 
         // Sourcing Invoices
         Route::get('/sourcing-invoices/{sourcingInvoice}/download', [\App\Http\Controllers\Customer\SourcingInvoiceController::class, 'downloadPdf'])->name('sourcing-invoices.download');
+        Route::get('/sourcing-invoices/{sourcingInvoice}', [\App\Http\Controllers\Customer\SourcingInvoiceController::class, 'show'])->name('sourcing-invoices.show');
+        Route::post('/sourcing-invoices/{sourcingInvoice}/pay', [\App\Http\Controllers\Customer\SourcingInvoiceController::class, 'pay'])->name('sourcing-invoices.pay');
     });

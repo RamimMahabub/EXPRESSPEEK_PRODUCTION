@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Agent\ShipmentController;
 use App\Http\Controllers\Api\QuoteController;
-use App\Http\Controllers\BlogController;
+use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\CityPageController;
 use App\Http\Controllers\CountryPageController;
 use App\Http\Controllers\HomeController;
@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public homepage — DHL-style landing (guests + all authenticated users)
+Route::get('/csrf-token', fn () => response()->json(['token' => csrf_token()]))->name('csrf-token');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/track', [HomeController::class, 'track'])->name('track');
 Route::get('/quote', [HomeController::class, 'quote'])->name('quote');
@@ -52,6 +53,10 @@ Route::post('/quote', [QuoteController::class, 'index']);
 Route::get('/sourcing', [SourcingRequestController::class, 'create'])->name('sourcing.create');
 Route::post('/sourcing', [SourcingRequestController::class, 'store'])->name('sourcing.store');
 Route::get('/sourcing/success', [SourcingRequestController::class, 'success'])->name('sourcing.success');
+
+// Business Applications
+Route::get('/business', [BusinessController::class, 'index'])->name('business.index');
+Route::post('/business', [BusinessController::class, 'store'])->name('business.store');
 
 // SEO Pages — Terms, Privacy, Help, Customer Service
 Route::get('/terms', [SeoPageController::class, 'terms'])->name('terms');
@@ -87,11 +92,16 @@ Route::get('/dashboard', function () {
     return redirect()->route(auth()->user()->dashboardRouteName());
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Profile routes (all authenticated users)
+// Profile and Notification routes (all authenticated users)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/all', [App\Http\Controllers\NotificationController::class, 'all'])->name('notifications.all');
+    Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
 
 // Kept as a safe bookmark for cPanel deployments without terminal access.

@@ -32,17 +32,45 @@
                 <p class="text-xs text-slate-400">Tracking</p>
                 <p class="font-mono text-violet-300">{{ $shipment->tracking_number }}</p>
             </div>
+            @if($shipment->shipment_type !== 'document')
             <div>
                 <p class="text-xs text-slate-400">Invoice</p>
                 <p class="font-mono text-slate-300">{{ $shipment->invoice_number ?: '—' }}</p>
+            </div>
+            @endif
+            <div>
+                <p class="text-xs text-slate-400">Created By</p>
+                <p class="text-sm font-medium text-emerald-300">
+                    @php
+                        $role = 'Customer';
+                        $name = $shipment->sender?->name;
+                        
+                        if ($shipment->created_by_agent_id) {
+                            $role = 'Agent';
+                            $name = $shipment->createdByAgent?->name;
+                        } elseif (!$shipment->sender_id) {
+                            $role = 'Guest';
+                            $name = $shipment->sender_name;
+                        } elseif ($shipment->sender?->isAdmin()) {
+                            $role = 'Admin';
+                        } elseif ($shipment->sender?->isAgent()) {
+                            $role = 'Agent';
+                        } elseif ($shipment->sender && abs($shipment->sender->created_at->diffInSeconds($shipment->created_at)) < 5) {
+                            $role = 'Guest';
+                        }
+                    @endphp
+                    {{ $role }}@if($name) <span class="text-slate-400 text-xs ml-1">({{ $name }})</span>@endif
+                </p>
             </div>
             <div class="flex gap-2">
                 @if(\Illuminate\Support\Facades\Route::has('agent.shipments.waybill'))
                     <a href="{{ route('agent.shipments.waybill', $shipment) }}" target="_blank"
                         class="text-xs neon-button text-white rounded-lg px-3 py-1.5 transition-colors">Waybill</a>
                 @endif
+                @if($shipment->shipment_type !== 'document')
                 <a href="{{ route('agent.shipments.invoice', $shipment) }}" target="_blank"
                     class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3 py-1.5 transition-colors">Invoice</a>
+                @endif
             </div>
         </div>
     </div>

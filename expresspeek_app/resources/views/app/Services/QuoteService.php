@@ -20,6 +20,7 @@ class QuoteService
 
     protected const CARRIER_DISPLAY_NAMES = [
         'Master' => 'EXPRESS PEEK',
+        'Master-SF' => 'SF SERVICE',
     ];
 
     public static function invalidatePricingDatasetCache(): void
@@ -82,7 +83,7 @@ class QuoteService
 
                 $option = [
                     'carrier_id'     => $carrier->id,
-                    'carrier'        => $this->displayName($carrier->name),
+                    'carrier'        => self::getDisplayName($carrier->name),
                     'shipment_type'  => $shipmentType,
                     'zone'           => $carrierZone,
                     'weight'         => $normalizedWeight,
@@ -167,7 +168,7 @@ class QuoteService
 
             $options->push([
                 'carrier_id'      => $carrier->id,
-                'carrier'         => $this->displayName($carrier->name),
+                'carrier'         => self::getDisplayName($carrier->name),
                 'base_price'      => round($totalBasePrice, 2),
                 'fuel_surcharge'  => 0.0,
                 'margin'          => 0.0,
@@ -519,7 +520,7 @@ class QuoteService
         return null;
     }
 
-    protected function displayName(string $internalName): string
+    public static function getDisplayName(string $internalName): string
     {
         return self::CARRIER_DISPLAY_NAMES[$internalName] ?? $internalName;
     }

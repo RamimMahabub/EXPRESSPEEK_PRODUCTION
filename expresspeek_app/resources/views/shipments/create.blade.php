@@ -12,7 +12,7 @@
 
     <div class="mb-8 flex flex-col gap-4 rounded-3xl border border-white/10 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600">Shipping Quote Engine</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600">Shipping Check Delivery Cost Engine</p>
             <h1 class="mt-2 text-3xl font-black text-slate-100">Create Shipment</h1>
             <p class="mt-2 text-sm text-slate-400">Complete the shipment details and continue without login, or sign in to attach it to your account.</p>
         </div>
@@ -171,19 +171,19 @@
             <div class="rounded-3xl border border-white/10 bg-white p-6 shadow-sm">
                 <div class="mb-5">
                     <h2 class="text-xl font-bold text-slate-100">Carrier</h2>
-                    <p class="mt-2 text-sm text-slate-400">Choose the carrier from your quote results.</p>
+                    <p class="mt-2 text-sm text-slate-400">Choose the carrier from your check delivery cost results.</p>
                 </div>
 
                 <div class="grid grid-cols-1 gap-4">
-                    @if(!empty($quotes['options']))
-                        @foreach($quotes['options'] as $option)
+                    @if(!empty($check delivery costs['options']))
+                        @foreach($check delivery costs['options'] as $option)
                             <label class="cursor-pointer rounded-2xl border p-4 transition-colors {{ (int) ($option['carrier_id'] ?? 0) === (int) $selectedCarrierId ? 'border-violet-400 bg-violet-50' : 'border-gray-200 hover:border-violet-300 hover:bg-violet-50/50' }}">
                                 <div class="flex items-start justify-between gap-4">
                                     <div>
                                         <div class="flex items-center gap-2">
                                             <input type="radio" name="carrier_id" value="{{ $option['carrier_id'] }}" @checked((int) ($option['carrier_id'] ?? 0) === (int) $selectedCarrierId) class="text-violet-600 focus:ring-violet-500">
                                             <span class="text-sm font-semibold text-slate-100">{{ $option['carrier'] }}</span>
-                                            @if(($option['carrier_id'] ?? 0) === ($quotes['recommended']['carrier_id'] ?? null))
+                                            @if(($option['carrier_id'] ?? 0) === ($check delivery costs['recommended']['carrier_id'] ?? null))
                                                 <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-700">Recommended</span>
                                             @endif
                                         </div>
@@ -200,13 +200,13 @@
                         <label class="rounded-2xl border border-violet-300 bg-violet-50 p-4">
                             <div class="flex items-center gap-2">
                                 <input type="radio" name="carrier_id" value="{{ $selectedCarrier->id }}" checked class="text-violet-600 focus:ring-violet-500">
-                                <span class="text-sm font-semibold text-slate-100">{{ $selectedCarrier->name }}</span>
+                                <span class="text-sm font-semibold text-slate-100">{{ \App\Services\QuoteService::getDisplayName($selectedCarrier->name) }}</span>
                                 <span class="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase text-violet-700">Selected</span>
                             </div>
                         </label>
                     @else
                         <div class="rounded-2xl border border-dashed border-gray-200 p-5 text-sm text-slate-400">
-                            No carrier selected yet. Go back to the quote engine and pick a carrier.
+                            No carrier selected yet. Go back to the check delivery cost engine and pick a carrier.
                         </div>
                     @endif
                 </div>

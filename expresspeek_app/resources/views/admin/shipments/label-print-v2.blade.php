@@ -38,18 +38,22 @@
         .awb-carrier { text-align:left; font-size:5.4pt; font-weight:400; margin-top:0.3mm; line-height:1.35; word-break:break-word; overflow:hidden; font-family:'Share Tech Mono', monospace; letter-spacing:.3pt; }
         .barcode { display:block; width:67.5mm; height:9.6mm; margin:0 auto; }
 
-        .party-panel { font-size:6.5pt; line-height:1.35; }
-        .party-inner { position:absolute; top:2.5mm; left:1mm; right:1mm; bottom:.5mm; overflow:hidden; }
-        .shipper-panel .party-inner { top:2.5mm; }
+        .party-panel { font-size:6.5pt; line-height:1.25; }
+        .party-inner { position:absolute; top:1.5mm; left:1mm; right:1mm; bottom:1mm; overflow:hidden; }
+        .shipper-panel .party-inner { top:1.5mm; }
         .shipper-panel { top:26mm; height:19mm; }
         .consignee-panel { top:45mm; height:19mm; }
-        .party-panel.dense { font-size:5.6pt; line-height:1.25; }
+        .party-panel.dense { font-size:5.4pt; line-height:1.15; }
+        .party-panel.dense .party-name { font-size:6pt; }
+        .party-panel.extra-dense { font-size:4.8pt; line-height:1.05; }
+        .party-panel.extra-dense .party-name { font-size:5.5pt; }
+        .party-panel.extra-dense .section-title { margin-bottom:0.4mm; }
+        .party-panel.extra-dense .party-line, .party-panel.extra-dense .party-meta { margin-top:0.3mm; }
         .section-title { margin-bottom:0.8mm; font-size:6.5pt; line-height:1; font-weight:700; letter-spacing:.4pt; font-family:'Share Tech Mono', monospace; }
         .party-name { font-size:6.8pt; font-weight:700; margin-top:0.5mm; font-family:'Share Tech Mono', monospace; letter-spacing:.2pt; }
-        .party-panel.dense .party-name { font-size:6pt; }
-        .party-line { margin-top:0.6mm; }
+        .party-line { margin-top:0.6mm; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .party-meta { margin-top:0.6mm; }
-        .party-meta td:first-child { width:66%; padding-right:1mm; }
+        .party-meta td:first-child { width:66%; padding-right:1mm; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .party-meta td:last-child { width:34%; text-align:left; overflow-wrap:anywhere; }
 
         .tracking-panel { top:64mm; height:6mm; }
@@ -132,8 +136,15 @@
     ])->filter()->implode(', ');
     $senderPhone = trim(collect([$shipment->sender_phone_code, $shipment->sender_phone])->filter()->implode(' '));
     $receiverPhone = trim(collect([$shipment->receiver_phone_code, $shipment->receiver_phone])->filter()->implode(' '));
-    $senderDense = mb_strlen($senderAddress . $senderLocality . $senderDisplayName) > 125;
-    $receiverDense = mb_strlen($receiverAddress . $receiverLocality . $receiverDisplayName) > 115;
+    
+    $senderTotalLen = mb_strlen($senderAddress . $senderLocality . $senderDisplayName);
+    $receiverTotalLen = mb_strlen($receiverAddress . $receiverLocality . $receiverDisplayName);
+    
+    $senderDense = $senderTotalLen > 70 || mb_strlen($senderAddress) > 35 || mb_strlen($senderLocality) > 25;
+    $senderExtraDense = $senderTotalLen > 110 || mb_strlen($senderAddress) > 60 || mb_strlen($senderLocality) > 40;
+    
+    $receiverDense = $receiverTotalLen > 70 || mb_strlen($receiverAddress) > 35 || mb_strlen($receiverLocality) > 25;
+    $receiverExtraDense = $receiverTotalLen > 110 || mb_strlen($receiverAddress) > 60 || mb_strlen($receiverLocality) > 40;
 
     $items = collect(is_array($shipment->items) ? $shipment->items : []);
     $goodsDescription = $shipment->shipment_type === 'document'
@@ -227,7 +238,7 @@
         </div>
     </section>
 
-    <section class="panel party-panel shipper-panel line-bottom {{ $senderDense ? 'dense' : '' }}">
+    <section class="panel party-panel shipper-panel line-bottom {{ $senderExtraDense ? 'extra-dense' : ($senderDense ? 'dense' : '') }}">
         <div class="party-inner">
             <div class="section-title">FROM (SHIPPER)</div>
             <div class="party-name">{{ $senderDisplayName ?: 'Not provided' }}</div>
@@ -244,7 +255,7 @@
         </div>
     </section>
 
-    <section class="panel party-panel consignee-panel line-bottom {{ $receiverDense ? 'dense' : '' }}">
+    <section class="panel party-panel consignee-panel line-bottom {{ $receiverExtraDense ? 'extra-dense' : ($receiverDense ? 'dense' : '') }}">
         <div class="party-inner">
             <div class="section-title">TO (CONSIGNEE)</div>
             <div class="party-name">{{ $receiverDisplayName ?: 'Not provided' }}</div>

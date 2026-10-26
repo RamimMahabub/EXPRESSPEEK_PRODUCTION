@@ -23,17 +23,17 @@
                 <li><strong>Personal Information:</strong> Name, email address, phone/WhatsApp number, physical address (both sender and receiver).</li>
                 <li><strong>Shipment Details:</strong> Package descriptions, weights, values, tracking numbers, destination countries.</li>
                 <li><strong>Payment Information:</strong> Transaction records, payment method details (we do not store credit card numbers directly).</li>
-                <li><strong>Sourcing Requests:</strong> Product descriptions, images, links, and delivery preferences submitted through our "Shop from Bangladesh" service.</li>
+                <li><strong>Shop From Bangladesh:</strong> Product descriptions, images, links, and delivery preferences submitted through our "Shop from Bangladesh" service.</li>
                 <li><strong>Usage Data:</strong> IP address, browser type, pages visited, referring URLs, collected via cookies and analytics tools.</li>
             </ul>
 
             <h2>2. How We Use Your Information</h2>
             <p>We use your information to:</p>
             <ul>
-                <li>Process and fulfil your shipments and sourcing requests</li>
+                <li>Process and fulfil your shipments and Shop From Bangladesh</li>
                 <li>Provide tracking updates and delivery notifications</li>
-                <li>Contact you via WhatsApp regarding sourcing orders and quotes</li>
-                <li>Calculate shipping quotes and compare carrier rates</li>
+                <li>Contact you via WhatsApp regarding sourcing orders and check delivery costs</li>
+                <li>Calculate shipping check delivery costs and compare carrier rates</li>
                 <li>Comply with customs declarations and export regulations in Bangladesh</li>
                 <li>Improve our website and services</li>
                 <li>Prevent fraud and ensure security</li>

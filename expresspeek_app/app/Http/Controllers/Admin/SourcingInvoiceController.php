@@ -10,6 +10,34 @@ use Illuminate\Validation\ValidationException;
 
 class SourcingInvoiceController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = SourcingInvoice::with(['sourcingRequest.user'])->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhere('transaction_id', 'like', "%{$search}%")
+                  ->orWhereHas('sourcingRequest.user', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $invoices = $query->paginate(20)->withQueryString();
+        
+        $totalReceived = SourcingInvoice::where('status', 'paid')->sum('total_amount');
+        $totalProcessing = SourcingInvoice::where('status', 'processing')->sum('total_amount');
+
+        return view('admin.sourcing.invoices-index', compact('invoices', 'totalReceived', 'totalProcessing'));
+    }
+
     public function create(SourcingRequest $sourcingRequest)
     {
         $sourcingRequest->load('items');
@@ -63,6 +91,13 @@ class SourcingInvoiceController extends Controller
     public function markAsPaid(SourcingInvoice $sourcingInvoice)
     {
         $sourcingInvoice->update(['status' => 'paid']);
+
+        if ($sourcingInvoice->sourcingRequest?->user) {
+            $sourcingInvoice->sourcingRequest->user->notify(
+                new \App\Notifications\PaymentStatusUpdatedNotification($sourcingInvoice->fresh('sourcingRequest'))
+            );
+        }
+
         return back()->with('success', 'Invoice marked as paid.');
     }
 

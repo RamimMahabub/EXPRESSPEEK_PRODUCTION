@@ -23,7 +23,7 @@
                 <a href="{{ route('quote') }}?country={{ $data['country_code'] }}"
                    class="inline-flex items-center gap-2 px-7 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/30" id="country-get-quote">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    Get a Quote to {{ $data['name'] }}
+                    Get a Check Delivery Cost to {{ $data['name'] }}
                 </a>
                 <a href="{{ route('track') }}"
                    class="inline-flex items-center gap-2 px-7 py-4 rounded-2xl border-2 border-white/20 text-white font-bold text-sm hover:border-white/40 transition-colors">
@@ -101,10 +101,10 @@
     <section class="max-w-5xl mx-auto px-6 pb-8">
         <div class="bg-gradient-to-r from-violet-600 to-blue-700 rounded-3xl p-8 md:p-12 text-center">
             <h2 class="text-2xl md:text-3xl font-black text-white mb-4">Ready to Ship to {{ $data['name'] }}?</h2>
-            <p class="text-violet-200 max-w-lg mx-auto mb-6 text-sm leading-relaxed">Get an instant quote with transparent pricing. Compare multiple carriers and choose the best option for your shipment.</p>
+            <p class="text-violet-200 max-w-lg mx-auto mb-6 text-sm leading-relaxed">Get an instant check delivery cost with transparent pricing. Compare multiple carriers and choose the best option for your shipment.</p>
             <a href="{{ route('quote') }}?country={{ $data['country_code'] }}"
                class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-violet-700 font-bold text-sm hover:bg-violet-50 transition-colors shadow-xl">
-                Get Your Quote Now →
+                Get Your Check Delivery Cost Now →
             </a>
         </div>
     </section>

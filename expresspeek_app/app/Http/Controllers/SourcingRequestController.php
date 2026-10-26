@@ -42,12 +42,26 @@ class SourcingRequestController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'customer_is_business'   => 'nullable|boolean',
+            'customer_company'       => 'nullable|string|max:191',
             'customer_name'          => 'required|string|max:191',
+            'customer_country'       => 'nullable|string|max:191',
+            'customer_country_code'  => 'nullable|string|max:10',
+            'customer_address'       => 'nullable|string|max:500',
+            'customer_address2'      => 'nullable|string|max:500',
+            'customer_address3'      => 'nullable|string|max:500',
+            'customer_city'          => 'nullable|string|max:100',
+            'customer_state'         => 'nullable|string|max:100',
+            'customer_postal_code'   => 'nullable|string|max:50',
+            'customer_email'         => 'nullable|email|max:191',
+            'customer_phone_type'    => 'nullable|string|max:50',
             'whatsapp_country_code'  => 'required|string|max:10',
             'whatsapp_number'        => 'required|string|max:30',
             'destination_country'    => 'required|string|max:191',
             'destination_country_code' => 'nullable|string|max:10',
             'destination_address'    => 'required|string|max:500',
+            'destination_address2'   => 'nullable|string|max:500',
+            'destination_address3'   => 'nullable|string|max:500',
             'destination_city'       => 'required|string|max:100',
             'destination_state'      => 'nullable|string|max:100',
             'destination_postal_code'=> 'nullable|string|max:20',
@@ -55,23 +69,78 @@ class SourcingRequestController extends Controller
             'products.*.description' => 'required|string|max:2000',
             'products.*.link'        => 'nullable|url|max:1000',
             'products.*.image'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ], [
+            'products.*.link.url' => 'Please enter a valid URL for the product link (make sure it starts with http:// or https://).'
         ]);
 
-        $sourcing = SourcingRequest::create([
-            'reference_number'       => SourcingRequest::generateReferenceNumber(),
-            'tracking_number'        => Shipment::generateTrackingNumber(),
-            'customer_name'          => $data['customer_name'],
-            'whatsapp_country_code'  => $data['whatsapp_country_code'],
-            'whatsapp_number'        => $data['whatsapp_number'],
-            'destination_country'    => $data['destination_country'],
-            'destination_country_code' => $data['destination_country_code'] ?? null,
-            'destination_address'    => $data['destination_address'],
-            'destination_city'       => $data['destination_city'],
-            'destination_state'      => $data['destination_state'] ?? null,
-            'destination_postal_code'=> $data['destination_postal_code'] ?? null,
-            'status'                 => SourcingRequest::STATUS_NEW,
-            'user_id'                => auth()->id(), // null if guest
-        ]);
+        $sourcing = null;
+        if (auth()->check() && $request->filled('sourcing_request_id')) {
+            $sourcing = SourcingRequest::where('id', $request->sourcing_request_id)
+                ->where('user_id', auth()->id())
+                ->where('status', SourcingRequest::STATUS_DRAFT)
+                ->first();
+        }
+
+        if ($sourcing) {
+            $sourcing->update([
+                'customer_is_business'   => $data['customer_is_business'] ?? false,
+                'customer_company'       => $data['customer_company'] ?? null,
+                'customer_name'          => $data['customer_name'],
+                'customer_country'       => $data['customer_country'] ?? null,
+                'customer_country_code'  => $data['customer_country_code'] ?? null,
+                'customer_address'       => $data['customer_address'] ?? null,
+                'customer_address2'      => $data['customer_address2'] ?? null,
+                'customer_address3'      => $data['customer_address3'] ?? null,
+                'customer_city'          => $data['customer_city'] ?? null,
+                'customer_state'         => $data['customer_state'] ?? null,
+                'customer_postal_code'   => $data['customer_postal_code'] ?? null,
+                'customer_email'         => $data['customer_email'] ?? null,
+                'customer_phone_type'    => $data['customer_phone_type'] ?? null,
+                'whatsapp_country_code'  => $data['whatsapp_country_code'],
+                'whatsapp_number'        => $data['whatsapp_number'],
+                'destination_country'    => $data['destination_country'],
+                'destination_country_code' => $data['destination_country_code'] ?? null,
+                'destination_address'    => $data['destination_address'],
+                'destination_address2'   => $data['destination_address2'] ?? null,
+                'destination_address3'   => $data['destination_address3'] ?? null,
+                'destination_city'       => $data['destination_city'],
+                'destination_state'      => $data['destination_state'] ?? null,
+                'destination_postal_code'=> $data['destination_postal_code'] ?? null,
+                'status'                 => SourcingRequest::STATUS_NEW,
+            ]);
+            // Clear existing draft items
+            $sourcing->items()->delete();
+        } else {
+            $sourcing = SourcingRequest::create([
+                'reference_number'       => SourcingRequest::generateReferenceNumber(),
+                'tracking_number'        => Shipment::generateTrackingNumber(),
+                'customer_is_business'   => $data['customer_is_business'] ?? false,
+                'customer_company'       => $data['customer_company'] ?? null,
+                'customer_name'          => $data['customer_name'],
+                'customer_country'       => $data['customer_country'] ?? null,
+                'customer_country_code'  => $data['customer_country_code'] ?? null,
+                'customer_address'       => $data['customer_address'] ?? null,
+                'customer_address2'      => $data['customer_address2'] ?? null,
+                'customer_address3'      => $data['customer_address3'] ?? null,
+                'customer_city'          => $data['customer_city'] ?? null,
+                'customer_state'         => $data['customer_state'] ?? null,
+                'customer_postal_code'   => $data['customer_postal_code'] ?? null,
+                'customer_email'         => $data['customer_email'] ?? null,
+                'customer_phone_type'    => $data['customer_phone_type'] ?? null,
+                'whatsapp_country_code'  => $data['whatsapp_country_code'],
+                'whatsapp_number'        => $data['whatsapp_number'],
+                'destination_country'    => $data['destination_country'],
+                'destination_country_code' => $data['destination_country_code'] ?? null,
+                'destination_address'    => $data['destination_address'],
+                'destination_address2'   => $data['destination_address2'] ?? null,
+                'destination_address3'   => $data['destination_address3'] ?? null,
+                'destination_city'       => $data['destination_city'],
+                'destination_state'      => $data['destination_state'] ?? null,
+                'destination_postal_code'=> $data['destination_postal_code'] ?? null,
+                'status'                 => SourcingRequest::STATUS_NEW,
+                'user_id'                => auth()->id(), // null if guest
+            ]);
+        }
 
         $manager = new ImageManager(new Driver());
 

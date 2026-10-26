@@ -23,6 +23,7 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
     </style>
+    @include('partials.meta-pixel')
 </head>
 <body class="role-panel h-full bg-slate-50 text-slate-800 antialiased">
 

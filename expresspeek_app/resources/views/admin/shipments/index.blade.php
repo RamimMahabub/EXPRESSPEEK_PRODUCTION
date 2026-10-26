@@ -63,7 +63,7 @@
             <select x-model="filters.record_type" @change="filters.statuses = []; filters.agents = []; applyFilters()" class="h-11 w-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 focus:border-indigo-500 focus:ring-indigo-100">
                 <option value="all">All Types</option>
                 <option value="shipment">Standard Shipments</option>
-                <option value="sourcing">Sourcing Requests</option>
+                <option value="sourcing">Shop From Bangladesh</option>
             </select>
         </div>
         {{-- Carrier Dropdown --}}
@@ -78,7 +78,7 @@
                     @foreach($carriers as $carrier)
                     <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
                         <input type="checkbox" value="{{ $carrier->id }}" x-model="filters.carriers" class="rounded border-gray-300 text-violet-600 focus:ring-violet-500">
-                        <span class="ml-2 text-sm text-gray-700 truncate">{{ $carrier->name }}</span>
+                        <span class="ml-2 text-sm text-gray-700 truncate">{{ \App\Services\QuoteService::getDisplayName($carrier->name) }}</span>
                     </label>
                     @endforeach
                 </div>
@@ -206,7 +206,7 @@
                             <select x-model="carrierId" class="ship-inline-select w-full max-w-[145px] cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 focus:border-indigo-500 focus:ring-indigo-100">
                                 <option value="">Select Carrier</option>
                                 @foreach($carriers as $carrier)
-                                <option value="{{ $carrier->id }}">{{ $carrier->name }}</option>
+                                <option value="{{ $carrier->id }}">{{ \App\Services\QuoteService::getDisplayName($carrier->name) }}</option>
                                 @endforeach
                             </select>
                         </td>
@@ -243,7 +243,7 @@
                                        class="ship-action-edit inline-flex items-center gap-1.5 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 transition hover:border-indigo-200 hover:bg-indigo-100">
                                         Edit
                                     </a>
-                                    <form action="{{ route('admin.sourcing-requests.destroy', $shipment) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this sourcing request?');" class="inline">
+                                    <form action="{{ route('admin.sourcing-requests.destroy', $shipment) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this Shop From Bangladesh?');" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="ship-action-delete inline-flex items-center gap-1.5 rounded-xl border border-rose-100 bg-white px-3 py-2 text-xs font-bold text-rose-600 transition hover:border-rose-200 hover:bg-rose-50">
@@ -546,6 +546,14 @@ document.addEventListener('alpine:init', () => {
     originalCarrierId: String(initialCarrierId || ''),
     isSavingStatus: false,
     
+    init() {
+        this.$watch('carrierTracking', (value) => {
+            if (value && value.trim() !== '' && ['pending', 'new', 'reviewing', 'contacted', 'payment_pending', 'sourcing'].includes(this.status)) {
+                this.status = 'connected_to_carrier';
+            }
+        });
+    },
+
     get isDirty() {
         return this.status !== this.originalStatus || this.carrierTracking !== this.originalTracking || this.carrierId !== this.originalCarrierId;
     },

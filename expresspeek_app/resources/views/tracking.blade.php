@@ -81,7 +81,7 @@
     </section>
 
     @if($error)
-        <section class="mx-auto max-w-4xl px-6 py-12" aria-live="polite">
+        <section id="tracking-results" class="mx-auto max-w-4xl px-6 py-12" aria-live="polite">
             <div class="rounded-3xl border {{ $lookupUnavailable ? 'border-amber-100' : 'border-red-100' }} bg-white p-7 shadow-sm sm:flex sm:items-center sm:gap-5">
                 <div class="mb-4 flex h-12 w-12 flex-none items-center justify-center rounded-2xl {{ $lookupUnavailable ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600' }} sm:mb-0">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16a2 2 0 001.73 3z"/></svg>
@@ -106,7 +106,7 @@
                 default => ['bg' => 'bg-violet-50', 'text' => 'text-violet-700', 'dot' => 'bg-violet-500'],
             };
         @endphp
-        <section class="mx-auto max-w-7xl px-6 py-12 lg:py-16" aria-live="polite">
+        <section id="tracking-results" class="mx-auto max-w-7xl px-6 py-12 lg:py-16" aria-live="polite">
             <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50">
                 <div class="border-b border-slate-100 p-6 sm:p-8">
                     <div class="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
@@ -122,9 +122,13 @@
                             <p class="mt-2 text-sm text-slate-500">{{ $shipment->carrier_name ?: 'ExpressPeek network' }} · {{ $shipment->shipment_type ? ucfirst($shipment->shipment_type) : 'International shipment' }}</p>
                         </div>
                         @if($shipment->carrier_tracking_number)
-                            <a href="{{ $shipment->carrier_tracking_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-5 text-sm font-bold text-violet-700 transition hover:bg-violet-100">
+                            <a href="{{ $shipment->carrier_tracking_url }}" target="_blank" rel="noopener noreferrer" class="group relative inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-8 text-base font-black text-slate-900 shadow-xl shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50">
+                                <span class="absolute -right-1.5 -top-1.5 flex h-4 w-4">
+                                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
+                                    <span class="relative inline-flex h-4 w-4 rounded-full bg-orange-500"></span>
+                                </span>
                                 View live carrier tracking
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7v7m0-7L10 14M5 7v12h12v-5"/></svg>
+                                <svg class="h-5 w-5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 3h7v7m0-7L10 14M5 7v12h12v-5"/></svg>
                             </a>
                         @endif
                     </div>
@@ -212,4 +216,17 @@
         </section>
     @endif
 </main>
+
+@push('scripts')
+@if($error || $shipment)
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const results = document.getElementById('tracking-results');
+        if (results) {
+            results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+</script>
+@endif
+@endpush
 @endsection

@@ -71,7 +71,7 @@
                             <td>
                                 <div class="ap-person">
                                     <span class="ap-avatar">{{ strtoupper(substr($user->name, 0, 2)) }}</span>
-                                    <div><strong>{{ $user->name }}</strong><small>Account #{{ str_pad($user->id, 4, '0', STR_PAD_LEFT) }}</small></div>
+                                    <div><a href="{{ route('admin.users.show', $user) }}" style="color: inherit; text-decoration: none;"><strong>{{ $user->name }}</strong></a><small>Account #{{ str_pad($user->id, 4, '0', STR_PAD_LEFT) }}</small></div>
                                 </div>
                             </td>
                             <td><a class="ap-email" href="mailto:{{ $user->email }}">{{ $user->email }}</a></td>
@@ -90,6 +90,7 @@
                             <td><span class="ap-date">{{ $user->created_at->format('M d, Y') }}</span><small class="ap-date-relative">{{ $user->created_at->diffForHumans() }}</small></td>
                             <td>
                                 <div class="ap-row-actions">
+                                    <a href="{{ route('admin.users.show', $user) }}" class="ap-row-button">View</a>
                                     <a href="{{ route('admin.users.edit', $user) }}" class="ap-row-button">Edit</a>
                                     @if($user->id !== auth()->id())
                                         <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Delete {{ addslashes($user->name) }}?')">

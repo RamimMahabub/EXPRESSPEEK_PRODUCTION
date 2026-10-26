@@ -18,7 +18,10 @@ class UserController extends Controller
         $role = $request->query('role', 'all');
         $users = $role !== 'all'
             ? $this->userService->getUsersByRole($role)
-            : User::with('roles')->latest()->paginate(20);
+            : User::with('roles')
+                ->where('email', 'not like', '%@expresspeek.local')
+                ->latest()
+                ->paginate(20);
 
         $stats = $this->userService->getUserStats();
 
@@ -30,10 +33,23 @@ class UserController extends Controller
         return view('admin.users.create');
     }
 
+    public function show(User $user)
+    {
+        $user->loadMissing('roles');
+        
+        $shipments = $user->isAgent() 
+            ? $user->assignedShipments()->latest()->paginate(10)
+            : $user->shipments()->latest()->paginate(10);
+
+        return view('admin.users.show', compact('user', 'shipments'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'is_business' => 'boolean',
+            'company_name' => 'nullable|string|max:255|required_if:is_business,1,true',
             'email' => 'required|email|unique:users,email',
             'phone_country_code' => ['required', 'string', 'regex:/^\+[1-9]\d{0,3}$/'],
             'phone' => ['required', 'string', 'regex:/^[0-9\s().-]{6,20}$/'],
@@ -58,6 +74,8 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'is_business' => 'boolean',
+            'company_name' => 'nullable|string|max:255|required_if:is_business,1,true',
             'email' => 'required|email|unique:users,email,'.$user->id,
             'phone_country_code' => ['required', 'string', 'regex:/^\+[1-9]\d{0,3}$/'],
             'phone' => ['required', 'string', 'regex:/^[0-9\s().+-]{6,24}$/'],
@@ -68,6 +86,8 @@ class UserController extends Controller
 
         $user->update([
             'name' => $validated['name'],
+            'is_business' => $validated['is_business'] ?? false,
+            'company_name' => $validated['company_name'] ?? null,
             'email' => $validated['email'],
             'phone_country_code' => $validated['phone_country_code'],
             'phone' => $validated['phone'],

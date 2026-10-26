@@ -118,11 +118,14 @@ class ShipmentService
 
         $sourcing = \App\Models\SourcingRequest::with('items', 'carrier')
             ->where(function ($query) use ($trackingNumber, $numericTrackingNumber) {
-                $query->where('tracking_number', $trackingNumber);
+                $query->where('tracking_number', $trackingNumber)
+                      ->orWhere('reference_number', $trackingNumber);
 
                 if ($numericTrackingNumber !== '') {
                     $query->orWhere('tracking_number', $numericTrackingNumber)
-                        ->orWhere('tracking_number', 'like', '%' . $numericTrackingNumber);
+                        ->orWhere('tracking_number', 'like', '%' . $numericTrackingNumber)
+                        ->orWhere('reference_number', $numericTrackingNumber)
+                        ->orWhere('reference_number', 'like', '%' . $numericTrackingNumber);
                 }
             })
             ->first();

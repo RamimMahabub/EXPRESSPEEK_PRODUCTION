@@ -33,17 +33,21 @@
         .barcode { display:block; width:67.5mm; height:9.6mm; margin:0 auto; }
 
         .party-panel { font-size:5.7pt; line-height:1.1; }
-        .party-inner { position:absolute; top:1.1mm; left:1mm; right:1mm; bottom:.4mm; overflow:hidden; }
-        .shipper-panel .party-inner { top:2mm; }
+        .party-inner { position:absolute; top:1mm; left:1mm; right:1mm; bottom:0.8mm; overflow:hidden; }
+        .shipper-panel .party-inner { top:1mm; }
         .shipper-panel { top:41.1mm; height:15.1mm; }
         .consignee-panel { top:56.2mm; height:13.6mm; }
-        .party-panel.dense { font-size:4.9pt; line-height:1.07; }
+        .party-panel.dense { font-size:4.8pt; line-height:1.05; }
+        .party-panel.dense .party-name { font-size:5.1pt; }
+        .party-panel.extra-dense { font-size:4.3pt; line-height:1.0; }
+        .party-panel.extra-dense .party-name { font-size:4.6pt; }
+        .party-panel.extra-dense .section-title { margin-bottom:0.2mm; font-size: 5pt; }
+        .party-panel.extra-dense .party-line, .party-panel.extra-dense .party-meta { margin-top:0.15mm; }
         .section-title { margin-bottom:.5mm; font-size:6.6pt; line-height:1; font-weight:700; }
         .party-name { font-size:6.1pt; font-weight:700; }
-        .party-panel.dense .party-name { font-size:5.3pt; }
-        .party-line { margin-top:.25mm; }
+        .party-line { margin-top:.25mm; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .party-meta { margin-top:.35mm; }
-        .party-meta td:first-child { width:66%; padding-right:1mm; }
+        .party-meta td:first-child { width:66%; padding-right:1mm; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .party-meta td:last-child { width:34%; text-align:left; overflow-wrap:anywhere; }
 
         .tracking-panel { top:69.8mm; height:5.2mm; }
@@ -108,8 +112,15 @@
     ])->filter()->implode(', ');
     $senderPhone = trim(collect([$shipment->sender_phone_code, $shipment->sender_phone])->filter()->implode(' '));
     $receiverPhone = trim(collect([$shipment->receiver_phone_code, $shipment->receiver_phone])->filter()->implode(' '));
-    $senderDense = mb_strlen($senderAddress . $senderLocality . $senderDisplayName) > 125;
-    $receiverDense = mb_strlen($receiverAddress . $receiverLocality . $receiverDisplayName) > 115;
+    
+    $senderTotalLen = mb_strlen($senderAddress . $senderLocality . $senderDisplayName);
+    $receiverTotalLen = mb_strlen($receiverAddress . $receiverLocality . $receiverDisplayName);
+    
+    $senderDense = $senderTotalLen > 70 || mb_strlen($senderAddress) > 35 || mb_strlen($senderLocality) > 25;
+    $senderExtraDense = $senderTotalLen > 110 || mb_strlen($senderAddress) > 60 || mb_strlen($senderLocality) > 40;
+    
+    $receiverDense = $receiverTotalLen > 70 || mb_strlen($receiverAddress) > 35 || mb_strlen($receiverLocality) > 25;
+    $receiverExtraDense = $receiverTotalLen > 110 || mb_strlen($receiverAddress) > 60 || mb_strlen($receiverLocality) > 40;
 
     $items = collect(is_array($shipment->items) ? $shipment->items : []);
     $goodsDescription = $shipment->shipment_type === 'document'
@@ -173,7 +184,7 @@
         <img class="barcode" src="{{ $barcodeData }}" alt="Code 128 barcode for {{ $tracking }}">
     </section>
 
-    <section class="panel party-panel shipper-panel line-bottom {{ $senderDense ? 'dense' : '' }}">
+    <section class="panel party-panel shipper-panel line-bottom {{ $senderExtraDense ? 'extra-dense' : ($senderDense ? 'dense' : '') }}">
         <div class="party-inner">
             <div class="section-title">FROM (SHIPPER)</div>
             <div class="party-name">{{ $senderDisplayName ?: 'Not provided' }}</div>
@@ -190,7 +201,7 @@
         </div>
     </section>
 
-    <section class="panel party-panel consignee-panel line-bottom {{ $receiverDense ? 'dense' : '' }}">
+    <section class="panel party-panel consignee-panel line-bottom {{ $receiverExtraDense ? 'extra-dense' : ($receiverDense ? 'dense' : '') }}">
         <div class="party-inner">
             <div class="section-title">TO (CONSIGNEE)</div>
             <div class="party-name">{{ $receiverDisplayName ?: 'Not provided' }}</div>

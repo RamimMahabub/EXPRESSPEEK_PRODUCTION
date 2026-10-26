@@ -126,6 +126,7 @@ class ShipmentController extends Controller
             'items.*.name'          => 'exclude_if:shipment_type,document|required_with:items|string|max:191',
             'items.*.quantity'      => 'exclude_if:shipment_type,document|required_with:items|integer|min:1',
             'items.*.value_per_item'=> 'exclude_if:shipment_type,document|required_with:items|numeric|min:0',
+            'items.*.hs_code'       => 'nullable|string|max:191',
             'packages'              => 'nullable|array|min:1',
             'packages.*.weight'     => 'required_with:packages|numeric|min:0.01',
             'packages.*.quantity'   => 'required_with:packages|integer|min:1',
@@ -239,7 +240,8 @@ class ShipmentController extends Controller
             'receiver_phone' => $data['receiver_phone'] ?? null,
 
             'shipment_type' => $data['shipment_type'],
-            'document_description' => $data['document_description'] ?? null,
+            'document_description' => $request->input('document_description'),
+            'remarks' => $request->input('remarks'),
             'items' => $items,
             'packages' => $packages,
             'total_packages' => $totalPackages,
@@ -260,6 +262,10 @@ class ShipmentController extends Controller
                 'notes' => 'Status updated by agent from ' . ($originalStatus ?: 'unknown') . ' to ' . $shipment->status . '.',
                 'occurred_at' => now(),
             ]);
+
+            if ($shipment->user) {
+                $shipment->user->notify(new \App\Notifications\ShipmentStatusUpdatedNotification($shipment));
+            }
         }
 
         return redirect()
@@ -517,16 +523,18 @@ class ShipmentController extends Controller
             'shipment_type'          => 'required|in:document,non_document',
             'document_description'   => 'nullable|string|max:500',
             'shipment_purpose'       => 'nullable|string|max:191',
+            'remarks'                => 'nullable|string|max:2000',
             'items'                  => 'nullable|array',
             'items.*.name'           => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|string|max:191',
             'items.*.quantity'       => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|integer|min:1',
             'items.*.value_per_item' => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|numeric|min:0',
+            'items.*.hs_code'        => 'nullable|string|max:191',
             // Packages
             'packages'               => 'required|array|min:1',
             'packages.*.weight'      => 'required|numeric|min:0.01',
-            'packages.*.length'      => 'nullable|numeric|min:0.01',
-            'packages.*.width'       => 'nullable|numeric|min:0.01',
-            'packages.*.height'      => 'nullable|numeric|min:0.01',
+            'packages.*.length'      => 'nullable|numeric|min:0',
+            'packages.*.width'       => 'nullable|numeric|min:0',
+            'packages.*.height'      => 'nullable|numeric|min:0',
             'packages.*.quantity'    => 'required|integer|min:1',
             // Carrier
             'carrier_id'             => 'required|exists:carriers,id',

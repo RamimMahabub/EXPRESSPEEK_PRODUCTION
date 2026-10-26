@@ -32,75 +32,71 @@
     }
     .input-field {
         width: 100%;
-        padding: 0.875rem 1rem;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 0.875rem;
-        font-size: 0.9rem;
-        color: #111827;
-        background: #f9fafb;
-        transition: all 0.2s;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        color: #0f172a;
+        background: #ffffff;
+        transition: border-color 0.2s, box-shadow 0.2s;
         outline: none;
     }
     .input-field:focus {
-        border-color: #7c3aed;
-        background: #fff;
-        box-shadow: 0 0 0 4px rgba(124,58,237,0.1);
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 4px rgba(139,92,246,0.1);
     }
-    .input-field::placeholder { color: #9ca3af; }
+    .input-field::placeholder { color: #94a3b8; }
     .form-label {
         display: block;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #6b7280;
-        margin-bottom: 0.5rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 0.375rem;
     }
     .upload-zone {
-        border: 2px dashed #d1d5db;
-        border-radius: 1rem;
+        border: 2px dashed #e2e8f0;
+        border-radius: 0.75rem;
         padding: 2rem 1.5rem;
         text-align: center;
         cursor: pointer;
         transition: all 0.2s;
-        background: #f9fafb;
+        background: #ffffff;
     }
     .upload-zone:hover, .upload-zone.dragover {
-        border-color: #7c3aed;
+        border-color: #8b5cf6;
         background: #faf5ff;
     }
     .phone-wrapper {
         display: flex;
         gap: 0;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 0.875rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
         overflow: hidden;
-        background: #f9fafb;
-        transition: all 0.2s;
+        background: #ffffff;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
     .phone-wrapper:focus-within {
-        border-color: #7c3aed;
-        background: #fff;
-        box-shadow: 0 0 0 4px rgba(124,58,237,0.1);
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 4px rgba(139,92,246,0.1);
     }
     .phone-select {
         border: none;
         background: transparent;
-        padding: 0.875rem 0.625rem;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #374151;
+        padding: 0.75rem 0.625rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #334155;
         outline: none;
         flex-shrink: 0;
         cursor: pointer;
-        border-right: 1.5px solid #e5e7eb;
+        border-right: 1px solid #e2e8f0;
     }
     .phone-input {
         border: none;
         background: transparent;
-        padding: 0.875rem 1rem;
-        font-size: 0.9rem;
-        color: #111827;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        color: #0f172a;
         outline: none;
         flex: 1;
         min-width: 0;
@@ -183,7 +179,7 @@
 
         {{-- Form Header --}}
         <div class="bg-gradient-to-r from-violet-600 to-blue-700 px-6 sm:px-8 py-6">
-            <h2 class="text-lg sm:text-xl font-black text-white">Sourcing Request Form</h2>
+            <h2 class="text-lg sm:text-xl font-black text-white">Shop From Bangladesh Form</h2>
             <p class="text-violet-200 text-xs sm:text-sm mt-1">All fields marked * are required. We'll reply on WhatsApp within 24 hours.</p>
         </div>
 
@@ -193,6 +189,10 @@
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             {{ session('success') }}
         </div>
+        <script>
+            localStorage.removeItem('sourcing_form_data');
+            localStorage.removeItem('sourcing_cart');
+        </script>
         @endif
 
         <form action="{{ route('sourcing.store') }}" method="POST" enctype="multipart/form-data" class="p-6 sm:p-8 space-y-7" id="sourcing-form">
@@ -204,136 +204,38 @@
                     <span class="w-5 h-5 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-[10px] font-black">1</span>
                     Your Contact Information
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {{-- Name --}}
-                    <div>
-                        <label for="customer_name" class="form-label">Full Name *</label>
-                        <input
-                            type="text"
-                            id="customer_name"
-                            name="customer_name"
-                            value="{{ old('customer_name') }}"
-                            placeholder="e.g. Ahmed Rahman"
-                            class="input-field @error('customer_name') border-red-400 @enderror"
-                            required
-                        >
-                        @error('customer_name')
-                            <p class="error-msg">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- WhatsApp --}}
-                    <div>
-                        <label class="form-label">WhatsApp Number *</label>
-                        <div
-                            x-data="{
-                                openPhone: false, qPhone: '', hiPhone: -1,
-                                selectedCode: '{{ old('whatsapp_country_code', '+880') }}',
-                                get allCodes() {
-                                    return [
-                                        {c:'+880',n:'Bangladesh',f:'🇧🇩'}, {c:'+1',n:'United States/Canada',f:'🇺🇸'},
-                                        {c:'+44',n:'United Kingdom',f:'🇬🇧'}, {c:'+61',n:'Australia',f:'🇦🇺'},
-                                        {c:'+49',n:'Germany',f:'🇩🇪'}, {c:'+33',n:'France',f:'🇫🇷'},
-                                        {c:'+39',n:'Italy',f:'🇮🇹'}, {c:'+34',n:'Spain',f:'🇪🇸'},
-                                        {c:'+31',n:'Netherlands',f:'🇳🇱'}, {c:'+46',n:'Sweden',f:'🇸🇪'},
-                                        {c:'+47',n:'Norway',f:'🇳🇴'}, {c:'+45',n:'Denmark',f:'🇩🇰'},
-                                        {c:'+41',n:'Switzerland',f:'🇨🇭'}, {c:'+971',n:'UAE',f:'🇦🇪'},
-                                        {c:'+974',n:'Qatar',f:'🇶🇦'}, {c:'+966',n:'Saudi Arabia',f:'🇸🇦'},
-                                        {c:'+65',n:'Singapore',f:'🇸🇬'}, {c:'+60',n:'Malaysia',f:'🇲🇾'},
-                                        {c:'+81',n:'Japan',f:'🇯🇵'}, {c:'+82',n:'South Korea',f:'🇰🇷'},
-                                        {c:'+91',n:'India',f:'🇮🇳'}, {c:'+92',n:'Pakistan',f:'🇵🇰'},
-                                        {c:'+94',n:'Sri Lanka',f:'🇱🇰'}, {c:'+64',n:'New Zealand',f:'🇳🇿'},
-                                        {c:'+27',n:'South Africa',f:'🇿🇦'}, {c:'+55',n:'Brazil',f:'🇧🇷'},
-                                        {c:'+52',n:'Mexico',f:'🇲🇽'}, {c:'+54',n:'Argentina',f:'🇦🇷'},
-                                        {c:'+56',n:'Chile',f:'🇨🇱'}, {c:'+57',n:'Colombia',f:'🇨🇴'},
-                                        {c:'+51',n:'Peru',f:'🇵🇪'}, {c:'+58',n:'Venezuela',f:'🇻🇪'},
-                                        {c:'+351',n:'Portugal',f:'🇵🇹'}, {c:'+32',n:'Belgium',f:'🇧🇪'},
-                                        {c:'+43',n:'Austria',f:'🇦🇹'}, {c:'+353',n:'Ireland',f:'🇮🇪'},
-                                        {c:'+358',n:'Finland',f:'🇫🇮'}, {c:'+48',n:'Poland',f:'🇵🇱'},
-                                        {c:'+420',n:'Czech Republic',f:'🇨🇿'}, {c:'+36',n:'Hungary',f:'🇭🇺'},
-                                        {c:'+40',n:'Romania',f:'🇷🇴'}, {c:'+359',n:'Bulgaria',f:'🇧🇬'},
-                                        {c:'+30',n:'Greece',f:'🇬🇷'}, {c:'+90',n:'Turkey',f:'🇹🇷'},
-                                        {c:'+20',n:'Egypt',f:'🇪🇬'}, {c:'+212',n:'Morocco',f:'🇲🇦'},
-                                        {c:'+234',n:'Nigeria',f:'🇳🇬'}, {c:'+254',n:'Kenya',f:'🇰🇪'},
-                                        {c:'+233',n:'Ghana',f:'🇬🇭'}, {c:'+255',n:'Tanzania',f:'🇹🇿'},
-                                        {c:'+256',n:'Uganda',f:'🇺🇬'}, {c:'+86',n:'China',f:'🇨🇳'},
-                                        {c:'+852',n:'Hong Kong',f:'🇭🇰'}, {c:'+886',n:'Taiwan',f:'🇹🇼'},
-                                        {c:'+66',n:'Thailand',f:'🇹🇭'}, {c:'+84',n:'Vietnam',f:'🇻🇳'},
-                                        {c:'+62',n:'Indonesia',f:'🇮🇩'}, {c:'+63',n:'Philippines',f:'🇵🇭'},
-                                        {c:'+95',n:'Myanmar',f:'🇲🇲'}, {c:'+855',n:'Cambodia',f:'🇰🇭'},
-                                        {c:'+972',n:'Israel',f:'🇮🇱'}, {c:'+962',n:'Jordan',f:'🇯🇴'},
-                                        {c:'+961',n:'Lebanon',f:'🇱🇧'}, {c:'+965',n:'Kuwait',f:'🇰🇼'},
-                                        {c:'+968',n:'Oman',f:'🇴🇲'}, {c:'+973',n:'Bahrain',f:'🇧🇭'},
-                                        {c:'+7',n:'Russia/Kazakhstan',f:'🇷🇺'}
-                                    ];
-                                },
-                                get opts() {
-                                    if (!this.qPhone) return this.allCodes;
-                                    const s = this.qPhone.toLowerCase();
-                                    return this.allCodes.filter(c => c.n.toLowerCase().includes(s) || c.c.includes(s));
-                                },
-                                pick(c) { this.selectedCode = c.c; this.qPhone = ''; this.openPhone = false; this.hiPhone = -1; },
-                                getSelected() { return this.allCodes.find(c => c.c === this.selectedCode) || this.allCodes[0]; }
-                            }"
-                            @click.away="openPhone = false; qPhone = '';"
-                            class="relative flex gap-0 border-[1.5px] border-gray-200 rounded-2xl overflow-visible bg-gray-50 focus-within:bg-white focus-within:border-violet-500 focus-within:ring-4 focus-within:ring-violet-500/10 transition-all @error('whatsapp_number') border-red-400 @enderror"
-                        >
-                            {{-- Dropdown Trigger --}}
-                            <div class="relative flex-shrink-0 border-r border-gray-200">
-                                <button type="button" @click="openPhone = !openPhone" class="h-full px-4 flex items-center gap-2 font-semibold text-gray-700 hover:text-violet-600 transition-colors">
-                                    <span x-text="getSelected().f" class="text-lg"></span>
-                                    <span x-text="getSelected().c" class="text-sm"></span>
-                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                                </button>
-                                
-                                {{-- Dropdown Menu --}}
-                                <div x-show="openPhone" x-transition class="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-72">
-                                    <div class="p-2 border-b border-gray-200 sticky top-0 bg-white z-10">
-                                        <input type="text" x-model="qPhone" placeholder="Search country or code..." class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none" @click.stop>
-                                    </div>
-                                    <div class="overflow-y-auto flex-1 p-1">
-                                        <template x-for="(c, i) in opts" :key="c.c + c.n">
-                                            <button type="button" @click="pick(c)" :class="c.c === selectedCode ? 'bg-violet-50 text-violet-700' : 'text-gray-700 hover:bg-gray-50'" class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors mb-0.5">
-                                                <span x-text="c.f" class="text-base"></span>
-                                                <span x-text="c.n" class="truncate flex-1"></span>
-                                                <span x-text="c.c" class="font-mono text-xs text-slate-400"></span>
-                                            </button>
-                                        </template>
-                                        <div x-show="opts.length === 0" class="px-4 py-3 text-sm text-slate-400 text-center">No countries found</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <input type="hidden" name="whatsapp_country_code" :value="selectedCode">
-                            
-                            <input
-                                type="tel"
-                                id="whatsapp_number"
-                                name="whatsapp_number"
-                                value="{{ old('whatsapp_number') }}"
-                                placeholder="1968524222"
-                                class="w-full bg-transparent border-none px-4 py-3.5 text-sm text-gray-900 focus:ring-0 outline-none placeholder:text-slate-400"
-                                required
-                            >
-                        </div>
-                        @error('whatsapp_number')
-                            <p class="error-msg">{{ $message }}</p>
-                        @enderror
-                        <p class="text-xs text-slate-400 mt-2 pl-1">We'll reach out to this number on WhatsApp.</p>
-                    </div>
+                
+                {{-- Business Contact Toggle --}}
+                <div class="flex items-center gap-3 mb-5">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="customer_is_business" value="1" id="customer_is_business_check"
+                            class="w-4 h-4 rounded border-gray-300 text-violet-600 bg-white focus:ring-violet-500"
+                            onchange="document.getElementById('customer_business_section').classList.toggle('hidden', !this.checked)"
+                            {{ old('customer_is_business') ? 'checked' : '' }}>
+                        <span class="text-sm font-semibold text-gray-700">Business Contact</span>
+                    </label>
                 </div>
-            </div>
 
-            <hr class="border-white/10">
+                {{-- Name --}}
+                <div class="mb-5">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" name="customer_name" value="{{ old('customer_name') }}" placeholder="Full name" class="input-field @error('customer_name') border-red-400 @enderror" required>
+                    @error('customer_name') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
+                </div>
 
-            {{-- ─── SECTION: Destination ─── --}}
-            <div>
-                <h3 class="text-xs font-black text-violet-600 uppercase tracking-widest mb-5 flex items-center gap-2">
-                    <span class="w-5 h-5 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-[10px] font-black">2</span>
-                    Delivery Destination
-                </h3>
+                {{-- Company --}}
+                <div id="customer_business_section" class="{{ old('customer_is_business') ? '' : 'hidden' }} mb-5">
+                    <label class="form-label">Company</label>
+                    <input type="text" name="customer_company" value="{{ old('customer_company') }}" placeholder="Company name" class="input-field @error('customer_company') border-red-400 @enderror">
+                    @error('customer_company') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
+                </div>
 
-                <div class="space-y-5">
+
+
+                {{-- Removed Address and Postal/City/State fields per request --}}
+
+                {{-- Country --}}
+                <div class="mb-5">
                     <div
                         x-data="{
                             open: false, q: '', hi: -1,
@@ -342,16 +244,32 @@
                             get opts() {
                                 const all = window.SOURCING_COUNTRIES || [];
                                 if (!this.q) return all;
-                                const s = this.q.toLowerCase();
+                                const s = this.q.toLowerCase().trim();
                                 const byStart = [], byContains = [];
                                 for (const c of all) {
                                     const name = c.name.toLowerCase();
-                                    if (name.startsWith(s)) { byStart.push(c); continue; }
-                                    if (name.includes(s) || c.code.toLowerCase().startsWith(s)) byContains.push(c);
+                                    const code = c.code.toLowerCase();
+                                    let matchesAlias = false;
+                                    if (s === 'us' || s === 'usa') {
+                                        if (code === 'us' || name === 'united states') matchesAlias = true;
+                                    } else if (s === 'uk') {
+                                        if (code === 'gb' || name === 'united kingdom') matchesAlias = true;
+                                    } else if (s === 'uae') {
+                                        if (code === 'ae' || name === 'united arab emirates') matchesAlias = true;
+                                    }
+                                    if (name.startsWith(s) || matchesAlias || code === s) { byStart.push(c); continue; }
+                                    if (name.includes(s) || code.startsWith(s)) byContains.push(c);
                                 }
                                 return [...byStart, ...byContains];
                             },
-                            pick(c) { this.selectedCode = c.code; this.selectedName = c.name; this.q = c.name; this.open = false; this.hi = -1; },
+                            pick(c) { 
+                                this.selectedCode = c.code; 
+                                this.selectedName = c.name; 
+                                this.q = c.name; 
+                                this.open = false; 
+                                this.hi = -1; 
+                                $dispatch('update-phone-country', c.code);
+                            },
                             clear() { this.selectedCode = ''; this.selectedName = ''; this.q = ''; },
                             onFocus() { this.open = true; if (this.selectedCode) this.q = ''; },
                             onKey(e) {
@@ -402,32 +320,159 @@
                             <p class="error-msg mt-1.5">{{ $message }}</p>
                         @enderror
                     </div>
+                </div>
+
 
                     {{-- Address Details --}}
-                    <div>
-                        <label for="destination_address" class="form-label">Street Address *</label>
-                        <input type="text" id="destination_address" name="destination_address" value="{{ old('destination_address') }}" placeholder="Apartment, suite, street address" class="input-field @error('destination_address') border-red-400 @enderror" required>
+                    <div class="mb-4">
+                        <label for="destination_address" class="form-label">Address *</label>
+                        <input type="text" id="destination_address" name="destination_address" value="{{ old('destination_address') }}" placeholder="Street address" class="input-field @error('destination_address') border-red-400 @enderror" required>
                         @error('destination_address') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="mb-4">
+                        <input type="text" name="destination_address2" value="{{ old('destination_address2') }}" placeholder="Address line 2 (optional)" class="input-field">
+                    </div>
+                    <div class="mb-5">
+                        <input type="text" name="destination_address3" value="{{ old('destination_address3') }}" placeholder="Address line 3 (optional)" class="input-field">
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label for="destination_postal_code" class="form-label">Postal Code</label>
+                            <input type="text" id="destination_postal_code" name="destination_postal_code" value="{{ old('destination_postal_code') }}" placeholder="ZIP / Postal Code" class="input-field @error('destination_postal_code') border-red-400 @enderror">
+                            @error('destination_postal_code') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
+                        </div>
                         <div>
                             <label for="destination_city" class="form-label">City *</label>
                             <input type="text" id="destination_city" name="destination_city" value="{{ old('destination_city') }}" placeholder="City" class="input-field @error('destination_city') border-red-400 @enderror" required>
                             @error('destination_city') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label for="destination_state" class="form-label">State / Province</label>
-                            <input type="text" id="destination_state" name="destination_state" value="{{ old('destination_state') }}" placeholder="State (optional)" class="input-field @error('destination_state') border-red-400 @enderror">
+                            <label for="destination_state" class="form-label">State</label>
+                            <input type="text" id="destination_state" name="destination_state" value="{{ old('destination_state') }}" placeholder="State / Province" class="input-field @error('destination_state') border-red-400 @enderror">
                             @error('destination_state') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
                         </div>
-                        <div>
-                            <label for="destination_postal_code" class="form-label">ZIP / Postal Code</label>
-                            <input type="text" id="destination_postal_code" name="destination_postal_code" value="{{ old('destination_postal_code') }}" placeholder="ZIP (optional)" class="input-field @error('destination_postal_code') border-red-400 @enderror">
-                            @error('destination_postal_code') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
-                        </div>
                     </div>
+
+                {{-- Email --}}
+                <div class="mb-5">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="customer_email" value="{{ old('customer_email') }}" placeholder="email@example.com" class="input-field @error('customer_email') border-red-400 @enderror">
+                    @error('customer_email') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
                 </div>
+
+                {{-- Phone --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                    <div class="md:col-span-1">
+                        <label class="form-label">Phone Type</label>
+                        <select name="customer_phone_type" class="input-field">
+                            <option @selected(old('customer_phone_type') === 'Office')>Office</option>
+                            <option @selected(old('customer_phone_type', 'Mobile') === 'Mobile')>Mobile</option>
+                            <option @selected(old('customer_phone_type') === 'Home')>Home</option>
+                            <option @selected(old('customer_phone_type') === 'Fax')>Fax</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="form-label">WhatsApp Number *</label>
+                        <div
+                            x-data="{
+                                openPhone: false, qPhone: '', hiPhone: -1,
+                                selectedCode: '{{ old('whatsapp_country_code', '+880') }}',
+                                get allCodes() {
+                                    return [
+                                        {iso:'BD', c:'+880',n:'Bangladesh',f:'🇧🇩'}, {iso:'US', c:'+1',n:'United States/Canada',f:'🇺🇸'},
+                                        {iso:'GB', c:'+44',n:'United Kingdom',f:'🇬🇧'}, {iso:'AU', c:'+61',n:'Australia',f:'🇦🇺'},
+                                        {iso:'DE', c:'+49',n:'Germany',f:'🇩🇪'}, {iso:'FR', c:'+33',n:'France',f:'🇫🇷'},
+                                        {iso:'IT', c:'+39',n:'Italy',f:'🇮🇹'}, {iso:'ES', c:'+34',n:'Spain',f:'🇪🇸'},
+                                        {iso:'NL', c:'+31',n:'Netherlands',f:'🇳🇱'}, {iso:'SE', c:'+46',n:'Sweden',f:'🇸🇪'},
+                                        {iso:'NO', c:'+47',n:'Norway',f:'🇳🇴'}, {iso:'DK', c:'+45',n:'Denmark',f:'🇩🇰'},
+                                        {iso:'CH', c:'+41',n:'Switzerland',f:'🇨🇭'}, {iso:'AE', c:'+971',n:'UAE',f:'🇦🇪'},
+                                        {iso:'QA', c:'+974',n:'Qatar',f:'🇶🇦'}, {iso:'SA', c:'+966',n:'Saudi Arabia',f:'🇸🇦'},
+                                        {iso:'SG', c:'+65',n:'Singapore',f:'🇸🇬'}, {iso:'MY', c:'+60',n:'Malaysia',f:'🇲🇾'},
+                                        {iso:'JP', c:'+81',n:'Japan',f:'🇯🇵'}, {iso:'KR', c:'+82',n:'South Korea',f:'🇰🇷'},
+                                        {iso:'IN', c:'+91',n:'India',f:'🇮🇳'}, {iso:'PK', c:'+92',n:'Pakistan',f:'🇵🇰'},
+                                        {iso:'LK', c:'+94',n:'Sri Lanka',f:'🇱🇰'}, {iso:'NZ', c:'+64',n:'New Zealand',f:'🇳🇿'},
+                                        {iso:'ZA', c:'+27',n:'South Africa',f:'🇿🇦'}, {iso:'BR', c:'+55',n:'Brazil',f:'🇧🇷'},
+                                        {iso:'MX', c:'+52',n:'Mexico',f:'🇲🇽'}, {iso:'AR', c:'+54',n:'Argentina',f:'🇦🇷'},
+                                        {iso:'CL', c:'+56',n:'Chile',f:'🇨🇱'}, {iso:'CO', c:'+57',n:'Colombia',f:'🇨🇴'},
+                                        {iso:'PE', c:'+51',n:'Peru',f:'🇵🇪'}, {iso:'VE', c:'+58',n:'Venezuela',f:'🇻🇪'},
+                                        {iso:'PT', c:'+351',n:'Portugal',f:'🇵🇹'}, {iso:'BE', c:'+32',n:'Belgium',f:'🇧🇪'},
+                                        {iso:'AT', c:'+43',n:'Austria',f:'🇦🇹'}, {iso:'IE', c:'+353',n:'Ireland',f:'🇮🇪'},
+                                        {iso:'FI', c:'+358',n:'Finland',f:'🇫🇮'}, {iso:'PL', c:'+48',n:'Poland',f:'🇵🇱'},
+                                        {iso:'CZ', c:'+420',n:'Czech Republic',f:'🇨🇿'}, {iso:'HU', c:'+36',n:'Hungary',f:'🇭🇺'},
+                                        {iso:'RO', c:'+40',n:'Romania',f:'🇷🇴'}, {iso:'BG', c:'+359',n:'Bulgaria',f:'🇧🇬'},
+                                        {iso:'GR', c:'+30',n:'Greece',f:'🇬🇷'}, {iso:'TR', c:'+90',n:'Turkey',f:'🇹🇷'},
+                                        {iso:'EG', c:'+20',n:'Egypt',f:'🇪🇬'}, {iso:'MA', c:'+212',n:'Morocco',f:'🇲🇦'},
+                                        {iso:'NG', c:'+234',n:'Nigeria',f:'🇳🇬'}, {iso:'KE', c:'+254',n:'Kenya',f:'🇰🇪'},
+                                        {iso:'GH', c:'+233',n:'Ghana',f:'🇬🇭'}, {iso:'TZ', c:'+255',n:'Tanzania',f:'🇹🇿'},
+                                        {iso:'UG', c:'+256',n:'Uganda',f:'🇺🇬'}, {iso:'CN', c:'+86',n:'China',f:'🇨🇳'},
+                                        {iso:'HK', c:'+852',n:'Hong Kong',f:'🇭🇰'}, {iso:'TW', c:'+886',n:'Taiwan',f:'🇹🇼'},
+                                        {iso:'TH', c:'+66',n:'Thailand',f:'🇹🇭'}, {iso:'VN', c:'+84',n:'Vietnam',f:'🇻🇳'},
+                                        {iso:'ID', c:'+62',n:'Indonesia',f:'🇮🇩'}, {iso:'PH', c:'+63',n:'Philippines',f:'🇵🇭'},
+                                        {iso:'MM', c:'+95',n:'Myanmar',f:'🇲🇲'}, {iso:'KH', c:'+855',n:'Cambodia',f:'🇰🇭'},
+                                        {iso:'IL', c:'+972',n:'Israel',f:'🇮🇱'}, {iso:'JO', c:'+962',n:'Jordan',f:'🇯🇴'},
+                                        {iso:'LB', c:'+961',n:'Lebanon',f:'🇱🇧'}, {iso:'KW', c:'+965',n:'Kuwait',f:'🇰🇼'},
+                                        {iso:'OM', c:'+968',n:'Oman',f:'🇴🇲'}, {iso:'BH', c:'+973',n:'Bahrain',f:'🇧🇭'},
+                                        {iso:'RU', c:'+7',n:'Russia/Kazakhstan',f:'🇷🇺'}, {iso:'CA', c:'+1',n:'Canada',f:'🇨🇦'}
+                                    ];
+                                },
+                                get opts() {
+                                    if (!this.qPhone) return this.allCodes;
+                                    const s = this.qPhone.toLowerCase();
+                                    return this.allCodes.filter(c => c.n.toLowerCase().includes(s) || c.c.includes(s));
+                                },
+                                pick(c) { this.selectedCode = c.c; this.qPhone = ''; this.openPhone = false; this.hiPhone = -1; },
+                                getSelected() { return this.allCodes.find(c => c.c === this.selectedCode) || this.allCodes[0]; }
+                            }"
+                            @click.away="openPhone = false; qPhone = '';"
+                            @update-phone-country.window="
+                                let match = allCodes.find(x => x.iso === $event.detail);
+                                if (match) selectedCode = match.c;
+                            "
+                            class="relative flex gap-0 border-[1.5px] border-gray-200 rounded-2xl overflow-visible bg-gray-50 focus-within:bg-white focus-within:border-violet-500 focus-within:ring-4 focus-within:ring-violet-500/10 transition-all @error('whatsapp_number') border-red-400 @enderror"
+                        >
+                            {{-- Dropdown Trigger --}}
+                            <div class="relative flex-shrink-0 border-r border-gray-200">
+                                <button type="button" @click="openPhone = !openPhone" class="h-full px-4 flex items-center gap-2 font-semibold text-gray-700 hover:text-violet-600 transition-colors">
+                                    <span x-text="getSelected().f" class="text-lg"></span>
+                                    <span x-text="getSelected().c" class="text-sm"></span>
+                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+                                
+                                {{-- Dropdown Menu --}}
+                                <div x-show="openPhone" x-transition class="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-72">
+                                    <div class="p-2 border-b border-gray-200 sticky top-0 bg-white z-10">
+                                        <input type="text" x-model="qPhone" placeholder="Search country or code..." class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none" @click.stop>
+                                    </div>
+                                    <div class="overflow-y-auto flex-1 p-1">
+                                        <template x-for="(c, i) in opts" :key="c.c + c.n">
+                                            <button type="button" @click="pick(c)" :class="c.c === selectedCode ? 'bg-violet-50 text-violet-700' : 'text-gray-700 hover:bg-gray-50'" class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors mb-0.5">
+                                                <span x-text="c.f" class="text-base"></span>
+                                                <span x-text="c.n" class="truncate flex-1"></span>
+                                                <span x-text="c.c" class="font-mono text-xs text-slate-400"></span>
+                                            </button>
+                                        </template>
+                                        <div x-show="opts.length === 0" class="px-4 py-3 text-sm text-slate-400 text-center">No countries found</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="whatsapp_country_code" :value="selectedCode">
+                            
+                            <input
+                                type="tel"
+                                id="whatsapp_number"
+                                name="whatsapp_number"
+                                value="{{ old('whatsapp_number') }}"
+                                placeholder="1968524222"
+                                class="w-full bg-transparent border-none px-4 py-3.5 text-sm text-gray-900 focus:ring-0 outline-none placeholder:text-slate-400"
+                                required
+                            >
+                        </div>
+                        @error('whatsapp_number') <p class="error-msg mt-1.5">{{ $message }}</p> @enderror
+                        <p class="text-xs text-slate-400 mt-2 pl-1">We'll reach out to this number on WhatsApp.</p>
+                    </div>
+                </div></div>
             </div>
 
             <hr class="border-white/10">
@@ -441,19 +486,60 @@
                         return [
                             'id' => uniqid(),
                             'desc' => $p['description'] ?? '',
-                            'link' => $p['link'] ?? ''
+                            'link' => $p['link'] ?? '',
+                            'imagePreview' => null
                         ];
                     }, $oldProducts);
                 @endphp
                 <div x-data='{
                     products: @json($mappedProducts),
+                    editingId: null,
+                    init() {
+                        const hasOld = {{ count(old('products', [])) > 0 ? 'true' : 'false' }};
+                        if (!hasOld) {
+                            const saved = localStorage.getItem("sourcing_cart");
+                            if (saved) {
+                                try {
+                                    this.products = JSON.parse(saved);
+                                } catch (e) {}
+                            }
+                        }
+
+                        if(this.products.length > 0 && !this.products[0].desc && !hasOld) {
+                            this.editingId = this.products[0].id;
+                        }
+
+                        this.$watch("products", value => {
+                            try {
+                                const toSave = value.map(p => ({
+                                    id: p.id,
+                                    desc: p.desc,
+                                    link: p.link,
+                                    imagePreview: null
+                                }));
+                                localStorage.setItem("sourcing_cart", JSON.stringify(toSave));
+                            } catch(e) {}
+                        }, { deep: true });
+                    },
                     addProduct() {
-                        this.products.push({ id: Date.now().toString(), desc: "", link: "" });
+                        const id = Date.now().toString();
+                        this.products.push({ id, desc: "", link: "", imagePreview: null });
+                        this.editingId = id;
+                    },
+                    editProduct(id) {
+                        this.editingId = id;
                     },
                     removeProduct(id) {
                         if(this.products.length > 1) {
                             this.products = this.products.filter(p => p.id !== id);
                         }
+                    },
+                    copyProduct(product) {
+                        const id = Date.now().toString();
+                        this.products.push({ id, desc: product.desc, link: product.link, imagePreview: null });
+                    },
+                    closeProduct() {
+                        this.editingId = null;
                     },
                     previewImg(e, idx) {
                         const file = e.target.files[0];
@@ -464,6 +550,9 @@
                                 document.getElementById("upload-preview-"+idx).classList.remove("hidden");
                                 document.getElementById("preview-img-"+idx).src = evt.target.result;
                                 document.getElementById("preview-name-"+idx).textContent = file.name;
+                                
+                                // Save preview in Alpine state for summary view
+                                this.products[idx].imagePreview = evt.target.result;
                             };
                             reader.readAsDataURL(file);
                         }
@@ -472,6 +561,7 @@
                         document.getElementById("product_image_"+idx).value = "";
                         document.getElementById("upload-placeholder-"+idx).classList.remove("hidden");
                         document.getElementById("upload-preview-"+idx).classList.add("hidden");
+                        this.products[idx].imagePreview = null;
                     }
                 }'>
                     <div class="flex items-center justify-between mb-5">
@@ -479,79 +569,138 @@
                             <span class="w-5 h-5 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-[10px] font-black">3</span>
                             Product Details
                         </h3>
-                        <button type="button" @click="addProduct()" class="text-xs font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            Add Another Product
-                        </button>
                     </div>
 
                     @if($errors->has('products.*') || $errors->has('products'))
                         <div class="mb-4 text-red-500 text-sm font-semibold bg-red-50 p-3 rounded-xl border border-red-100">
-                            Please check the product details for errors (ensure all descriptions are provided).
+                            <ul class="list-disc list-inside">
+                                @foreach($errors->get('products.*') as $messages)
+                                    @foreach($messages as $message)
+                                        <li>{{ $message }}</li>
+                                    @endforeach
+                                @endforeach
+                                @foreach($errors->get('products') as $message)
+                                    <li>{{ $message }}</li>
+                                @endforeach
+                            </ul>
                         </div>
                     @endif
 
-                    <div class="space-y-6">
+                    <div class="space-y-4">
                         <template x-for="(product, index) in products" :key="product.id">
-                            <div class="bg-white border border-white/10 p-5 rounded-2xl relative group shadow-sm hover:shadow-md transition-shadow">
-                                <button x-show="products.length > 1" @click="removeProduct(product.id)" type="button" class="absolute -top-3 -right-3 w-7 h-7 bg-red-50 text-red-600 border border-red-100 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-500 hover:text-white" title="Remove Product">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                                </button>
+                            <div class="bg-white border border-gray-200 p-5 rounded-2xl relative shadow-sm hover:shadow-md transition-shadow">
+                                
+                                <!-- SUMMARY VIEW (Collapsed) -->
+                                <div x-show="editingId !== product.id" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div class="flex-1 flex items-center gap-3 sm:gap-4 text-sm text-slate-700 min-w-0">
+                                        <div class="font-bold text-slate-400 whitespace-nowrap self-start mt-1 sm:mt-0" x-text="(index + 1) + '.'"></div>
+                                        
+                                        {{-- Image Thumbnail --}}
+                                        <div class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center overflow-hidden">
+                                            <template x-if="product.imagePreview">
+                                                <img :src="product.imagePreview" class="w-full h-full object-cover">
+                                            </template>
+                                            <template x-if="!product.imagePreview">
+                                                <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            </template>
+                                        </div>
 
-                                <div class="mb-4 flex items-center gap-2 text-sm font-black text-slate-400 uppercase tracking-widest">
-                                    Product <span x-text="index + 1"></span>
+                                        {{-- Product Details --}}
+                                        <div class="flex flex-col min-w-0 flex-1">
+                                            <span class="font-bold text-slate-900 line-clamp-2" x-text="product.desc || 'Unnamed Product'"></span>
+                                            <template x-if="product.link">
+                                                <a :href="product.link" target="_blank" class="text-xs text-violet-600 hover:text-violet-700 hover:underline truncate mt-1 inline-flex items-center gap-1" title="View product link">
+                                                    <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                    <span x-text="product.link" class="truncate"></span>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-2 self-start sm:self-auto shrink-0 border-t sm:border-t-0 border-gray-100 pt-3 sm:pt-0 w-full sm:w-auto justify-end">
+                                        <button type="button" @click="editProduct(product.id)" class="text-xs font-semibold text-violet-600 hover:text-violet-700 bg-violet-50 hover:bg-violet-100 px-3 py-2 rounded-lg transition-colors shadow-sm">Edit</button>
+                                        <button type="button" @click="copyProduct(product)" class="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors shadow-sm">Copy</button>
+                                        <button type="button" x-show="products.length > 1" @click="removeProduct(product.id)" class="text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-colors shadow-sm">Remove</button>
+                                    </div>
                                 </div>
 
-                                {{-- Description --}}
-                                <div class="mb-4">
-                                    <label class="form-label">Product Description *</label>
-                                    <textarea
-                                        :name="'products['+index+'][description]'"
-                                        x-model="product.desc"
-                                        rows="2"
-                                        placeholder="Be as specific as possible. E.g: 1 piece Aarong kantha stitch saree (red and white)..."
-                                        class="input-field resize-none bg-gray-50 focus:bg-white"
-                                        required
-                                    ></textarea>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {{-- Product Link --}}
-                                    <div>
-                                        <label class="form-label">Product Link <span class="text-slate-400 font-normal normal-case">(optional)</span></label>
-                                        <div class="relative">
-                                            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                                            <input
-                                                type="url"
-                                                :name="'products['+index+'][link]'"
-                                                x-model="product.link"
-                                                placeholder="https://..."
-                                                class="input-field input-with-icon-left bg-gray-50 focus:bg-white"
-                                            >
+                                <!-- EDIT VIEW (Expanded) -->
+                                <div x-show="editingId === product.id" x-transition.opacity>
+                                    <div class="mb-4 flex items-center justify-between">
+                                        <div class="flex items-center gap-2 text-sm font-black text-slate-400 uppercase tracking-widest">
+                                            Product <span x-text="index + 1"></span>
                                         </div>
                                     </div>
 
-                                    {{-- Image Upload --}}
-                                    <div>
-                                        <label class="form-label">Product Image <span class="text-slate-400 font-normal normal-case">(optional)</span></label>
-                                        <div
-                                            class="upload-zone relative p-3 text-center border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-violet-500 hover:bg-violet-50 transition-all bg-gray-50"
-                                            @click="document.getElementById('product_image_'+index).click()"
-                                        >
-                                            <div :id="'upload-placeholder-'+index">
-                                                <p class="text-xs font-semibold text-gray-600 flex items-center justify-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Click to upload image</p>
-                                            </div>
-                                            <div :id="'upload-preview-'+index" class="hidden flex items-center justify-between gap-3 text-left">
-                                                <img :id="'preview-img-'+index" src="" alt="Preview" class="w-10 h-10 rounded-md object-cover border border-gray-200">
-                                                <p :id="'preview-name-'+index" class="text-[10px] text-slate-500 font-medium truncate flex-1"></p>
-                                                <button type="button" @click.stop="clearImg(index)" class="text-xs text-red-500 font-bold hover:bg-red-50 p-1.5 rounded-md transition-colors">Clear</button>
+                                    {{-- Description --}}
+                                    <div class="mb-4">
+                                        <label class="form-label">Product Description *</label>
+                                        <textarea
+                                            :name="'products['+index+'][description]'"
+                                            x-model="product.desc"
+                                            rows="2"
+                                            placeholder="Be as specific as possible. E.g: 1 piece Aarong kantha stitch saree (red and white)..."
+                                            class="input-field resize-none bg-gray-50 focus:bg-white"
+                                        ></textarea>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {{-- Product Link --}}
+                                        <div>
+                                            <label class="form-label">Product Link <span class="text-slate-400 font-normal normal-case">(optional)</span></label>
+                                            <div class="relative">
+                                                <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                                <input
+                                                    type="text"
+                                                    :name="'products['+index+'][link]'"
+                                                    x-model="product.link"
+                                                    placeholder="https://..."
+                                                    class="input-field input-with-icon-left bg-gray-50 focus:bg-white"
+                                                >
                                             </div>
                                         </div>
-                                        <input type="file" :id="'product_image_'+index" :name="'products['+index+'][image]'" accept="image/*" class="hidden" @change="previewImg($event, index)">
+
+                                        {{-- Image Upload --}}
+                                        <div>
+                                            <label class="form-label">Product Image <span class="text-slate-400 font-normal normal-case">(optional)</span></label>
+                                            <div
+                                                class="upload-zone relative p-3 text-center border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-violet-500 hover:bg-violet-50 transition-all bg-gray-50"
+                                                @click="document.getElementById('product_image_'+index).click()"
+                                            >
+                                                <div :id="'upload-placeholder-'+index">
+                                                    <p class="text-xs font-semibold text-gray-600 flex items-center justify-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Click to upload image</p>
+                                                </div>
+                                                <div :id="'upload-preview-'+index" class="hidden flex items-center justify-between gap-3 text-left">
+                                                    <img :id="'preview-img-'+index" src="" alt="Preview" class="w-10 h-10 rounded-md object-cover border border-gray-200">
+                                                    <p :id="'preview-name-'+index" class="text-[10px] text-slate-500 font-medium truncate flex-1"></p>
+                                                    <button type="button" @click.stop="clearImg(index)" class="text-xs text-red-500 font-bold hover:bg-red-50 p-1.5 rounded-md transition-colors">Clear</button>
+                                                </div>
+                                            </div>
+                                            <input type="file" :id="'product_image_'+index" :name="'products['+index+'][image]'" accept="image/*" class="hidden" @change="previewImg($event, index)">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+                                        <button type="button" x-show="products.length > 1" @click="removeProduct(product.id)" class="text-xs font-semibold text-red-600 hover:text-red-700 flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            Remove Product
+                                        </button>
+                                        <div x-show="products.length <= 1"></div>
+
+                                        <button type="button" @click="closeProduct()" class="text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 px-5 py-2 rounded-xl transition-colors shadow-lg shadow-violet-600/20">
+                                            Add to Cart
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </template>
+                    </div>
+
+                    <div class="mt-4 flex justify-end">
+                        <button type="button" @click="addProduct()" class="flex items-center gap-2 text-sm font-bold text-violet-600 hover:text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-xl px-5 py-2.5 transition-all shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Add Another Item to Cart
+                        </button>
                     </div>
                 </div>
             </div>
@@ -562,7 +711,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                     </svg>
-                    Submit Sourcing Request
+                    Confirm Order
                 </button>
                 <p class="text-center text-xs text-slate-400 mt-3">
                     By submitting, you agree that ExpressPeek may contact you on WhatsApp to discuss your order.
@@ -594,6 +743,78 @@
 
 @push('scripts')
 <script>
+// --- Auto-save Regular Form Fields ---
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('sourcing-form');
+    if (!form) return;
+
+    const hasOld = {{ count(old()) > 0 ? 'true' : 'false' }};
+    if (!hasOld) {
+        const saved = localStorage.getItem('sourcing_form_data');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                for (const key in data) {
+                    const field = form.querySelector(`[name="${key}"]`);
+                    if (field && field.type !== 'file' && field.type !== 'hidden') {
+                        if (field.type === 'checkbox' || field.type === 'radio') {
+                            field.checked = data[key];
+                            field.dispatchEvent(new Event('change', { bubbles: true }));
+                        } else {
+                            field.value = data[key];
+                            field.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+    }
+
+    let draftTimeout;
+    function saveForm() {
+        const formData = new FormData(form);
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            if (typeof value === 'string' && key.indexOf('[') === -1 && key !== '_token') {
+                data[key] = value;
+            }
+        }
+        localStorage.setItem('sourcing_form_data', JSON.stringify(data));
+
+        @if(auth()->check())
+        clearTimeout(draftTimeout);
+        draftTimeout = setTimeout(() => {
+            fetch("{{ route('customer.sourcing-requests.draft.store') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'Accept': 'application/json'
+                },
+                body: new FormData(form)
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.sourcing_request_id) {
+                    let idInput = document.getElementById('sourcing_request_id_input');
+                    if(!idInput) {
+                        idInput = document.createElement('input');
+                        idInput.type = 'hidden';
+                        idInput.id = 'sourcing_request_id_input';
+                        idInput.name = 'sourcing_request_id';
+                        form.appendChild(idInput);
+                    }
+                    idInput.value = res.sourcing_request_id;
+                }
+            })
+            .catch(err => console.error('Draft save error', err));
+        }, 1500);
+        @endif
+    }
+
+    form.addEventListener('input', saveForm);
+    form.addEventListener('change', saveForm);
+});
+
 window.SOURCING_COUNTRIES = @json($countries->map(fn($c) => ['name' => $c->country_name, 'code' => $c->country_code])->values());
 
 function previewImage(input) {

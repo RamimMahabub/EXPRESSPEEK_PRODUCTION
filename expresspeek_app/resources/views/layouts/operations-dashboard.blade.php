@@ -354,24 +354,25 @@
         @media (max-width:420px) {
             .ops-main { padding-left:11px; padding-right:11px; }
             .ops-action strong { font-size:8px; }
-            .ops-legend { grid-template-columns:repeat(2,1fr); }
+        .ops-legend { grid-template-columns:repeat(2,1fr); }
         }
     </style>
     @stack('styles')
+    @include('partials.meta-pixel')
 </head>
 <body class="role-panel">
 @php
     $user = auth()->user();
-    $primaryRole = $user->primaryRoleName();
+    $primaryRole = $user ? $user->primaryRoleName() : 'guest';
     $isAdmin = $primaryRole === 'admin';
     $isCustomer = $primaryRole === 'customer';
-    $dashboardRoute = $user->dashboardRouteName();
-    $shipmentsRoute = $user->shipmentsRouteName();
-    $createRoute = $user->shipmentCreateRouteName();
-    $addressRoute = $user->addressBookRouteName();
+    $dashboardRoute = $user ? $user->dashboardRouteName() : 'home';
+    $shipmentsRoute = $user ? $user->shipmentsRouteName() : 'home';
+    $createRoute = $user ? $user->shipmentCreateRouteName() : 'shipment.guest.create';
+    $addressRoute = $user ? $user->addressBookRouteName() : 'home';
     $roleLabel = $isAdmin ? 'Admin' : ($isCustomer ? 'Customer' : 'Agent');
     $shipmentsPattern = $isAdmin ? 'admin.shipments.*' : ($isCustomer ? 'customer.shipments.*' : 'agent.shipments.*');
-    $initials = str($user->name)->explode(' ')->take(2)->map(fn ($part) => str($part)->substr(0,1))->join('');
+    $initials = $user ? str($user->name)->explode(' ')->take(2)->map(fn ($part) => str($part)->substr(0,1))->join('') : 'U';
 @endphp
 <div>
     <header class="ops-topbar">
@@ -383,29 +384,31 @@
                     <a class="ops-nav-link {{ request()->routeIs('customer.shipments.*') ? 'active' : '' }}" href="{{ route('customer.shipments.index') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg><span>Shipments</span></a>
                     <a class="ops-nav-link" href="{{ route('customer.dashboard') }}#track"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Tracking</span></a>
                     <a class="ops-nav-link {{ request()->routeIs('customer.address-book.*') ? 'active' : '' }}" href="{{ route('customer.address-book.page') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h7M8 13h7"/></svg><span>Address Book</span></a>
-                    <a class="ops-nav-link {{ request()->routeIs('customer.sourcing-requests.*') ? 'active' : '' }}" href="{{ route('customer.sourcing-requests.index') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Requests</span></a>
+                    <a class="ops-nav-link {{ request()->routeIs('customer.sourcing-requests.*') ? 'active' : '' }}" href="{{ route('customer.sourcing-requests.index') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Shop BD</span></a>
                 @elseif($isAdmin)
                     <a class="ops-nav-link {{ request()->routeIs('admin.shipments.*') ? 'active' : '' }}" href="{{ route('admin.shipments.index') }}" aria-label="Shipments" title="Shipments"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg><span>Shipments</span></a>
                     <a class="ops-nav-link {{ request()->routeIs('volumetric-weight-calculator') ? 'active' : '' }}" href="{{ route('volumetric-weight-calculator') }}" aria-label="Volumetric Weight Calculator" title="Volumetric Weight Calculator"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M4 19V5h16v14H4Z"/><path d="M8 5v4M12 5v2M16 5v4M8 19v-4M12 19v-2M16 19v-4"/></svg><span>Calculator</span></a>
                     <a class="ops-nav-link" href="{{ route('admin.dashboard') }}#track" aria-label="Tracking" title="Tracking"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Tracking</span></a>
-                    <a class="ops-nav-link" href="{{ route('quote') }}" aria-label="Quotes" title="Quotes" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg><span>Quotes</span></a>
+                    <a class="ops-nav-link" href="{{ route('quote') }}" aria-label="Quotes" title="Quotes" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg><span>Delivery Costs</span></a>
                     <a class="ops-nav-link {{ request()->routeIs($createRoute) ? 'active' : '' }}" href="{{ route($createRoute) }}" aria-label="Create Shipment" title="Create Shipment"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create Shipment</span></a>
                     <a class="ops-nav-link {{ request()->routeIs($addressRoute) ? 'active' : '' }}" href="{{ route($addressRoute) }}" aria-label="Address Book" title="Address Book"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h7M8 13h7"/></svg><span>Address Book</span></a>
                     <a class="ops-nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}" aria-label="Users" title="Users"><svg class="ops-icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 4a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5"/></svg><span>Users</span></a>
-                    <a class="ops-nav-link {{ request()->routeIs('admin.sourcing-requests.*') ? 'active' : '' }}" href="{{ route('admin.sourcing-requests.index') }}" aria-label="Sourcing Requests" title="Sourcing Requests"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Sourcing Requests</span></a>
+                    <a class="ops-nav-link {{ request()->routeIs('admin.sourcing-requests.*') ? 'active' : '' }}" href="{{ route('admin.sourcing-requests.index') }}" aria-label="Sourcing Requests" title="Sourcing Requests"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0"/></svg><span>Sourcing Requests</span></a>
+                    <a class="ops-nav-link {{ request()->routeIs('admin.sourcing-invoices.*') ? 'active' : '' }}" href="{{ route('admin.sourcing-invoices.index') }}" aria-label="Payments" title="Payments"><svg class="ops-icon" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>Payments</span></a>
+                    <a class="ops-nav-link {{ request()->routeIs('admin.business-applications.*') ? 'active' : '' }}" href="{{ route('admin.business-applications.index') }}" aria-label="Business" title="Business"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg><span>Business</span></a>
                     <a class="ops-nav-link {{ request()->routeIs('admin.rates.import.*') ? 'active' : '' }}" href="{{ route('admin.rates.import.create') }}" aria-label="Rate Upload" title="Rate Upload"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 14v6h16v-6"/></svg><span>Rate Upload</span></a>
                 @else
                     <a class="ops-nav-link {{ request()->routeIs('agent.shipments.*') ? 'active' : '' }}" href="{{ route('agent.shipments.index') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg><span>Delivery Queue</span></a>
                     <a class="ops-nav-link {{ request()->routeIs('volumetric-weight-calculator') ? 'active' : '' }}" href="{{ route('volumetric-weight-calculator') }}" title="Volumetric Weight Calculator"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M4 19V5h16v14H4Z"/><path d="M8 5v4M12 5v2M16 5v4M8 19v-4M12 19v-2M16 19v-4"/></svg><span>Calculator</span></a>
                     <a class="ops-nav-link" href="{{ route('agent.dashboard') }}#track"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Tracking</span></a>
-                    <a class="ops-nav-link" href="{{ route('quote') }}" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg><span>Quotes</span></a>
+                    <a class="ops-nav-link" href="{{ route('quote') }}" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg><span>Delivery Costs</span></a>
                     <a class="ops-nav-link {{ request()->routeIs($createRoute) ? 'active' : '' }}" href="{{ route($createRoute) }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create Shipment</span></a>
                     <a class="ops-nav-link {{ request()->routeIs($addressRoute) ? 'active' : '' }}" href="{{ route($addressRoute) }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h7M8 13h7"/></svg><span>Address Book</span></a>
                 @endif
             </nav>
             <span class="ops-role-pill">{{ $roleLabel }}</span>
             <div class="ops-top-actions">
-                <a class="ops-icon-btn" href="{{ route($shipmentsRoute) }}" aria-label="Shipment updates"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>@hasSection('notification-count')<span class="ops-notice">@yield('notification-count')</span>@endif</a>
+                <x-notification-bell />
                 <a class="ops-icon-btn" href="{{ route('customer-service') }}" aria-label="Support"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M21 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></a>
                 <a class="ops-home-action" href="{{ route('home') }}" aria-label="Back to Home"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3V11Z"/></svg><span>Back to Home</span></a>
                 <a class="ops-profile" href="{{ route('profile.edit') }}">@if($user->avatarUrl())<img class="ops-avatar" src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}">@else<span class="ops-avatar">{{ strtoupper($initials) }}</span>@endif<span class="ops-profile-copy"><span class="ops-profile-name">{{ $user->name }}</span><span class="ops-profile-email">{{ $user->email }}</span></span></a>
@@ -414,7 +417,7 @@
         </div>
     </header>
 
-    <header class="ops-mobile-header"><a href="{{ route($dashboardRoute) }}"><img src="/images/express-peek-logo.webp" alt="Express Peek"></a><div class="ops-mobile-actions"><span class="ops-role-pill">{{ $roleLabel }}</span><a href="{{ route('profile.edit') }}">@if($user->avatarUrl())<img class="ops-avatar" src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}">@else<span class="ops-avatar">{{ strtoupper($initials) }}</span>@endif</a></div></header>
+    <header class="ops-mobile-header"><a href="{{ route($dashboardRoute) }}"><img src="/images/express-peek-logo.webp" alt="Express Peek"></a><div class="ops-mobile-actions"><span class="ops-role-pill">{{ $roleLabel }}</span><a href="{{ route('profile.edit') }}">@if($user->avatarUrl())<img class="ops-avatar" src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}">@else<span class="ops-avatar">{{ strtoupper($initials) }}</span>@endif</a><form method="POST" action="{{ route('logout') }}" style="margin:0;display:flex;align-items:center;">@csrf<button class="ops-icon-btn" type="submit" aria-label="Sign out" style="color:#e82d4b;background:#fff0f2;"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg></button></form></div></header>
 
     <main class="ops-main panel-content">
         @if(session('success'))<div class="ops-flash success">{{ session('success') }}</div>@endif
@@ -429,14 +432,14 @@
         <a class="ops-bottom-link {{ request()->routeIs($shipmentsPattern) ? 'active' : '' }}" href="{{ route($shipmentsRoute) }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg><span>Shipments</span></a>
         @if($isCustomer)
             <a class="ops-bottom-link" href="{{ route('customer.dashboard') }}#track"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Tracking</span></a>
-            <a class="ops-bottom-link {{ request()->routeIs('customer.sourcing-requests.*') ? 'active' : '' }}" href="{{ route('customer.sourcing-requests.index') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/></svg><span>Requests</span></a>
+            <a class="ops-bottom-link {{ request()->routeIs('customer.sourcing-requests.*') ? 'active' : '' }}" href="{{ route('customer.sourcing-requests.index') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/></svg><span>Shop BD</span></a>
         @elseif($isAdmin)
             <a class="ops-bottom-link" href="{{ route('admin.dashboard') }}#track"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Tracking</span></a>
-            <a class="ops-bottom-link" href="{{ route('quote') }}" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M9 11h6M9 15h6"/></svg><span>Quote</span></a>
+            <a class="ops-bottom-link" href="{{ route('quote') }}" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M9 11h6M9 15h6"/></svg><span>Check Delivery Cost</span></a>
             <a class="ops-bottom-link {{ request()->routeIs($createRoute) ? 'active' : '' }}" href="{{ route($createRoute) }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create</span></a>
         @else
             <a class="ops-bottom-link" href="{{ route('agent.dashboard') }}#track"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Tracking</span></a>
-            <a class="ops-bottom-link" href="{{ route('quote') }}" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M9 11h6M9 15h6"/></svg><span>Quote</span></a>
+            <a class="ops-bottom-link" href="{{ route('quote') }}" data-open-quote-modal><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M9 11h6M9 15h6"/></svg><span>Check Delivery Cost</span></a>
         @endif
         <a class="ops-bottom-link" href="{{ route('home') }}"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3V11Z"/></svg><span>Home</span></a>
         @unless($isAdmin)
@@ -457,6 +460,9 @@
             ->sortBy('country_name')
             ->values();
     @endphp
+    <script>
+        window.INTERNAL_SHIPMENT_CREATE_URL = @json(isset($createRoute) ? route($createRoute) : route('shipment.create'));
+    </script>
     @include('components.quote-modal', ['countries' => $quoteCountries])
     @stack('scripts')
 </div>

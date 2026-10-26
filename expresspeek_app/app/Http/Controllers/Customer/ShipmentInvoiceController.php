@@ -13,7 +13,7 @@ class ShipmentInvoiceController extends Controller
 
         abort_if((int) $shipmentInvoice->shipment->sender_id !== (int) auth()->id(), 403);
 
-        $pdf = app('dompdf.wrapper')->loadView('shipments.invoice-pdf', compact('shipmentInvoice'));
+        $pdf = app('dompdf.wrapper')->setPaper('a4', 'portrait')->loadView('shipments.invoice-pdf', compact('shipmentInvoice'));
 
         return $pdf->stream($shipmentInvoice->invoice_number . '.pdf');
     }

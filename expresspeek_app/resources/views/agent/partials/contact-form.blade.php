@@ -97,38 +97,128 @@
 </div>
 
 {{-- Phone --}}
-<div class="grid grid-cols-3 gap-3 mb-4">
-    <div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+    <div class="sm:col-span-1">
         <label class="block text-xs font-medium text-slate-400 mb-1.5">Phone Type</label>
         <select name="{{ $prefix }}_phone_type"
             class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500">
-            <option>Office</option>
-            <option>Mobile</option>
-            <option>Home</option>
-            <option>Fax</option>
+            <option @selected(old($prefix . '_phone_type') === 'Office')>Office</option>
+            <option @selected(old($prefix . '_phone_type', 'Mobile') === 'Mobile')>Mobile</option>
+            <option @selected(old($prefix . '_phone_type') === 'Home')>Home</option>
+            <option @selected(old($prefix . '_phone_type') === 'Fax')>Fax</option>
         </select>
     </div>
-    <div>
-        <label class="block text-xs font-medium text-slate-400 mb-1.5">Code</label>
-        <div class="relative phone-code-search-wrapper">
-            <input type="text" name="{{ $prefix }}_phone_code" id="{{ $prefix }}_phone_code_input" 
-                value="{{ old($prefix . '_phone_code', $prefix === 'sender' ? '+880' : '') }}" 
-                placeholder="+880" autocomplete="off"
-                oninput="phoneCodeAutocomplete(this,'{{ $prefix }}')"
-                onfocus="phoneCodeAutocomplete(this,'{{ $prefix }}')"
-                onkeydown="phoneCodeKeydown(event,'{{ $prefix }}')"
-                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500 transition-colors">
-            <div id="{{ $prefix }}_phone_code_dropdown" class="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-xl shadow-xl z-30 hidden max-h-56 overflow-y-auto"></div>
+    <div class="sm:col-span-2">
+        <label class="block text-xs font-medium text-slate-400 mb-1.5">Phone Number *</label>
+        <div x-data="{
+                openPhone: false, qPhone: '', hiPhone: -1,
+                selectedCode: '{{ old($prefix . '_phone_code', '+880') }}',
+                get allCodes() {
+                    return [
+    {c:'+93',n:'Afghanistan',f:'🇦🇫'}, {c:'+355',n:'Albania',f:'🇦🇱'}, {c:'+213',n:'Algeria',f:'🇩🇿'}, {c:'+1684',n:'American Samoa',f:'🇦🇸'},
+    {c:'+376',n:'Andorra',f:'🇦🇩'}, {c:'+244',n:'Angola',f:'🇦🇴'}, {c:'+1264',n:'Anguilla',f:'🇦🇮'}, {c:'+1268',n:'Antigua and Barbuda',f:'🇦🇬'},
+    {c:'+54',n:'Argentina',f:'🇦🇷'}, {c:'+374',n:'Armenia',f:'🇦🇲'}, {c:'+297',n:'Aruba',f:'🇦🇼'}, {c:'+61',n:'Australia',f:'🇦🇺'},
+    {c:'+43',n:'Austria',f:'🇦🇹'}, {c:'+994',n:'Azerbaijan',f:'🇦🇿'}, {c:'+1242',n:'Bahamas',f:'🇧🇸'}, {c:'+973',n:'Bahrain',f:'🇧🇭'},
+    {c:'+880',n:'Bangladesh',f:'🇧🇩'}, {c:'+1246',n:'Barbados',f:'🇧🇧'}, {c:'+375',n:'Belarus',f:'🇧🇾'}, {c:'+32',n:'Belgium',f:'🇧🇪'},
+    {c:'+501',n:'Belize',f:'🇧🇿'}, {c:'+229',n:'Benin',f:'🇧🇯'}, {c:'+1441',n:'Bermuda',f:'🇧🇲'}, {c:'+975',n:'Bhutan',f:'🇧🇹'},
+    {c:'+591',n:'Bolivia',f:'🇧🇴'}, {c:'+387',n:'Bosnia and Herzegovina',f:'🇧🇦'}, {c:'+267',n:'Botswana',f:'🇧🇼'}, {c:'+55',n:'Brazil',f:'🇧🇷'},
+    {c:'+673',n:'Brunei',f:'🇧🇳'}, {c:'+359',n:'Bulgaria',f:'🇧🇬'}, {c:'+226',n:'Burkina Faso',f:'🇧🇫'}, {c:'+257',n:'Burundi',f:'🇧🇮'},
+    {c:'+855',n:'Cambodia',f:'🇰🇭'}, {c:'+237',n:'Cameroon',f:'🇨🇲'}, {c:'+1',n:'Canada',f:'🇨🇦'}, {c:'+238',n:'Cape Verde',f:'🇨🇻'},
+    {c:'+1345',n:'Cayman Islands',f:'🇰🇾'}, {c:'+236',n:'Central African Republic',f:'🇨🇫'}, {c:'+235',n:'Chad',f:'🇹🇩'}, {c:'+56',n:'Chile',f:'🇨🇱'},
+    {c:'+86',n:'China',f:'🇨🇳'}, {c:'+57',n:'Colombia',f:'🇨🇴'}, {c:'+269',n:'Comoros',f:'🇰🇲'}, {c:'+242',n:'Congo',f:'🇨🇬'},
+    {c:'+243',n:'DR Congo',f:'🇨🇩'}, {c:'+682',n:'Cook Islands',f:'🇨🇰'}, {c:'+506',n:'Costa Rica',f:'🇨🇷'}, {c:'+385',n:'Croatia',f:'🇭🇷'},
+    {c:'+53',n:'Cuba',f:'🇨🇺'}, {c:'+357',n:'Cyprus',f:'🇨🇾'}, {c:'+420',n:'Czech Republic',f:'🇨🇿'}, {c:'+45',n:'Denmark',f:'🇩🇰'},
+    {c:'+253',n:'Djibouti',f:'🇩🇯'}, {c:'+1767',n:'Dominica',f:'🇩🇲'}, {c:'+1809',n:'Dominican Republic',f:'🇩🇴'}, {c:'+593',n:'Ecuador',f:'🇪🇨'},
+    {c:'+20',n:'Egypt',f:'🇪🇬'}, {c:'+503',n:'El Salvador',f:'🇸🇻'}, {c:'+240',n:'Equatorial Guinea',f:'🇬🇶'}, {c:'+291',n:'Eritrea',f:'🇪🇷'},
+    {c:'+372',n:'Estonia',f:'🇪🇪'}, {c:'+268',n:'Eswatini',f:'🇸🇿'}, {c:'+251',n:'Ethiopia',f:'🇪🇹'}, {c:'+679',n:'Fiji',f:'🇫🇯'},
+    {c:'+358',n:'Finland',f:'🇫🇮'}, {c:'+33',n:'France',f:'🇫🇷'}, {c:'+689',n:'French Polynesia',f:'🇵🇫'}, {c:'+241',n:'Gabon',f:'🇬🇦'},
+    {c:'+220',n:'Gambia',f:'🇬🇲'}, {c:'+995',n:'Georgia',f:'🇬🇪'}, {c:'+49',n:'Germany',f:'🇩🇪'}, {c:'+233',n:'Ghana',f:'🇬🇭'},
+    {c:'+350',n:'Gibraltar',f:'🇬🇮'}, {c:'+30',n:'Greece',f:'🇬🇷'}, {c:'+299',n:'Greenland',f:'🇬🇱'}, {c:'+1473',n:'Grenada',f:'🇬🇩'},
+    {c:'+502',n:'Guatemala',f:'🇬🇹'}, {c:'+224',n:'Guinea',f:'🇬🇳'}, {c:'+245',n:'Guinea-Bissau',f:'🇬🇼'}, {c:'+592',n:'Guyana',f:'🇬🇾'},
+    {c:'+509',n:'Haiti',f:'🇭🇹'}, {c:'+504',n:'Honduras',f:'🇭🇳'}, {c:'+852',n:'Hong Kong',f:'🇭🇰'}, {c:'+36',n:'Hungary',f:'🇭🇺'},
+    {c:'+354',n:'Iceland',f:'🇮🇸'}, {c:'+91',n:'India',f:'🇮🇳'}, {c:'+62',n:'Indonesia',f:'🇮🇩'}, {c:'+98',n:'Iran',f:'🇮🇷'},
+    {c:'+964',n:'Iraq',f:'🇮🇶'}, {c:'+353',n:'Ireland',f:'🇮🇪'}, {c:'+972',n:'Israel',f:'🇮🇱'}, {c:'+39',n:'Italy',f:'🇮🇹'},
+    {c:'+225',n:'Ivory Coast',f:'🇨🇮'}, {c:'+1876',n:'Jamaica',f:'🇯🇲'}, {c:'+81',n:'Japan',f:'🇯🇵'}, {c:'+962',n:'Jordan',f:'🇯🇴'},
+    {c:'+7',n:'Kazakhstan',f:'🇰🇿'}, {c:'+254',n:'Kenya',f:'🇰🇪'}, {c:'+965',n:'Kuwait',f:'🇰🇼'}, {c:'+996',n:'Kyrgyzstan',f:'🇰🇬'},
+    {c:'+856',n:'Laos',f:'🇱🇦'}, {c:'+371',n:'Latvia',f:'🇱🇻'}, {c:'+961',n:'Lebanon',f:'🇱🇧'}, {c:'+266',n:'Lesotho',f:'🇱🇸'},
+    {c:'+231',n:'Liberia',f:'🇱🇷'}, {c:'+218',n:'Libya',f:'🇱🇾'}, {c:'+423',n:'Liechtenstein',f:'🇱🇮'}, {c:'+370',n:'Lithuania',f:'🇱🇹'},
+    {c:'+352',n:'Luxembourg',f:'🇱🇺'}, {c:'+853',n:'Macau',f:'🇲🇴'}, {c:'+261',n:'Madagascar',f:'🇲🇬'}, {c:'+265',n:'Malawi',f:'🇲🇼'},
+    {c:'+60',n:'Malaysia',f:'🇲🇾'}, {c:'+960',n:'Maldives',f:'🇲🇻'}, {c:'+223',n:'Mali',f:'🇲🇱'}, {c:'+356',n:'Malta',f:'🇲🇹'},
+    {c:'+692',n:'Marshall Islands',f:'🇲🇭'}, {c:'+222',n:'Mauritania',f:'🇲🇷'}, {c:'+230',n:'Mauritius',f:'🇲🇺'}, {c:'+52',n:'Mexico',f:'🇲🇽'},
+    {c:'+691',n:'Micronesia',f:'🇫🇲'}, {c:'+373',n:'Moldova',f:'🇲🇩'}, {c:'+377',n:'Monaco',f:'🇲🇨'}, {c:'+976',n:'Mongolia',f:'🇲🇳'},
+    {c:'+382',n:'Montenegro',f:'🇲🇪'}, {c:'+212',n:'Morocco',f:'🇲🇦'}, {c:'+258',n:'Mozambique',f:'🇲🇿'}, {c:'+95',n:'Myanmar',f:'🇲🇲'},
+    {c:'+264',n:'Namibia',f:'🇳🇦'}, {c:'+977',n:'Nepal',f:'🇳🇵'}, {c:'+31',n:'Netherlands',f:'🇳🇱'}, {c:'+64',n:'New Zealand',f:'🇳🇿'},
+    {c:'+505',n:'Nicaragua',f:'🇳🇮'}, {c:'+227',n:'Niger',f:'🇳🇪'}, {c:'+234',n:'Nigeria',f:'🇳🇬'}, {c:'+850',n:'North Korea',f:'🇰🇵'},
+    {c:'+389',n:'North Macedonia',f:'🇲🇰'}, {c:'+47',n:'Norway',f:'🇳🇴'}, {c:'+968',n:'Oman',f:'🇴🇲'}, {c:'+92',n:'Pakistan',f:'🇵🇰'},
+    {c:'+970',n:'Palestine',f:'🇵🇸'}, {c:'+507',n:'Panama',f:'🇵🇦'}, {c:'+675',n:'Papua New Guinea',f:'🇵🇬'}, {c:'+595',n:'Paraguay',f:'🇵🇾'},
+    {c:'+51',n:'Peru',f:'🇵🇪'}, {c:'+63',n:'Philippines',f:'🇵🇭'}, {c:'+48',n:'Poland',f:'🇵🇱'}, {c:'+351',n:'Portugal',f:'🇵🇹'},
+    {c:'+1',n:'Puerto Rico',f:'🇵🇷'}, {c:'+974',n:'Qatar',f:'🇶🇦'}, {c:'+40',n:'Romania',f:'🇷🇴'}, {c:'+7',n:'Russia',f:'🇷🇺'},
+    {c:'+250',n:'Rwanda',f:'🇷🇼'}, {c:'+1758',n:'Saint Lucia',f:'🇱🇨'}, {c:'+685',n:'Samoa',f:'🇼🇸'}, {c:'+378',n:'San Marino',f:'🇸🇲'},
+    {c:'+966',n:'Saudi Arabia',f:'🇸🇦'}, {c:'+221',n:'Senegal',f:'🇸🇳'}, {c:'+381',n:'Serbia',f:'🇷🇸'}, {c:'+248',n:'Seychelles',f:'🇸🇨'},
+    {c:'+232',n:'Sierra Leone',f:'🇸🇱'}, {c:'+65',n:'Singapore',f:'🇸🇬'}, {c:'+421',n:'Slovakia',f:'🇸🇰'}, {c:'+386',n:'Slovenia',f:'🇸🇮'},
+    {c:'+677',n:'Solomon Islands',f:'🇸🇧'}, {c:'+252',n:'Somalia',f:'🇸🇴'}, {c:'+27',n:'South Africa',f:'🇿🇦'}, {c:'+82',n:'South Korea',f:'🇰🇷'},
+    {c:'+211',n:'South Sudan',f:'🇸🇸'}, {c:'+34',n:'Spain',f:'🇪🇸'}, {c:'+94',n:'Sri Lanka',f:'🇱🇰'}, {c:'+249',n:'Sudan',f:'🇸🇩'},
+    {c:'+597',n:'Suriname',f:'🇸🇷'}, {c:'+46',n:'Sweden',f:'🇸🇪'}, {c:'+41',n:'Switzerland',f:'🇨🇭'}, {c:'+963',n:'Syria',f:'🇸🇾'},
+    {c:'+886',n:'Taiwan',f:'🇹🇼'}, {c:'+992',n:'Tajikistan',f:'🇹🇯'}, {c:'+255',n:'Tanzania',f:'🇹🇿'}, {c:'+66',n:'Thailand',f:'🇹🇭'},
+    {c:'+670',n:'Timor-Leste',f:'🇹🇱'}, {c:'+228',n:'Togo',f:'🇹🇬'}, {c:'+676',n:'Tonga',f:'🇹🇴'}, {c:'+1868',n:'Trinidad and Tobago',f:'🇹🇹'},
+    {c:'+216',n:'Tunisia',f:'🇹🇳'}, {c:'+90',n:'Turkey',f:'🇹🇷'}, {c:'+993',n:'Turkmenistan',f:'🇹🇲'}, {c:'+256',n:'Uganda',f:'🇺🇬'},
+    {c:'+380',n:'Ukraine',f:'🇺🇦'}, {c:'+971',n:'United Arab Emirates',f:'🇦🇪'}, {c:'+44',n:'United Kingdom',f:'🇬🇧'}, {c:'+1',n:'United States',f:'🇺🇸'},
+    {c:'+598',n:'Uruguay',f:'🇺🇾'}, {c:'+998',n:'Uzbekistan',f:'🇺🇿'}, {c:'+678',n:'Vanuatu',f:'🇻🇺'}, {c:'+379',n:'Vatican City',f:'🇻🇦'},
+    {c:'+58',n:'Venezuela',f:'🇻🇪'}, {c:'+84',n:'Vietnam',f:'🇻🇳'}, {c:'+967',n:'Yemen',f:'🇾🇪'}, {c:'+260',n:'Zambia',f:'🇿🇲'},
+    {c:'+263',n:'Zimbabwe',f:'🇿🇼'}
+];
+                },
+                get opts() {
+                    if (!this.qPhone) return this.allCodes;
+                    const s = this.qPhone.toLowerCase();
+                    return this.allCodes.filter(c => c.n.toLowerCase().includes(s) || c.c.includes(s));
+                },
+                pick(c) { 
+                    this.selectedCode = c.c; 
+                    this.qPhone = ''; 
+                    this.openPhone = false; 
+                    this.hiPhone = -1; 
+                },
+                getSelected() { return this.allCodes.find(c => c.c === this.selectedCode) || this.allCodes[0]; }
+            }"
+            @phone-code-changed.window="if ($event.detail.prefix === '{{ $prefix }}') { selectedCode = $event.detail.dial; }"
+            @click.away="openPhone = false; qPhone = '';"
+            class="relative flex gap-0 w-full bg-gray-800 border border-gray-700 rounded-xl overflow-visible focus-within:border-violet-500 transition-colors"
+        >
+            <div class="relative flex-shrink-0 border-r border-gray-700">
+                <button type="button" @click="openPhone = !openPhone" class="h-full px-3 py-2 flex items-center gap-2 font-semibold text-white hover:text-violet-400 transition-colors">
+                    <span x-text="getSelected().f" class="text-base"></span>
+                    <span x-text="getSelected().c" class="text-sm"></span>
+                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                
+                <div x-show="openPhone" x-transition x-cloak class="absolute top-full left-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-72">
+                    <div class="p-2 border-b border-gray-700 sticky top-0 bg-gray-800 z-10">
+                        <input type="text" x-model="qPhone" placeholder="Search country or code..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-violet-500" @click.stop>
+                    </div>
+                    <div class="overflow-y-auto flex-1 p-1" style="scrollbar-width: thin; scrollbar-color: #4b5563 transparent;">
+                        <template x-for="(c, i) in opts" :key="c.c + c.n">
+                            <button type="button" @click="pick(c)" :class="c.c === selectedCode ? 'bg-gray-700 text-white' : 'text-slate-300 hover:bg-gray-700/80'" class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5">
+                                <span x-text="c.f" class="text-base"></span>
+                                <span x-text="c.n" class="truncate flex-1"></span>
+                                <span x-text="c.c" class="font-mono text-xs text-slate-400"></span>
+                            </button>
+                        </template>
+                        <div x-show="opts.length === 0" class="px-4 py-3 text-sm text-slate-400 text-center">No countries found</div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="{{ $prefix }}_phone_code" x-model="selectedCode">
+            
+            <input type="tel" name="{{ $prefix }}_phone" value="{{ old($prefix . '_phone') }}" placeholder="1968524222" required
+                class="w-full bg-transparent border-none px-3 py-2 text-sm text-white focus:ring-0 outline-none placeholder-gray-600">
         </div>
-    </div>
-    <div>
-        <label class="block text-xs font-medium text-slate-400 mb-1.5">Phone Number</label>
-        <input type="text" name="{{ $prefix }}_phone" placeholder="1968524222"
-            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-violet-500">
     </div>
 </div>
 
 {{-- Save to Address Book --}}
+@if(!($guestMode ?? false))
 <div class="pt-3 border-t border-white/10 space-y-2">
     <button type="button" onclick="saveToAddressBook('{{ $prefix }}')"
         data-save-address-book-button="{{ $prefix }}"
@@ -138,6 +228,7 @@
     </button>
     <p id="{{ $prefix }}_save_status" class="hidden text-xs leading-5 text-slate-400"></p>
 </div>
+@endif
 
 @once
 @push('scripts')
@@ -235,9 +326,24 @@ function countryAutocomplete(input, prefix) {
     const q = input.value.trim().toLowerCase();
     const clearBtn = document.getElementById(prefix + '_country_clear');
     if (clearBtn) clearBtn.classList.toggle('hidden', !input.value.trim());
-    const results = q.length === 0
-        ? window.COUNTRIES.slice(0, 60)
-        : window.COUNTRIES.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase() === q).slice(0, 12);
+    let results;
+    if (q.length === 0) {
+        results = window.COUNTRIES.slice(0, 60);
+    } else {
+        results = window.COUNTRIES.filter(c => {
+            const name = c.name.toLowerCase();
+            const code = c.code.toLowerCase();
+            let matchesAlias = false;
+            if (q === 'us' || q === 'usa') {
+                if (code === 'us' || name === 'united states') matchesAlias = true;
+            } else if (q === 'uk') {
+                if (code === 'gb' || name === 'united kingdom') matchesAlias = true;
+            } else if (q === 'uae') {
+                if (code === 'ae' || name === 'united arab emirates') matchesAlias = true;
+            }
+            return name.includes(q) || code === q || code.startsWith(q) || matchesAlias;
+        }).slice(0, 12);
+    }
     _buildCountryDropdown(prefix, results, q);
 }
 
@@ -283,9 +389,15 @@ function selectCountry(prefix, name, code) {
     document.getElementById(prefix + '_country_dropdown').classList.add('hidden');
     const clearBtn = document.getElementById(prefix + '_country_clear');
     if (clearBtn) clearBtn.classList.remove('hidden');
-    const codeEl = document.getElementById(prefix + '_phone_code_input');
+    const codeEl = document.querySelector(`[name="${prefix}_phone_code"]`);
     const cObj = window.PHONE_CODES.find(p => p.code === code);
-    if (codeEl && !codeEl.value && cObj) codeEl.value = cObj.dial;
+    if (codeEl && cObj) {
+        codeEl.value = cObj.dial;
+        codeEl.dispatchEvent(new Event('change', { bubbles: true }));
+        window.dispatchEvent(new CustomEvent('phone-code-changed', {
+            detail: { prefix: prefix, dial: cObj.dial }
+        }));
+    }
 }
 
 document.addEventListener('click', (e) => {

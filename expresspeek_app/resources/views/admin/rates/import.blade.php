@@ -13,7 +13,7 @@
         <div class="flex overflow-x-auto border-b border-white/10 scrollbar-none">
             @foreach([
                 ['key' => 'dhl',    'label' => 'DHL',    'color' => 'text-yellow-400'],
-                ['key' => 'master', 'label' => 'Master', 'color' => 'text-blue-400'],
+                ['key' => 'master', 'label' => 'Express Peek', 'color' => 'text-blue-400'],
                 ['key' => 'aramex', 'label' => 'Aramex', 'color' => 'text-orange-400'],
                 ['key' => 'ups',    'label' => 'UPS',    'color' => 'text-amber-400'],
                 ['key' => 'ocs',    'label' => 'OCS',    'color' => 'text-cyan-400'],
@@ -45,16 +45,16 @@
             </form>
         </div>
 
-        {{-- ── Master ── --}}
+        {{-- ── Express Peek ── --}}
         <div x-show="tab === 'master'" x-cloak class="p-6 space-y-4">
             <div>
-                <h2 class="text-base font-semibold text-white">Master Air Agent</h2>
-                <p class="mt-1 text-sm text-slate-400">Upload the Master Air Agent monthly rate sheet to refresh all Master/Singapore/Dubai provider rates.</p>
+                <h2 class="text-base font-semibold text-white">Express Peek</h2>
+                <p class="mt-1 text-sm text-slate-400">Upload the Express Peek rate sheet to refresh all Express Peek/SF Service/Singapore/Dubai provider rates.</p>
             </div>
             <form action="{{ route('admin.rates.import.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 <input type="hidden" name="carrier" value="master">
-                <x-rate-file-input id="master_file" name="master_file" label="Master Rate File" required color="blue" />
+                <x-rate-file-input id="master_file" name="master_file" label="Express Peek Rate File" required color="blue" />
                 <x-import-button />
             </form>
         </div>

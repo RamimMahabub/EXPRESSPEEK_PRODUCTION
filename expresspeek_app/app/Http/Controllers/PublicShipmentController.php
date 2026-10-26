@@ -103,15 +103,16 @@ class PublicShipmentController extends Controller
             'shipment_type'          => 'required|in:document,non_document',
             'document_description'   => 'nullable|string|max:500',
             'shipment_purpose'       => 'nullable|string|max:191',
+            'remarks'                => 'nullable|string|max:2000',
             'items'                  => 'nullable|array',
             'items.*.name'           => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|string|max:191',
             'items.*.quantity'       => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|integer|min:1',
             'items.*.value_per_item' => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|numeric|min:0',
             'packages'               => 'required|array|min:1',
             'packages.*.weight'      => 'required|numeric|min:0.01',
-            'packages.*.length'      => 'nullable|numeric|min:0.01',
-            'packages.*.width'       => 'nullable|numeric|min:0.01',
-            'packages.*.height'      => 'nullable|numeric|min:0.01',
+            'packages.*.length'      => 'nullable|numeric|min:0',
+            'packages.*.width'       => 'nullable|numeric|min:0',
+            'packages.*.height'      => 'nullable|numeric|min:0',
             'packages.*.quantity'    => 'required|integer|min:1',
             'carrier_id'             => 'required|exists:carriers,id',
         ]);
@@ -178,6 +179,8 @@ class PublicShipmentController extends Controller
 
             'shipment_type'         => $data['shipment_type'],
             'document_description'  => $data['document_description'] ?? null,
+            'shipment_purpose'      => $data['shipment_purpose'] ?? null,
+            'remarks'               => $data['remarks'] ?? null,
             'items'                 => $items,
             'packages'              => $data['packages'],
             'total_packages'        => $totalPackages,
@@ -258,17 +261,15 @@ class PublicShipmentController extends Controller
         $email = strtolower(trim((string) ($data['sender_email'] ?? '')));
         $name = trim((string) ($data['sender_name'] ?? 'Guest Customer'));
 
-        if ($email !== '') {
-            $existing = User::query()->where('email', $email)->first();
-
-            if ($existing) {
-                return $existing;
-            }
+        if ($email === '') {
+            $email = 'guest@expresspeek.local';
+            $name = 'Guest User';
         }
 
-        if ($email === '') {
-            $slug = Str::slug($name) ?: 'guest-customer';
-            $email = $slug . '+' . Str::lower(Str::random(8)) . '@expresspeek.local';
+        $existing = User::query()->where('email', $email)->first();
+
+        if ($existing) {
+            return $existing;
         }
 
         $guest = User::create([

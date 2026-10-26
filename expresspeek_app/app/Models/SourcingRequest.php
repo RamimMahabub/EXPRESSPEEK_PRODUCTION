@@ -11,12 +11,26 @@ class SourcingRequest extends Model
 
     protected $fillable = [
         'reference_number',
+        'customer_is_business',
+        'customer_company',
         'customer_name',
+        'customer_country',
+        'customer_country_code',
+        'customer_address',
+        'customer_address2',
+        'customer_address3',
+        'customer_city',
+        'customer_state',
+        'customer_postal_code',
+        'customer_email',
+        'customer_phone_type',
         'whatsapp_number',
         'whatsapp_country_code',
         'destination_country',
         'destination_country_code',
         'destination_address',
+        'destination_address2',
+        'destination_address3',
         'destination_city',
         'destination_state',
         'destination_postal_code',
@@ -57,6 +71,24 @@ class SourcingRequest extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::created(function (self $request): void {
+            if ($request->status === self::STATUS_DRAFT) {
+                return;
+            }
+
+            $admins = User::role('admin')->get();
+            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\ActivityNotification(
+                'New Shop From BD Request',
+                $request->reference_number . ' was submitted by ' . $request->customer_name . '.',
+                route('admin.sourcing-requests.show', $request),
+                'package',
+                'violet',
+            ));
+        });
+    }
+
     public function getTrackingNumberAttribute($value): ?string
     {
         if ($value === null) {
@@ -70,6 +102,7 @@ class SourcingRequest extends Model
 
     // ─── Status Constants ────────────────────────────────────────────────────────
 
+    const STATUS_DRAFT           = 'draft';
     const STATUS_NEW             = 'new';
     const STATUS_REVIEWING       = 'reviewing';
     const STATUS_CONTACTED       = 'contacted';
@@ -82,6 +115,7 @@ class SourcingRequest extends Model
     public static function statuses(): array
     {
         return [
+            self::STATUS_DRAFT           => 'Draft',
             self::STATUS_NEW             => 'New Request',
             self::STATUS_REVIEWING       => 'Under Review',
             self::STATUS_CONTACTED       => 'Customer Contacted',
@@ -101,6 +135,7 @@ class SourcingRequest extends Model
     public function getStatusColorAttribute(): string
     {
         return match ($this->status) {
+            self::STATUS_DRAFT           => 'slate',
             self::STATUS_NEW             => 'blue',
             self::STATUS_REVIEWING       => 'indigo',
             self::STATUS_CONTACTED       => 'purple',

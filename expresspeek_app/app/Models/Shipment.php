@@ -49,6 +49,7 @@ class Shipment extends Model
         'shipment_type',
         'document_description',
         'shipment_purpose',
+        'remarks',
         'items',
         'packages',
         'total_packages',
@@ -85,6 +86,24 @@ class Shipment extends Model
             'sender_is_business' => 'boolean',
             'receiver_is_business' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (self $shipment): void {
+            if ($shipment->status === self::STATUS_DRAFT) {
+                return;
+            }
+
+            $admins = User::role('admin')->get();
+            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\ActivityNotification(
+                'New Shipment Created',
+                'Shipment ' . $shipment->tracking_number . ' was created.',
+                route('admin.shipments.edit', $shipment),
+                'truck',
+                'blue',
+            ));
+        });
     }
 
     /**
@@ -159,6 +178,7 @@ class Shipment extends Model
     }
 
     // Status constants
+    const STATUS_DRAFT                = 'draft';
     const STATUS_PENDING              = 'pending';
     const STATUS_PICKED_UP            = 'picked_up';
     const STATUS_CONNECTED_TO_CARRIER = 'connected_to_carrier';
@@ -171,6 +191,7 @@ class Shipment extends Model
     public static function statuses(): array
     {
         return [
+            self::STATUS_DRAFT             => 'Draft',
             self::STATUS_PENDING           => 'Pending',
             self::STATUS_PICKED_UP         => 'Picked Up',
             self::STATUS_CONNECTED_TO_CARRIER => 'Connected to the carrier',
@@ -190,6 +211,7 @@ class Shipment extends Model
     public function getStatusColorAttribute(): string
     {
         return match ($this->status) {
+            self::STATUS_DRAFT             => 'slate',
             self::STATUS_PENDING           => 'yellow',
             self::STATUS_PICKED_UP         => 'blue',
             self::STATUS_CONNECTED_TO_CARRIER => 'green',

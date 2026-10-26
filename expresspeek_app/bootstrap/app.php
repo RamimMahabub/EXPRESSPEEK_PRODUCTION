@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectUsersTo('/dashboard');
+
         // Trust Vercel proxy headers so request scheme/host are detected correctly.
         $middleware->trustProxies(at: '*');
         $middleware->validateCsrfTokens(except: [
@@ -27,15 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // A login page left open before logout contains the previous session's
-        // CSRF token. Recover with a fresh form instead of showing a raw 419 page.
         $exceptions->respond(function ($response, $exception, Request $request) {
-            if ($response->getStatusCode() === 419
-                && $request->isMethod('post')
-                && $request->is('login')) {
-                return redirect()->route('login', $request->only('next'))->with(
+            if ($response->getStatusCode() === 419 && !$request->expectsJson()) {
+                $next = $request->isMethod('get') ? url()->current() : url()->previous();
+                return redirect()->route('login', ['next' => $next])->with(
                     'status',
-                    'Your login page expired. Please sign in again.'
+                    'Your session expired due to inactivity. Please sign in again.'
                 );
             }
 

@@ -35,9 +35,10 @@ class DashboardController extends Controller
         }
 
         $stats = [
-            'total'      => $shipments->count(),
-            'pending'    => $shipments->where('status', 'pending')->count(),
-            'in_transit' => $shipments->where('status', 'in_transit')->count(),
+            'total'          => $shipments->count(),
+            'order_requests' => \App\Models\SourcingRequest::where('user_id', $user->id)->count(),
+            'pending'        => $shipments->where('status', 'pending')->count(),
+            'in_transit'     => $shipments->where('status', 'in_transit')->count(),
             'delivered'  => $shipments->whereIn('status', [
                 \App\Models\Shipment::STATUS_CONNECTED_TO_CARRIER,
                 \App\Models\Shipment::STATUS_DELIVERED,

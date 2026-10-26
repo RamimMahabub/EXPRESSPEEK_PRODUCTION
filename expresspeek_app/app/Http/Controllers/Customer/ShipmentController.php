@@ -283,17 +283,19 @@ class ShipmentController extends Controller
             // Content
             'shipment_type'          => 'required|in:document,non_document',
             'document_description'   => 'nullable|string|max:500',
+            'remarks'                => 'nullable|string|max:2000',
             'shipment_purpose'       => 'nullable|string|max:191',
             'items'                  => 'nullable|array',
             'items.*.name'           => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|string|max:191',
             'items.*.quantity'       => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|integer|min:1',
             'items.*.value_per_item' => 'exclude_if:shipment_type,document|required_if:shipment_type,non_document|numeric|min:0',
+            'items.*.hs_code'        => 'nullable|string|max:191',
             // Packages
             'packages'               => 'required|array|min:1',
             'packages.*.weight'      => 'required|numeric|min:0.01',
-            'packages.*.length'      => 'nullable|numeric|min:0.01',
-            'packages.*.width'       => 'nullable|numeric|min:0.01',
-            'packages.*.height'      => 'nullable|numeric|min:0.01',
+            'packages.*.length'      => 'nullable|numeric|min:0',
+            'packages.*.width'       => 'nullable|numeric|min:0',
+            'packages.*.height'      => 'nullable|numeric|min:0',
             'packages.*.quantity'    => 'required|integer|min:1',
             // Carrier
             'carrier_id'             => 'required|exists:carriers,id',
@@ -310,9 +312,9 @@ class ShipmentController extends Controller
         $user = auth()->user();
         $isAgent = $user?->isAgent() ?? false;
 
+        $shipmentId = $request->input('shipment_id');
+        
         $shipmentData = array_merge($data, [
-            'tracking_number'     => $this->generateTrackingNumber(),
-            'invoice_number'      => 'INV-' . strtoupper(Str::random(6)) . '-' . now()->format('Ymd'),
             'total_packages'      => $totalPackages,
             'total_weight'        => $totalWeight,
             'weight'              => $totalWeight, // legacy field
@@ -323,7 +325,20 @@ class ShipmentController extends Controller
             'sender_id'           => $user?->id,
         ]);
 
-        $shipment = Shipment::create($shipmentData);
+        if ($shipmentId) {
+            $shipment = Shipment::where('id', $shipmentId)->where('sender_id', $user?->id)->first();
+            if ($shipment && $shipment->status === Shipment::STATUS_DRAFT) {
+                $shipment->update($shipmentData);
+            } else {
+                $shipmentData['tracking_number'] = $this->generateTrackingNumber();
+                $shipmentData['invoice_number'] = 'INV-' . strtoupper(Str::random(6)) . '-' . now()->format('Ymd');
+                $shipment = Shipment::create($shipmentData);
+            }
+        } else {
+            $shipmentData['tracking_number'] = $this->generateTrackingNumber();
+            $shipmentData['invoice_number'] = 'INV-' . strtoupper(Str::random(6)) . '-' . now()->format('Ymd');
+            $shipment = Shipment::create($shipmentData);
+        }
 
         $shipment->trackingEvents()->create([
             'location'    => $shipmentData['sender_city'] . ', ' . $shipmentData['sender_country'],
@@ -365,6 +380,126 @@ class ShipmentController extends Controller
     private function generateTrackingNumber(): string
     {
         return Shipment::generateTrackingNumber();
+    }
+
+    /**
+     * POST /customer/shipments/draft — Save the current wizard progress as a Draft.
+     */
+    public function saveDraft(Request $request)
+    {
+        $user = auth()->user();
+        $isAgent = $user?->isAgent() ?? false;
+
+        $shipmentId = $request->input('shipment_id');
+        
+        $data = $request->all();
+
+        // Calculate totals if packages exist
+        $totalPackages = 1;
+        $totalWeight = 0.5; // fallback
+        
+        if (!empty($data['packages']) && is_array($data['packages'])) {
+            $normalizedPackages = PackageWeightCalculator::normalize($data['packages']);
+            $packageTotals = PackageWeightCalculator::totals($normalizedPackages);
+            $totalPackages = $packageTotals['packages'];
+            $totalWeight = max((float)$packageTotals['weight'], 0.5);
+            $data['packages'] = $normalizedPackages;
+        }
+
+        $carrierName = null;
+        if (!empty($data['carrier_id'])) {
+            $carrier = Carrier::find($data['carrier_id']);
+            $carrierName = $carrier?->name;
+        }
+
+        $shipmentData = [
+            'sender_id'           => $user?->id,
+            'agent_id'            => $isAgent ? $user?->id : null,
+            'created_by_agent_id' => $isAgent ? $user?->id : null,
+            'status'              => Shipment::STATUS_DRAFT,
+            
+            // Required DB fields get defaults if empty
+            'receiver_name'       => $data['receiver_name'] ?? '[Draft]',
+            'receiver_address'    => $data['receiver_address'] ?? '[Draft]',
+            'receiver_city'       => $data['receiver_city'] ?? '[Draft]',
+            'receiver_country'    => $data['receiver_country'] ?? '[Draft]',
+            'weight'              => $totalWeight,
+            
+            // Optional / Extended fields
+            'sender_name'         => $data['sender_name'] ?? null,
+            'sender_company'      => $data['sender_company'] ?? null,
+            'sender_is_business'  => filter_var($data['sender_is_business'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'sender_country_code' => $data['sender_country_code'] ?? null,
+            'sender_country'      => $data['sender_country'] ?? null,
+            'sender_address'      => $data['sender_address'] ?? null,
+            'sender_address2'     => $data['sender_address2'] ?? null,
+            'sender_address3'     => $data['sender_address3'] ?? null,
+            'sender_postal_code'  => $data['sender_postal_code'] ?? null,
+            'sender_city'         => $data['sender_city'] ?? null,
+            'sender_state'        => $data['sender_state'] ?? null,
+            'sender_email'        => $data['sender_email'] ?? null,
+            'sender_phone_type'   => $data['sender_phone_type'] ?? null,
+            'sender_phone_code'   => $data['sender_phone_code'] ?? null,
+            'sender_phone'        => $data['sender_phone'] ?? null,
+
+            'receiver_company'      => $data['receiver_company'] ?? null,
+            'receiver_is_business'  => filter_var($data['receiver_is_business'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'receiver_country_code' => $data['receiver_country_code'] ?? null,
+            'receiver_address2'     => $data['receiver_address2'] ?? null,
+            'receiver_address3'     => $data['receiver_address3'] ?? null,
+            'receiver_postal_code'  => $data['receiver_postal_code'] ?? null,
+            'receiver_state'        => $data['receiver_state'] ?? null,
+            'receiver_email'        => $data['receiver_email'] ?? null,
+            'receiver_phone_type'   => $data['receiver_phone_type'] ?? null,
+            'receiver_phone_code'   => $data['receiver_phone_code'] ?? null,
+            'receiver_phone'        => $data['receiver_phone'] ?? null,
+
+            'shipment_type'         => $data['shipment_type'] ?? 'non_document',
+            'document_description'  => $data['document_description'] ?? null,
+            'remarks'               => $data['remarks'] ?? null,
+            'shipment_purpose'      => $data['shipment_purpose'] ?? null,
+            'items'                 => $data['items'] ?? null,
+            'packages'              => $data['packages'] ?? null,
+            'total_packages'        => $totalPackages,
+            'total_weight'          => $totalWeight,
+            
+            'carrier_id'            => $data['carrier_id'] ?? null,
+            'carrier_name'          => $carrierName,
+        ];
+
+        if ($shipmentId) {
+            $shipment = Shipment::where('id', $shipmentId)->where('sender_id', $user?->id)->first();
+            if ($shipment && $shipment->status === Shipment::STATUS_DRAFT) {
+                $shipment->update($shipmentData);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Cannot update this shipment'], 403);
+            }
+        } else {
+            // New draft
+            $shipmentData['tracking_number'] = $this->generateTrackingNumber();
+            $shipmentData['invoice_number'] = 'INV-' . strtoupper(Str::random(6)) . '-' . now()->format('Ymd');
+            $shipment = Shipment::create($shipmentData);
+        }
+
+        return response()->json([
+            'success'     => true,
+            'shipment_id' => $shipment->id,
+            'message'     => 'Draft saved successfully'
+        ]);
+    }
+
+    /**
+     * DELETE /customer/shipments/{shipment} — Delete a draft shipment.
+     */
+    public function destroy(Shipment $shipment)
+    {
+        abort_if($shipment->sender_id !== auth()->id(), 403);
+        abort_if($shipment->status !== Shipment::STATUS_DRAFT, 403, 'Only draft shipments can be removed.');
+
+        $shipment->delete();
+
+        return redirect()->route('customer.shipments.index')
+            ->with('success', 'Draft shipment removed successfully.');
     }
 
 }

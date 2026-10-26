@@ -1,303 +1,206 @@
+@php
+    $shipment = $shipmentInvoice->shipment;
+    $charges = collect($shipmentInvoice->items ?? [])->values();
+    $packages = collect($shipment->packages ?? []);
+    $goods = collect($shipment->items ?? []);
+    $isDocument = $shipment->shipment_type === 'document';
+    $currency = $shipmentInvoice->currency;
+    $shipmentDate = $shipment->created_at?->format('Y-m-d') ?? '';
+    $receiptDate = $shipmentInvoice->created_at?->format('Y-m-d') ?? '';
+    $waybill = $shipment->carrier_tracking_number ?: $shipment->tracking_number;
+    $chargeableWeight = (float) ($shipment->total_weight ?: $shipment->weight);
+    $actualWeight = $packages->isNotEmpty()
+        ? $packages->sum(fn ($package) => (float) ($package['actual_weight'] ?? $package['weight'] ?? 0) * max(1, (int) ($package['quantity'] ?? 1)))
+        : $chargeableWeight;
+    $hasDimensions = $packages->contains(fn ($package) => isset($package['volumetric_weight'])
+        || (!empty($package['length']) && !empty($package['width']) && !empty($package['height'])));
+    $dimensionalWeight = $packages->sum(fn ($package) => (float) ($package['volumetric_weight']
+        ?? (($package['length'] ?? 0) * ($package['width'] ?? 0) * ($package['height'] ?? 0) / \App\Support\PackageWeightCalculator::DIVISOR))
+        * max(1, (int) ($package['quantity'] ?? 1)));
+    $declaredValue = $goods->sum(fn ($item) => (float) ($item['value_per_item'] ?? 0) * (int) ($item['quantity'] ?? 1));
+    $senderLocality = collect([$shipment->sender_city, $shipment->sender_state, $shipment->sender_postal_code])->filter()->join(', ');
+    $receiverLocality = collect([$shipment->receiver_city, $shipment->receiver_state, $shipment->receiver_postal_code])->filter()->join(', ');
+    $senderPhone = collect([$shipment->sender_phone_code, $shipment->sender_phone])->filter()->join('');
+    $receiverPhone = collect([$shipment->receiver_phone_code, $shipment->receiver_phone])->filter()->join('');
+    $logoPath = public_path('images/express-peek-logo-pdf.png');
+    $logoData = is_file($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+    $baseCharges = $charges->filter(fn ($charge) => ($charge['type'] ?? '') === 'base_freight');
+    $serviceCharges = $charges->reject(fn ($charge) => ($charge['type'] ?? '') === 'base_freight');
+    $compactCharges = $charges->count() <= 5 && $charges->sum(fn ($charge) => mb_strlen($charge['description'] ?? '')) <= 240;
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $shipment->shipment_purpose === 'Commercial' ? 'Commercial' : 'Proforma' }} Invoice {{ $shipmentInvoice->invoice_number }}</title>
+    <title>Shipment Receipt {{ $shipmentInvoice->invoice_number }}</title>
     <style>
-        @page { margin: 15mm 15mm; }
+        @page { size: A4 portrait; margin: 24pt 30pt 40pt; }
         * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            color: #000;
-            font-family: Arial, sans-serif;
-            font-size: 11px;
-            line-height: 1.3;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        td, th { vertical-align: top; }
-        .document-title {
-            margin: 0 0 15px 0;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .header-info {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .header-info span {
-            margin-right: 20px;
-        }
-        
-        .parties-table { margin-bottom: 20px; }
-        .parties-table td { width: 50%; padding-right: 15px; }
-        .party-title { font-weight: bold; font-size: 10px; margin-bottom: 3px; }
-        .party-details { font-size: 10px; line-height: 1.4; }
-        
-        .references {
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        .remarks {
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .remarks span {
-            margin-left: 20px;
-            font-weight: normal;
-        }
-
-        .items-table { margin-bottom: 20px; border: 1px solid #000; }
-        .items-table th, .items-table td {
-            border: 1px solid #000;
-            padding: 5px;
-            font-size: 10px;
-        }
-        .items-table th {
-            font-weight: bold;
-            text-align: left;
-        }
-        
-        .totals-container {
-            display: table;
-            width: 100%;
-            font-size: 10px;
-            margin-bottom: 40px;
-        }
-        .totals-left {
-            display: table-cell;
-            width: 50%;
-            padding-right: 15px;
-        }
-        .totals-right {
-            display: table-cell;
-            width: 50%;
-        }
-        .totals-table { width: 100%; margin-bottom: 15px; }
-        .totals-table td { padding: 2px 0; }
-        .totals-table td.label { width: 45%; }
-        
-        .certification {
-            font-size: 10px;
-            margin-bottom: 30px;
-        }
-        
-        .signature-section {
-            display: table;
-            width: 100%;
-            font-size: 11px;
-        }
-        .signature-left {
-            display: table-cell;
-            width: 45%;
-        }
-        .signature-middle {
-            display: table-cell;
-            width: 30%;
-        }
-        .signature-right {
-            display: table-cell;
-            width: 25%;
-            text-align: center;
-        }
-        
-        .sig-row { display: table; width: 100%; margin-bottom: 5px; }
-        .sig-label { display: table-cell; width: 120px; font-weight: bold; }
-        .sig-value { display: table-cell; border-bottom: 1px solid transparent; }
-        
+        body { margin: 0; color: #111; font-family: DejaVu Sans, sans-serif; font-size: 8pt; line-height: 1.4; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        td, th { vertical-align: top; overflow-wrap: break-word; word-wrap: break-word; }
+        h1 { margin: 0; font-size: 21pt; line-height: 1.2; font-weight: bold; }
+        h2 { margin: 0 0 9pt; font-size: 13pt; line-height: 1.25; font-weight: bold; }
+        p { margin: 0; }
+        .header { border-bottom: 1pt solid #aaa; margin-bottom: 14pt; }
+        .header td { vertical-align: middle; padding-bottom: 8pt; }
+        .brand { width: 40%; }
+        .brand img { width: 126pt; height: auto; }
+        .brand-name { font-size: 18pt; color: #172b70; font-weight: bold; }
+        .title { width: 60%; text-align: right; }
+        .receipt-meta { margin-top: 5pt; font-size: 7pt; color: #555; }
+        .parties { border-bottom: 1pt solid #bbb; margin-bottom: 16pt; }
+        .parties td { width: 50%; height: 135pt; padding: 0 10pt 12pt; }
+        .parties td + td { padding-left: 13pt; }
+        .address { line-height: 1.45; }
+        .email { margin-top: 8pt; }
+        .columns { margin-bottom: 12pt; }
+        .column { width: 50%; padding: 0 10pt; }
+        .column + .column { padding-left: 13pt; }
+        .details td { padding: 1pt 0; line-height: 1.4; }
+        .details .label { width: 48%; padding-right: 8pt; }
+        .details .value { width: 52%; }
+        .billing { margin-top: 4pt; }
+        .charge-table th { text-align: left; font-size: 7pt; border-bottom: .6pt solid #aaa; padding: 0 0 5pt; }
+        .charge-table td { padding: 5pt 0; border-bottom: .4pt solid #ddd; }
+        .charge-table .amount { width: 90pt; text-align: right; padding-left: 6pt; }
+        .charge-table .total td { border-top: 1pt solid #777; border-bottom: 0; font-weight: bold; padding-top: 7pt; }
+        .charge-table tr, .details tr { page-break-inside: avoid; }
+        .section { margin: 12pt 10pt 0; }
+        .reference-table .label { width: 25%; }
+        .contents { margin-top: 20pt; }
+        .contents h2 { page-break-after: avoid; }
+        .contents p { margin-bottom: 3pt; }
+        .notes { margin-top: 14pt; white-space: pre-line; }
+        .notes strong { display: block; margin-bottom: 3pt; }
+        .footer { position: fixed; bottom: -22pt; left: 0; right: 0; border-top: .5pt solid #ccc; padding-top: 5pt; font-size: 7pt; color: #555; }
+        .footer td:last-child { text-align: right; }
     </style>
 </head>
 <body>
-@php
-    $shipment = $shipmentInvoice->shipment;
-    $charges = collect($shipmentInvoice->items ?? [])->values();
-    
-    // Sender formatting
-    $senderLocality = collect([$shipment->sender_city, $shipment->sender_postal_code])->filter()->join(', ');
-    $receiverLocality = collect([$shipment->receiver_city, $shipment->receiver_postal_code])->filter()->join(', ');
-    
-    // Tracking number is AWB No
-    $awbNo = str_replace(' ', '', $shipment->tracking_number ?? '');
-    
-    $invoiceDate = $shipmentInvoice->created_at ? $shipmentInvoice->created_at->format('Y-m-d') : date('Y-m-d');
-    $invoiceNo = $shipmentInvoice->invoice_number;
-    
-@endphp
-
-<h1 class="document-title">{{ $shipment->shipment_purpose === 'Commercial' ? 'Commercial' : 'Proforma' }} Invoice</h1>
-
-<div class="header-info">
-    <span>AWB No: {{ $awbNo }}</span>
-    <span>Invoice Date: {{ $invoiceDate }}</span>
-    <span>Invoice No: {{ $invoiceNo }}</span>
-</div>
-
-<table class="parties-table">
-    <tr>
-        <td>
-            <div class="party-title">SHIP FROM:</div>
-            <div class="party-details">
-                @if($shipment->sender_company){{ $shipment->sender_company }}<br>@endif
-                @if($shipment->sender_name){{ $shipment->sender_name }}<br>@endif
-                @if($shipment->sender_address){{ $shipment->sender_address }}<br>@endif
-                @if($shipment->sender_address2){{ $shipment->sender_address2 }}<br>@endif
-                @if($senderLocality){{ $senderLocality }}<br>@endif
-                @if($shipment->sender_country){{ $shipment->sender_country }}<br>@endif
-                @if($shipment->sender_phone)+{{ $shipment->sender_phone_code }}{{ $shipment->sender_phone }}<br>@endif
-                @if($shipment->sender_email){{ $shipment->sender_email }}<br>@endif
-                Trader Type: {{ $shipment->sender_is_business ? 'BUSINESS' : 'INDIVIDUAL' }}<br>
-                VAT No:<br>
-                EORI:<br>
-                TAX ID:
-            </div>
-        </td>
-        <td>
-            <div class="party-title">SHIP TO:</div>
-            <div class="party-details">
-                @if($shipment->receiver_company){{ $shipment->receiver_company }}<br>@endif
-                @if($shipment->receiver_name){{ $shipment->receiver_name }}<br>@endif
-                @if($shipment->receiver_address){{ $shipment->receiver_address }}<br>@endif
-                @if($shipment->receiver_address2){{ $shipment->receiver_address2 }}<br>@endif
-                @if($receiverLocality){{ $receiverLocality }}<br>@endif
-                @if($shipment->receiver_country){{ $shipment->receiver_country }}<br>@endif
-                @if($shipment->receiver_phone)+{{ $shipment->receiver_phone_code }}{{ $shipment->receiver_phone }}<br>@endif
-                Trader Type: {{ $shipment->receiver_is_business ? 'BUSINESS' : 'INDIVIDUAL' }}<br>
-                VAT No:<br>
-                EORI:
-            </div>
-        </td>
-    </tr>
-</table>
-
-<div class="references">
-    Shipper Reference:<br>
-    Receiver Reference:
-</div>
-
-<div class="remarks">
-    Remarks: <span>SAMPLE OF NO COMMERCIAL VALUE, THIS VALUE CUSTOMS PURPOSE ONLY.</span>
-</div>
-
-<table class="items-table">
-    <thead>
+    <table class="header">
         <tr>
-            <th>Ite-<br>m</th>
-            <th>Description</th>
-            <th>Commo-<br>dity Code</th>
-            <th>Tax Paid</th>
-            <th>Item Weight/<br>Item Total<br>Weight</th>
-            <th>COO</th>
-            <th>Reference Type &<br>ID</th>
-            <th>QTY</th>
-            <th>Unit<br>Value</th>
-            <th>Sub Total<br>Value</th>
+            <td class="brand">
+                @if($logoData)<img src="{{ $logoData }}" alt="Express Peek">@else<span class="brand-name">EXPRESS PEEK</span>@endif
+            </td>
+            <td class="title">
+                <h1>Shipment Receipt</h1>
+                <p class="receipt-meta">{{ $shipmentInvoice->invoice_number }}@if($receiptDate) &nbsp; | &nbsp; {{ $receiptDate }}@endif</p>
+            </td>
         </tr>
-    </thead>
-    <tbody>
-        @forelse($charges as $index => $charge)
-            <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $charge['description'] ?? 'Item description' }}</td>
-                <td>{{ $charge['commodity_code'] ?? '' }}</td>
-                <td></td>
-                <td>
-                    {{ isset($charge['weight']) ? $charge['weight'] . ' kg' : '' }}<br>
-                    {{ isset($charge['total_weight']) ? $charge['total_weight'] . ' kg' : '' }}
-                </td>
-                <td>{{ $charge['coo'] ?? $shipment->sender_country_code ?? 'BANGLADESH' }}</td>
-                <td></td>
-                <td>{{ $charge['quantity'] ?? '1' }} PCS</td>
-                <td>{{ number_format((float) ($charge['amount'] ?? 0), 2) }} {{ $shipmentInvoice->currency }}</td>
-                <td>{{ number_format((float) (($charge['amount'] ?? 0) * ($charge['quantity'] ?? 1)), 2) }} {{ $shipmentInvoice->currency }}</td>
-            </tr>
-        @empty
-            <tr>
-                <td>1</td>
-                <td>Freight Charge</td>
-                <td></td>
-                <td></td>
-                <td><br></td>
-                <td>BANGLADESH</td>
-                <td></td>
-                <td>1 PCS</td>
-                <td>{{ number_format((float) $shipmentInvoice->total_amount, 2) }} {{ $shipmentInvoice->currency }}</td>
-                <td>{{ number_format((float) $shipmentInvoice->total_amount, 2) }} {{ $shipmentInvoice->currency }}</td>
-            </tr>
-        @endforelse
-    </tbody>
-</table>
+    </table>
 
-<div class="totals-container">
-    <div class="totals-left">
-        <table class="totals-table">
-            <tr><td class="label">Total Goods Value:</td><td>{{ number_format((float) $shipmentInvoice->total_amount, 2) }} {{ $shipmentInvoice->currency }}</td></tr>
-            <tr><td class="label">Total Invoice Amount:</td><td>{{ number_format((float) $shipmentInvoice->total_amount, 2) }} {{ $shipmentInvoice->currency }}</td></tr>
-            <tr><td class="label">Currency Code:</td><td>{{ $shipmentInvoice->currency }}</td></tr>
-            <tr><td class="label">Terms of Payment:</td><td></td></tr>
-            <tr><td class="label">Terms of Trade:</td><td>Delivered at Place</td></tr>
-            <tr><td class="label">Place of Incoterm:</td><td>{{ $shipment->receiver_country }}</td></tr>
-            <tr><td class="label">Reason for Export:</td><td>Sample</td></tr>
-            <tr><td class="label">Type of Export:</td><td>Sample</td></tr>
-            <tr><td class="label">Total Net Weight:</td><td>{{ $shipment->total_weight ?? $shipment->weight }} kg</td></tr>
-            <tr><td class="label">Total Gross Weight:</td><td>{{ $shipment->total_weight ?? $shipment->weight }} kg</td></tr>
+    <table class="parties">
+        <tr>
+            <td>
+                <h2>Shipment From</h2>
+                <div class="address">
+                    <p>{{ $shipment->sender_name }}</p>
+                    @if($shipment->sender_company)<p>{{ $shipment->sender_company }}</p>@endif
+                    @foreach([$shipment->sender_address, $shipment->sender_address2, $shipment->sender_address3, $senderLocality, $shipment->sender_country] as $line)
+                        @if($line)<p>{{ $line }}</p>@endif
+                    @endforeach
+                    @if($shipment->sender_phone)<p>{{ $senderPhone }}</p>@endif
+                    @if($shipment->sender_email)<p class="email">{{ $shipment->sender_email }}</p>@endif
+                </div>
+            </td>
+            <td>
+                <h2>Shipment To</h2>
+                <div class="address">
+                    <p>{{ $shipment->receiver_name }}</p>
+                    @if($shipment->receiver_company)<p>{{ $shipment->receiver_company }}</p>@endif
+                    @foreach([$shipment->receiver_address, $shipment->receiver_address2, $shipment->receiver_address3, $receiverLocality, $shipment->receiver_country] as $line)
+                        @if($line)<p>{{ $line }}</p>@endif
+                    @endforeach
+                    @if($shipment->receiver_phone)<p>{{ $receiverPhone }}</p>@endif
+                    @if($shipment->receiver_email)<p class="email">{{ $shipment->receiver_email }}</p>@endif
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="columns">
+        <tr>
+            <td class="column">
+                <h2>Shipment Details</h2>
+                <table class="details">
+                    <tr><td class="label">Shipment Date:</td><td class="value">{{ $shipmentDate }}</td></tr>
+                    <tr><td class="label">Waybill Number:</td><td class="value">{{ $waybill }}</td></tr>
+                    <tr><td class="label">Tracking Number:</td><td class="value">{{ $shipment->tracking_number }}</td></tr>
+                    <tr><td class="label">Service Type:</td><td class="value">{{ $shipment->carrier_name }}</td></tr>
+                    <tr><td class="label">Packaging Type:</td><td class="value">{{ $isDocument ? 'Documents' : 'Parcel (Non-Document)' }}</td></tr>
+                    <tr><td class="label">Number of Pieces:</td><td class="value">{{ $shipment->total_packages ?: max(1, $packages->sum(fn ($package) => max(1, (int) ($package['quantity'] ?? 1)))) }}</td></tr>
+                    <tr><td class="label">Total Weight:</td><td class="value">{{ number_format($actualWeight, 2) }} kg</td></tr>
+                    <tr><td class="label">Dimensional:</td><td class="value">{{ $hasDimensions ? number_format($dimensionalWeight, 2) . ' kg' : '' }}</td></tr>
+                    <tr><td class="label">Chargeable:</td><td class="value">{{ number_format($chargeableWeight, 2) }} kg</td></tr>
+                </table>
+            </td>
+            <td class="column">
+                <h2>International Information</h2>
+                <table class="details">
+                    <tr><td class="label">Declared Value:</td><td class="value">{{ !$isDocument && $goods->isNotEmpty() ? number_format($declaredValue, 2) . ' USD' : '' }}</td></tr>
+                    <tr><td class="label">Shipment Purpose:</td><td class="value">{{ $shipment->shipment_purpose ?? '' }}</td></tr>
+                    <tr><td class="label">Destination:</td><td class="value">{{ $shipment->receiver_country }}</td></tr>
+                    <tr><td class="label">Estimated Del date:</td><td class="value">{{ $shipment->estimated_delivery?->format('l, d M, Y') ?? '' }}</td></tr>
+                    <tr><td class="label">Remarks:</td><td class="value">{{ $shipment->remarks ?? '' }}</td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <table class="columns billing">
+        <tr>
+            <td class="column">
+                <h2>Billing Information</h2>
+                <table class="details">
+                    <tr><td class="label">Courier:</td><td class="value">{{ $shipment->carrier_name }}</td></tr>
+                    <tr><td class="label">Receipt Number:</td><td class="value">{{ $shipmentInvoice->invoice_number }}</td></tr>
+                    <tr><td class="label">Currency:</td><td class="value">{{ $currency }}</td></tr>
+                    <tr><td class="label">Payment Status:</td><td class="value">{{ $shipmentInvoice->status_label }}</td></tr>
+                    @if($shipmentInvoice->due_date)
+                        <tr><td class="label">Payment Due:</td><td class="value">{{ $shipmentInvoice->due_date->format('Y-m-d') }}</td></tr>
+                    @endif
+                </table>
+            </td>
+            <td class="column">
+                @if($compactCharges)
+                    <h2>Charge Breakdown</h2>
+                    @include('shipments.partials.receipt-charges')
+                @endif
+            </td>
+        </tr>
+    </table>
+
+    @if(!$compactCharges)
+        <div class="section">
+            <h2>Charge Breakdown</h2>
+            @include('shipments.partials.receipt-charges')
+        </div>
+    @endif
+
+    <div class="section">
+        <h2>Reference Information</h2>
+        <table class="details reference-table">
+            <tr><td class="label">Reference:</td><td>{{ $shipment->invoice_number ?? '' }}</td></tr>
         </table>
     </div>
-    <div class="totals-right">
-        <table class="totals-table">
-            <tr><td class="label">Total line items:</td><td>{{ max(count($charges), 1) }}</td></tr>
-            <tr><td class="label">Number of Pallets:</td><td></td></tr>
-            <tr><td class="label">Total units:</td><td>{{ $shipment->total_packages ?? $shipment->packages ?? 1 }}</td></tr>
-            <tr><td class="label">Package Marks / Other Info:</td><td></td></tr>
-        </table>
-        
-        <br>
-        
-        <table class="totals-table">
-            <tr><td class="label">Payer of GST / VAT:</td><td></td></tr>
-            <tr><td class="label">Duty / taxes acct:</td><td>Receiver Will Pay</td></tr>
-            <tr><td class="label">Requiere Pedimento:</td><td>No</td></tr>
-            <tr><td class="label">Duty / tax billing service:</td><td></td></tr>
-            <tr><td class="label">Carrier:</td><td>{{ $shipment->carrier_name ?? 'DHL' }}</td></tr>
-            <tr><td class="label">Ultimate Consignee:</td><td></td></tr>
-            <tr><td class="label">Exemption Citation:</td><td></td></tr>
-        </table>
-    </div>
-</div>
 
-<div class="certification">
-    I/We hereby certify that the information contained in the invoice is true and correct and that the contents of this shipment are as stated above.
-</div>
+    <div class="section contents">
+        <h2>Description of Contents</h2>
+        @if($isDocument)
+            <p>{{ $shipment->document_description ?? '' }}</p>
+        @else
+            @foreach($goods as $item)
+                <p>{{ $item['name'] ?? $item['description'] ?? '' }}{{ isset($item['quantity']) ? ' - ' . $item['quantity'] . ' pcs' : '' }}</p>
+            @endforeach
+        @endif
+        @if(filled($shipmentInvoice->notes))
+            <div class="notes"><strong>Payment instructions / notes</strong>{{ $shipmentInvoice->notes }}</div>
+        @endif
+    </div>
 
-<div class="signature-section">
-    <div class="signature-left">
-        <div class="sig-row">
-            <div class="sig-label">Name:</div>
-            <div class="sig-value">{{ $shipment->sender_name ?? 'MR.MITHU / MR. ANISUR / MR. ANTO' }}</div>
-        </div>
-        <div class="sig-row">
-            <div class="sig-label">Position:</div>
-            <div class="sig-value">Merchandising Department. / Technical Department.</div>
-        </div>
-        <div class="sig-row">
-            <div class="sig-label">Date of Signature:</div>
-            <div class="sig-value">{{ $invoiceDate }}</div>
-        </div>
+    <div class="footer">
+        <table><tr><td>Express Peek | Shipment Receipt</td><td>{{ $shipmentInvoice->invoice_number }}</td></tr></table>
     </div>
-    <div class="signature-middle">
-        <div class="sig-row">
-            <div class="sig-label" style="width:70px;">Signature:</div>
-            <div class="sig-value"></div>
-        </div>
-    </div>
-    <div class="signature-right">
-        <div style="font-weight: bold;">Company Stamp</div>
-        <br><br><br>
-        Page 1 of 1
-    </div>
-</div>
-
 </body>
 </html>
-

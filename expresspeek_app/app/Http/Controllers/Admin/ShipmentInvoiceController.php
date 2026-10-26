@@ -16,7 +16,7 @@ class ShipmentInvoiceController extends Controller
         if (!Schema::hasTable('shipment_invoices')) {
             return redirect()
                 ->route('admin.shipments.edit', $shipment)
-                ->with('error', 'Invoice generation needs the pending database update. Open System Update and run the secure update.');
+                ->with('error', 'Receipt generation needs the pending database update. Open System Update and run the secure update.');
         }
 
         return view('admin.shipments.invoice-create', compact('shipment'));
@@ -27,7 +27,7 @@ class ShipmentInvoiceController extends Controller
         if (!Schema::hasTable('shipment_invoices')) {
             return redirect()
                 ->route('admin.shipments.edit', $shipment)
-                ->with('error', 'Invoice generation needs the pending database update. Open System Update and run the secure update.');
+                ->with('error', 'Receipt generation needs the pending database update. Open System Update and run the secure update.');
         }
 
         $data = $request->validate([
@@ -62,7 +62,7 @@ class ShipmentInvoiceController extends Controller
 
         if ($totalAmount > 9999999999.99) {
             throw ValidationException::withMessages([
-                'base_freight' => 'The combined freight and other charges exceed the maximum invoice amount.',
+                'base_freight' => 'The combined freight and other charges exceed the maximum receipt amount.',
             ]);
         }
 
@@ -78,28 +78,38 @@ class ShipmentInvoiceController extends Controller
 
         return redirect()
             ->route('admin.shipments.edit', $shipment)
-            ->with('success', 'Invoice generated successfully.');
+            ->with('success', 'Shipment receipt generated successfully.');
     }
 
     public function markAsPaid(ShipmentInvoice $shipmentInvoice)
     {
         $shipmentInvoice->update(['status' => ShipmentInvoice::STATUS_PAID]);
 
-        return back()->with('success', 'Invoice marked as paid.');
+        if ($shipmentInvoice->shipment?->user) {
+            $shipmentInvoice->shipment->user->notify(new \App\Notifications\ActivityNotification(
+                'Shipment Payment Confirmed',
+                'Payment for shipment ' . $shipmentInvoice->shipment->tracking_number . ' has been confirmed.',
+                route('customer.shipments.show', $shipmentInvoice->shipment),
+                'credit-card',
+                'green',
+            ));
+        }
+
+        return back()->with('success', 'Receipt marked as paid.');
     }
 
     public function destroy(ShipmentInvoice $shipmentInvoice)
     {
         $shipmentInvoice->delete();
 
-        return back()->with('success', 'Invoice deleted successfully.');
+        return back()->with('success', 'Receipt deleted successfully.');
     }
 
     public function downloadPdf(ShipmentInvoice $shipmentInvoice)
     {
         $shipmentInvoice->load('shipment');
 
-        $pdf = app('dompdf.wrapper')->loadView('shipments.invoice-pdf', compact('shipmentInvoice'));
+        $pdf = app('dompdf.wrapper')->setPaper('a4', 'portrait')->loadView('shipments.invoice-pdf', compact('shipmentInvoice'));
 
         return $pdf->stream($shipmentInvoice->invoice_number . '.pdf');
     }

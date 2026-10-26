@@ -139,7 +139,24 @@ if (typeof window.countryAutocomplete === 'undefined') {
         const q = input.value.trim().toLowerCase();
         const clearBtn = document.getElementById(prefix + '_country_clear');
         if (clearBtn) clearBtn.classList.toggle('hidden', !input.value.trim());
-        const results = q.length === 0 ? window.COUNTRIES.slice(0, 60) : window.COUNTRIES.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase() === q).slice(0, 12);
+        let results;
+        if (q.length === 0) {
+            results = window.COUNTRIES.slice(0, 60);
+        } else {
+            results = window.COUNTRIES.filter(c => {
+                const name = c.name.toLowerCase();
+                const code = c.code.toLowerCase();
+                let matchesAlias = false;
+                if (q === 'us' || q === 'usa') {
+                    if (code === 'us' || name === 'united states') matchesAlias = true;
+                } else if (q === 'uk') {
+                    if (code === 'gb' || name === 'united kingdom') matchesAlias = true;
+                } else if (q === 'uae') {
+                    if (code === 'ae' || name === 'united arab emirates') matchesAlias = true;
+                }
+                return name.includes(q) || code === q || code.startsWith(q) || matchesAlias;
+            }).slice(0, 12);
+        }
         _buildCountryDropdown(prefix, results, q);
     };
     window.countryInputFocus = function(input, prefix) { window.countryAutocomplete(input, prefix); };
@@ -230,7 +247,7 @@ if (typeof window.countryAutocomplete === 'undefined') {
         <select name="{{ $prefix }}_phone_type"
             class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500">
             <option value="Office" @selected(old($prefix . '_phone_type', data_get($source, $prefix . '_phone_type')) === 'Office')>Office</option>
-            <option value="Mobile" @selected(old($prefix . '_phone_type', data_get($source, $prefix . '_phone_type')) === 'Mobile')>Mobile</option>
+            <option value="Mobile" @selected(old($prefix . '_phone_type', data_get($source, $prefix . '_phone_type', 'Mobile')) === 'Mobile')>Mobile</option>
             <option value="Home" @selected(old($prefix . '_phone_type', data_get($source, $prefix . '_phone_type')) === 'Home')>Home</option>
             <option value="Fax" @selected(old($prefix . '_phone_type', data_get($source, $prefix . '_phone_type')) === 'Fax')>Fax</option>
         </select>

@@ -1,6 +1,6 @@
 @extends('layouts.customer')
-@section('seo_title', 'Get a Shipping Quote from Bangladesh | ExpressPeek')
-@section('seo_description', 'Compare instant shipping rates from Bangladesh to 220+ countries. Get transparent quotes from multiple carriers — no sign-up required. Ship documents, parcels, and cargo.')
+@section('seo_title', 'Get a Shipping Check Delivery Cost from Bangladesh | ExpressPeek')
+@section('seo_description', 'Compare instant shipping rates from Bangladesh to 220+ countries. Get transparent check delivery costs from multiple carriers — no sign-up required. Ship documents, parcels, and cargo.')
 
 @push('head')
 <style>
@@ -45,7 +45,7 @@
             <span class="text-transparent bg-clip-text drop-shadow-sm" style="background-image: linear-gradient(90deg, #c4b5fd, #93c5fd)">Compare Shipping Rates</span>
         </h1>
         <p class="text-white text-lg md:text-xl max-w-3xl mx-auto mb-12 leading-relaxed drop-shadow-sm font-medium">
-            Get instant, transparent quotes from <strong class="text-white">{{ $carrierCount }} global carriers</strong> covering <strong class="text-white">{{ $countryCount }}+ destinations</strong> — all in seconds. No sign-up required to compare.
+            Get instant, transparent check delivery costs from <strong class="text-white">{{ $carrierCount }} global carriers</strong> covering <strong class="text-white">{{ $countryCount }}+ destinations</strong> — all in seconds. No sign-up required to compare.
         </p>
 
         {{-- ===== LIVE STATS ROW ===== --}}
@@ -53,7 +53,7 @@
             @foreach([
                 ['value' => $carrierCount, 'suffix' => '', 'label' => 'Global Carriers', 'icon' => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', 'color' => 'from-violet-500 to-purple-600'],
                 ['value' => $countryCount, 'suffix' => '+', 'label' => 'Countries Covered', 'icon' => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064', 'color' => 'from-blue-500 to-blue-600'],
-                ['value' => '1', 'suffix' => 's', 'label' => 'Avg. Quote Time', 'icon' => 'M13 10V3L4 14h7v7l9-11h-7z', 'color' => 'from-amber-500 to-orange-500'],
+                ['value' => '1', 'suffix' => 's', 'label' => 'Avg. Check Delivery Cost Time', 'icon' => 'M13 10V3L4 14h7v7l9-11h-7z', 'color' => 'from-amber-500 to-orange-500'],
                 ['value' => '100', 'suffix' => '%', 'label' => 'Price Transparency', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'color' => 'from-emerald-500 to-emerald-600'],
             ] as $stat)
             <div class="stat-card bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-5 text-center">
@@ -70,7 +70,7 @@
     </div>
 </section>
 
-{{-- ===== QUOTE FORM ===== --}}
+{{-- ===== Check Delivery Cost FORM ===== --}}
 <div class="bg-gray-50 relative">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 -mt-16 relative z-20 pb-16">
         <div x-data="quoteEnginePage()" class="bg-white rounded-3xl shadow-2xl shadow-indigo-900/10 border border-gray-100 overflow-hidden">
@@ -81,7 +81,7 @@
                         <img src="/images/express-peek-logo.webp" alt="Express Peek" class="h-8 w-auto object-contain">
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold tracking-tight">Shipping Quote Engine</h3>
+                        <h3 class="text-lg font-bold tracking-tight">Shipping Check Delivery Cost Engine</h3>
                         <p class="text-violet-200 text-xs mt-0.5">Comparing {{ $carrierCount }} carriers across {{ $countryCount }}+ countries</p>
                     </div>
                 </div>
@@ -113,7 +113,7 @@
                                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Destination Country</label>
                                     <div x-data="{
                                         open:false, q:'', hi:-1,
-                                        get opts(){ const all=window.SITE_COUNTRIES||[]; if(!this.q) return all.slice(0,60); const s=this.q.toLowerCase(); const byCode=[],byStart=[],byContains=[]; for(const c of all){ const code=c.code.toLowerCase(),name=c.name.toLowerCase(); if(code===s){byCode.push(c);continue;} if(name.startsWith(s)){byStart.push(c);continue;} if(name.includes(s)||code.startsWith(s)){byContains.push(c);} } return [...byCode,...byStart,...byContains].slice(0,15); },
+                                        get opts(){ const all=window.SITE_COUNTRIES||[]; if(!this.q) return all.slice(0,60); const s=this.q.toLowerCase().trim(); const byCode=[],byStart=[],byContains=[]; for(const c of all){ const code=c.code.toLowerCase(),name=c.name.toLowerCase(); let alias=false; if(s==='us'||s==='usa'){alias=(code==='us'||name==='united states');}else if(s==='uk'){alias=(code==='gb'||name==='united kingdom');}else if(s==='uae'){alias=(code==='ae'||name==='united arab emirates');} if(code===s||alias){byCode.push(c);continue;} if(name.startsWith(s)){byStart.push(c);continue;} if(name.includes(s)||code.startsWith(s)){byContains.push(c);} } return [...byCode,...byStart,...byContains].slice(0,15); },
                                         get label(){ return (window.SITE_COUNTRIES||[]).find(c=>c.code===product.country)?.name||''; },
                                         pick(c){ product.country=c.code; this.q=c.name; this.open=false; this.hi=-1; },
                                         clear(){ product.country=''; this.q=''; },
@@ -254,7 +254,7 @@
                     <div class="mt-6 bg-blue-50/50 border border-blue-100 rounded-2xl p-5 flex items-start gap-4">
                         <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         <p class="text-sm text-slate-600 leading-relaxed">
-                            Quotes are estimates. Fuel surcharges and standard handling fees are already included. Actual price may vary based on volumetric weight, destination cities (e.g. remote areas), type of goods (e.g. critical or non-conveyable goods), special packing costs, and insurance selections.
+                            Check Delivery Costs are estimates. Fuel surcharges and standard handling fees are already included. Actual price may vary based on volumetric weight, destination cities (e.g. remote areas), type of goods (e.g. critical or non-conveyable goods), special packing costs, and insurance selections.
                         </p>
                     </div>
                 </div>
@@ -271,11 +271,11 @@
     </div>
 </div>
 
-{{-- ===== WHY OUR QUOTE SYSTEM ===== --}}
+{{-- ===== WHY OUR Check Delivery Cost SYSTEM ===== --}}
 <section class="bg-white py-16 border-b border-gray-100">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
         <div class="text-center mb-12">
-            <p class="text-violet-600 text-xs font-bold uppercase tracking-widest mb-3">Why ExpressPeek Quotes?</p>
+            <p class="text-violet-600 text-xs font-bold uppercase tracking-widest mb-3">Why ExpressPeek Check Delivery Costs?</p>
             <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">Built for Speed. Built for Savings.</h2>
             <p class="text-slate-500 max-w-2xl mx-auto">Our quoting engine compares every carrier in real time so you always get the best rate — with zero guesswork.</p>
         </div>
@@ -305,7 +305,7 @@
                     'color' => 'bg-blue-100 text-blue-600',
                     'glow' => 'shadow-blue-100',
                     'title' => 'Global Coverage',
-                    'desc' => 'With ' . $countryCount . '+ destination countries in our network, we can quote virtually any international shipment — documents and parcels alike.',
+                    'desc' => 'With ' . $countryCount . '+ destination countries in our network, we can check delivery cost virtually any international shipment — documents and parcels alike.',
                     'badge' => $countryCount . '+ Countries',
                     'badge_color' => 'bg-blue-100 text-blue-700',
                 ],

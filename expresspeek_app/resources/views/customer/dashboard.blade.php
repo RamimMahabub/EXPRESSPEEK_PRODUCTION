@@ -67,7 +67,7 @@
         .ep-profile-copy { display: block; min-width: 0; width: 132px; max-width: 132px; overflow: hidden; }
         .ep-profile-name { display: block; margin: 0; color: var(--ep-ink); font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ep-profile-email { display: block; margin: 2px 0 0; color: #7b89a4; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ep-notification-popover { position: fixed; z-index: 60; top: 70px; right: 28px; width: min(350px,calc(100vw - 24px)); padding: 16px; border: 1px solid var(--ep-line); border-radius: 15px; background: white; box-shadow: 0 20px 55px rgba(21,34,74,.17); }
+        .ep-notification-popover { position: fixed; z-index: 60; top: 86px; right: 300px; width: min(350px,calc(100vw - 24px)); padding: 16px; border: 1px solid var(--ep-line); border-radius: 15px; background: white; box-shadow: 0 20px 55px rgba(21,34,74,.17); }
 
         .ep-main { max-width: 1780px; margin: 0 auto; padding: 24px 30px 38px; }
         .ep-card { background: rgba(255,255,255,.97); border: 1px solid var(--ep-line); border-radius: 16px; box-shadow: 0 8px 28px rgba(22,42,84,.045); }
@@ -241,7 +241,7 @@
             .ep-mobile-user .ep-icon-button { width: 38px; height: 38px; }
             .ep-mobile-user .ep-avatar { width: 42px; height: 42px; }
             .ep-main { padding: 23px 16px 28px; }
-            .ep-notification-popover { top: 68px; right: 12px; }
+            .ep-notification-popover { top: 82px; right: 12px; }
             .ep-hero { min-height: 224px; margin-top: 92px; overflow: visible; border: 0; border-radius: 18px; background:linear-gradient(180deg,#eef5fb 0%,#f9fbfd 48%,#e7f0f7 100%); }
             .ep-hero::before { background-image:url('/images/dashboard-logistics-hero-light.png'); background-position:center bottom; background-size:100% auto; background-repeat:no-repeat; -webkit-mask-image:none; mask-image:none; }
             .ep-hero::after { background:linear-gradient(90deg,rgba(249,252,255,.96) 0%,rgba(249,252,255,.76) 43%,rgba(249,252,255,.12) 76%,rgba(249,252,255,0) 100%); }
@@ -406,7 +406,7 @@
     $chartPoints = $chartValues->map(fn ($value, $index) => (10 + ($index * 113.33)).','.(150 - (($value / $chartMax) * 112)))->join(' ');
 @endphp
 
-<div class="ep-shell" x-data="{ notificationsOpen: false }">
+<div class="ep-shell" x-data="{ notificationsOpen: false, notifications: [], unreadCount: 0, init() { this.loadNotifications(); }, toggleNotifications() { this.notificationsOpen = !this.notificationsOpen; if (this.notificationsOpen) { this.unreadCount = 0; this.loadNotifications(); this.markAllNotificationsRead(); } }, loadNotifications() { fetch('/notifications', { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }).then(response => response.json()).then(data => { this.notifications = data.notifications || []; this.unreadCount = this.notificationsOpen ? 0 : (data.unread_count || 0); }); }, markRead(notification) { if (notification.read_at) return; fetch('/notifications/' + notification.id + '/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, Accept: 'application/json' } }).then(() => { notification.read_at = new Date().toISOString(); this.unreadCount = Math.max(0, this.unreadCount - 1); }); }, markAllNotificationsRead() { fetch('/notifications/read-all', { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, Accept: 'application/json' } }).then(() => { this.notifications.forEach(notification => notification.read_at = new Date().toISOString()); this.unreadCount = 0; }); } }" x-init="init()">
     <header class="ep-topbar">
         <div class="ep-topbar-inner">
             <a class="ep-brand" href="{{ route('customer.dashboard') }}" aria-label="Express Peek dashboard">
@@ -427,13 +427,13 @@
                     <svg class="ep-icon" viewBox="0 0 24 24"><path d="M5 4h13a2 2 0 0 1 2 2v15H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 2v4M8 10h7M8 14h7"/></svg><span>Address Book</span>
                 </a>
                 <a href="{{ route('customer.sourcing-requests.index') }}" class="ep-nav-link">
-                    <svg class="ep-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Sourcing Requests</span>
+                    <svg class="ep-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Shop From Bangladesh</span>
                 </a>
             </nav>
 
             <div class="ep-top-actions">
-                <button class="ep-icon-button" @click="notificationsOpen = !notificationsOpen" aria-label="Open notifications">
-                    <svg class="ep-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>@if($stats['exceptions'] > 0)<span class="ep-badge">{{ $stats['exceptions'] }}</span>@endif
+                <button class="ep-icon-button" @click="toggleNotifications()" aria-label="Open notifications">
+                    <svg class="ep-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span x-show="unreadCount > 0" x-text="unreadCount" class="ep-badge"></span>
                 </button>
                 <a href="{{ route('customer-service') }}" class="ep-icon-button" aria-label="Customer support">
                     <svg class="ep-icon" viewBox="0 0 24 24"><path d="M21 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>
@@ -446,6 +446,12 @@
                     <span class="ep-profile-copy"><span class="ep-profile-name">{{ auth()->user()->name }}</span><span class="ep-profile-email">{{ auth()->user()->email }}</span></span>
                     <svg class="ep-icon" style="width:14px" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg>
                 </a>
+                <form method="POST" action="{{ route('logout') }}" style="margin:0;display:flex;align-items:center;">
+                    @csrf
+                    <button class="ep-icon-button" type="submit" aria-label="Sign out" style="color:#e82d4b;background:#fff0f2;">
+                        <svg class="ep-icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg>
+                    </button>
+                </form>
             </div>
         </div>
     </header>
@@ -453,19 +459,27 @@
     <header class="ep-mobile-header">
         <a href="{{ route('customer.dashboard') }}"><img src="/images/express-peek-logo.webp" alt="Express Peek"></a>
         <div class="ep-mobile-user">
-            <button class="ep-icon-button" @click="notificationsOpen = !notificationsOpen" aria-label="Notifications"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>@if($stats['exceptions'] > 0)<span class="ep-badge">{{ $stats['exceptions'] }}</span>@endif</button>
+            <button class="ep-icon-button" @click="toggleNotifications()" aria-label="Notifications"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span x-show="unreadCount > 0" x-text="unreadCount" class="ep-badge"></span></button>
             <a href="{{ route('profile.edit') }}">@if(auth()->user()->avatarUrl())<img class="ep-avatar" src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}">@else<span class="ep-avatar">{{ strtoupper($initials) }}</span>@endif</a>
+            <form method="POST" action="{{ route('logout') }}" style="margin:0;display:flex;align-items:center;">
+                @csrf
+                <button class="ep-icon-button" type="submit" aria-label="Sign out" style="color:#e82d4b;background:#fff0f2;margin-left:4px;">
+                    <svg class="ep-icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></svg>
+                </button>
+            </form>
         </div>
     </header>
 
     <aside class="ep-notification-popover" x-cloak x-show="notificationsOpen" x-transition.opacity @click.outside="notificationsOpen = false" aria-label="Notifications">
         <div class="ep-section-head"><h2 class="ep-heading">Notifications</h2><button class="ep-icon-button" style="width:28px;height:28px" @click="notificationsOpen = false" aria-label="Close notifications"><svg class="ep-icon" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
         <div class="ep-alert-list">
-            @forelse($recentShipments->take(3) as $index => $shipment)
-                <a href="{{ route('customer.shipments.show', $shipment) }}" class="ep-alert-row"><span class="ep-alert-symbol {{ $index === 0 && in_array($shipment->status,['failed','returned']) ? 'red' : ($index===1 ? 'orange' : 'blue') }}"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M12 8v4M12 16h.01"/></svg></span><span class="ep-alert-copy"><strong>{{ $shipment->tracking_number }}</strong><span>{{ $shipment->status_label }} — {{ $shipment->receiver_city }}</span></span><span class="ep-alert-time">{{ $shipment->updated_at->diffForHumans(short: true) }}</span></a>
-            @empty
-                <div class="ep-alert-row"><span class="ep-alert-symbol blue"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M12 8v4M12 16h.01"/></svg></span><span class="ep-alert-copy"><strong>You’re all caught up</strong><span>New shipment updates will appear here.</span></span><span class="ep-alert-time">Now</span></div>
-            @endforelse
+            <template x-for="notification in notifications.slice(0, 5)" :key="notification.id">
+                <a :href="notification.data.action_url || '#'" @click="markRead(notification)" class="ep-alert-row"><span class="ep-alert-symbol blue"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M12 8v4M12 16h.01"/></svg></span><span class="ep-alert-copy"><strong x-text="notification.data.title"></strong><span x-text="notification.data.message"></span></span><span class="ep-alert-time" x-text="new Date(notification.created_at).toLocaleDateString()"></span></a>
+            </template>
+            <div x-show="notifications.length === 0" class="ep-alert-row"><span class="ep-alert-symbol blue"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M12 8v4M12 16h.01"/></svg></span><span class="ep-alert-copy"><strong>You’re all caught up</strong><span>New updates will appear here.</span></span><span class="ep-alert-time">Now</span></div>
+        </div>
+        <div class="ep-section-head" style="justify-content:center;border-top:1px solid var(--ep-line);margin-top:8px;padding-top:12px;">
+            <a href="{{ route('notifications.all') }}" class="ep-view-link">View all notifications <span>→</span></a>
         </div>
     </aside>
 
@@ -479,47 +493,48 @@
 
         <section class="ep-hero" aria-labelledby="welcome-heading">
             <div class="ep-hero-content">
-                <span class="ep-hero-eyebrow">Your logistics command center</span>
-                <h1 class="ep-greeting" id="welcome-heading">Move with confidence, {{ $firstName }}.</h1>
-                <p class="ep-greeting-sub">Every shipment, milestone, and next move—beautifully organized.</p>
-                <div class="ep-command-card">
-                    <div class="ep-command-top">
-                        <span class="ep-command-title"><span class="ep-live-dot"></span>
-                            @if($stats['in_transit'] > 0)
-                                Your network is in motion
-                            @elseif($stats['pending'] > 0)
-                                Pickups are ready for action
-                            @else
-                                Ready for your next delivery
-                            @endif
-                        </span>
-                        <a class="ep-command-link" href="{{ route('customer.shipments.index') }}">Manage <span>→</span></a>
-                    </div>
-                    <div class="ep-command-metrics">
-                        <div class="ep-command-metric"><strong>{{ $stats['in_transit'] }}</strong><span>Active<br>shipments</span></div>
-                        <div class="ep-command-metric"><strong>{{ $stats['pending'] }}</strong><span>Awaiting<br>pickup</span></div>
-                    </div>
+                <span class="ep-hero-eyebrow">Live shipment visibility</span>
+                <h1 class="ep-greeting" id="welcome-heading">Track every handoff.</h1>
+                <p class="ep-greeting-sub">Use your Express Peek number or carrier reference to see the current status and complete event history.</p>
+                
+                <form class="ep-tracker-form" method="GET" action="{{ route('customer.dashboard') }}" style="margin-top: 24px;">
+                    <label class="ep-tracker-field">
+                        <svg class="ep-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                        <input class="ep-tracker-input" name="tracking" value="{{ $trackingNumber }}" required autocomplete="off" placeholder="Enter tracking number" aria-label="Tracking number">
+                    </label>
+                    <button class="ep-tracker-button" type="submit">Track Shipment</button>
+                </form>
+                <div class="ep-tracker-benefits" style="color: #657492;">
+                    <span><i></i>Express Peek updates</span>
+                    <span><i></i>Carrier references supported</span>
+                    <span><i></i>Secure lookup</span>
                 </div>
+                
+                <x-dashboard-tracking-results 
+                    :shipment="$trackedShipment" 
+                    :error="$trackingError" 
+                    :lookup-unavailable="$trackingLookupUnavailable" 
+                />
             </div>
             <div class="ep-hero-actions">
                 <a href="{{ route('customer.shipments.create') }}" class="ep-action-card"><span class="ep-action-icon purple"><svg class="ep-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg></span><span class="ep-action-title">Create Shipment</span><span class="ep-action-sub">Start a new delivery</span></a>
-                <a href="#track" class="ep-action-card"><span class="ep-action-icon blue"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="ep-action-title">Track Shipment</span><span class="ep-action-sub">Real-time tracking</span></a>
-                <a href="{{ route('quote') }}" data-open-quote-modal class="ep-action-card"><span class="ep-action-icon green"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg></span><span class="ep-action-title">Request Quote</span><span class="ep-action-sub">Get rates instantly</span></a>
+                <a href="{{ route('customer.sourcing-requests.create', ['new' => 1]) }}" class="ep-action-card"><span class="ep-action-icon blue"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><span class="ep-action-title">Shop From Bangladesh</span><span class="ep-action-sub">Find new products</span></a>
+                <a href="{{ route('quote') }}" data-open-quote-modal class="ep-action-card"><span class="ep-action-icon green"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg></span><span class="ep-action-title">Request Check Delivery Cost</span><span class="ep-action-sub">Get rates instantly</span></a>
                 <a href="{{ route('volumetric-weight-calculator') }}" class="ep-action-card"><span class="ep-action-icon orange"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M4 19V5h16v14H4Z"/><path d="M8 5v4M12 5v2M16 5v4M8 19v-4M12 19v-2M16 19v-4"/></svg></span><span class="ep-action-title">Weight Calculator</span><span class="ep-action-sub">Plan billable weight</span></a>
             </div>
         </section>
 
         <section class="ep-mobile-actions ep-card" aria-label="Quick actions">
             <a href="{{ route('customer.shipments.create') }}" class="ep-mobile-action"><span class="ep-soft-icon purple"><svg class="ep-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21"/></svg></span>Create<br>Shipment</a>
-            <a href="#track" class="ep-mobile-action"><span class="ep-soft-icon blue"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Track<br>Shipment</a>
-            <a href="{{ route('quote') }}" data-open-quote-modal class="ep-mobile-action"><span class="ep-soft-icon green"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg></span>Request<br>Quote</a>
+            <a href="{{ route('customer.sourcing-requests.create', ['new' => 1]) }}" class="ep-mobile-action"><span class="ep-soft-icon blue"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span>Sourcing<br>Request</a>
+            <a href="{{ route('quote') }}" data-open-quote-modal class="ep-mobile-action"><span class="ep-soft-icon green"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg></span>Request<br>Check Delivery Cost</a>
             <a href="{{ route('volumetric-weight-calculator') }}" class="ep-mobile-action"><span class="ep-soft-icon orange"><svg class="ep-icon" viewBox="0 0 24 24"><path d="M4 19V5h16v14H4Z"/><path d="M8 5v4M12 5v2M16 5v4"/></svg></span>Weight<br>Calculator</a>
         </section>
 
         <section class="ep-stats" aria-label="Shipment overview">
             @foreach([
                 ['label'=>'Total Shipments','value'=>$stats['total'],'tone'=>'purple','trend'=>'↑ 12%','copy'=>'vs last month','href'=>route('customer.shipments.index')],
-                ['label'=>'Pending Pickup','value'=>$stats['pending'],'tone'=>'orange','trend'=>'↓ 2','copy'=>'vs yesterday','href'=>route('customer.shipments.index',['statuses'=>['pending']])],
+                ['label'=>'Order Requests','value'=>$stats['order_requests'] ?? 0,'tone'=>'blue','trend'=>'Check status','copy'=>'active requests','href'=>route('customer.sourcing-requests.index')],
                 ['label'=>'In Transit','value'=>$stats['in_transit'],'tone'=>'blue','trend'=>'↑ 5','copy'=>'vs yesterday','href'=>route('customer.shipments.index',['statuses'=>['in_transit']])],
                 ['label'=>'Successful','value'=>$stats['delivered'],'tone'=>'green','trend'=>'↑ 15%','copy'=>'connected or delivered','href'=>route('customer.shipments.index',['statuses'=>['connected_to_carrier','delivered']])],
                 ['label'=>'Exceptions','value'=>$stats['exceptions'],'tone'=>'red','trend'=>'Requires attention','copy'=>'','href'=>route('customer.shipments.index',['statuses'=>['failed','returned']])],
@@ -583,7 +598,7 @@
                     <div class="ep-section-head"><h2 class="ep-heading">Quick Access</h2></div>
                     <div class="ep-quick-grid">
                         <a class="ep-quick" href="{{ route('customer.shipments.index') }}"><span><svg class="ep-icon" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/></svg></span><span>My Shipments</span></a>
-                        <a class="ep-quick" href="#track"><span><svg class="ep-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span>Track Shipment</span></a>
+                        <a class="ep-quick" href="{{ route('customer.sourcing-requests.create', ['new' => 1]) }}"><span><svg class="ep-icon" viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></span><span>Shop From Bangladesh</span></a>
                         <a class="ep-quick" href="{{ route('customer.address-book.page') }}"><span><svg class="ep-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h7M8 13h7"/></svg></span><span>Address Book</span></a>
                         <a class="ep-quick" href="{{ route('volumetric-weight-calculator') }}"><span><svg class="ep-icon" viewBox="0 0 24 24"><path d="M4 19V5h16v14H4Z"/><path d="M8 5v4M12 5v2M16 5v4"/></svg></span><span>Weight Calculator</span></a>
                     </div>
@@ -615,7 +630,7 @@
 
         <section class="ep-mobile-promo"><h3>Ship Smarter with Express Peek</h3><p>Real-time visibility, automated updates, and complete control over your shipments.</p><a href="{{ route('customer.shipments.create') }}">Create New Shipment <span>›</span></a></section>
 
-        <x-dashboard-tracking-search :action="route('customer.dashboard')" :tracking-number="$trackingNumber" />
+        <!-- Tracking moved to hero section -->
 
         @if($trackingNumber !== '' || $trackingError)
             @include('components.dashboard-tracking-result', [
@@ -638,6 +653,9 @@
     </nav>
 </div>
 
+<script>
+    window.INTERNAL_SHIPMENT_CREATE_URL = @json(route('customer.shipments.create'));
+</script>
 @include('components.quote-modal')
 
 </body>

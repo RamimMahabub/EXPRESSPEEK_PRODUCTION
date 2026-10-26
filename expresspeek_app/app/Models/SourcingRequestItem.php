@@ -11,6 +11,8 @@ class SourcingRequestItem extends Model
         'product_description',
         'product_link',
         'product_image',
+        'status',
+        'rejection_reason',
     ];
 
     public function sourcingRequest()

@@ -422,6 +422,7 @@
                 .auth-session-note { display:none; }
             }
         </style>
+        @include('partials.meta-pixel')
     </head>
     <body class="antialiased">
         <div class="auth-wrapper">

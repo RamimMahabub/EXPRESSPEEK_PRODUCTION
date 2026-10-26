@@ -31,7 +31,7 @@
         <a class="ops-action" href="{{ route('agent.shipments.index') }}"><span class="ops-action-icon blue"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 4h12v17H6z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></span><strong>Delivery Queue</strong><small>Manage assignments</small></a>
         <a class="ops-action" href="{{ route('agent.address-book.page') }}"><span class="ops-action-icon green"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M5 4h14v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h7M8 13h7"/></svg></span><strong>Address Book</strong><small>Saved contacts</small></a>
         <a class="ops-action" href="{{ route('agent.dashboard') }}#track"><span class="ops-action-icon orange"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><strong>Track Shipment</strong><small>Real-time tracking</small></a>
-        <a class="ops-action" href="{{ route('quote') }}" data-open-quote-modal><span class="ops-action-icon teal"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg></span><strong>Get a Quote</strong><small>Compare shipping rates</small></a>
+        <a class="ops-action" href="{{ route('quote') }}" data-open-quote-modal><span class="ops-action-icon teal"><svg class="ops-icon" viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M16 3v4h4M9 11h6M9 15h6"/></svg></span><strong>Get a Check Delivery Cost</strong><small>Compare shipping rates</small></a>
     </div>
 </section>
 
@@ -86,13 +86,11 @@
     </aside>
 </section>
 
-<x-dashboard-tracking-search :action="route('agent.dashboard')" :tracking-number="$trackingNumber" />
-
-@if($trackingNumber !== '' || $trackingError)
-    @include('components.dashboard-tracking-result', [
-        'shipment' => $trackedShipment,
-        'error' => $trackingError,
-        'lookupUnavailable' => $trackingLookupUnavailable,
-    ])
-@endif
+<x-dashboard-tracking-search 
+    :action="route('agent.dashboard')" 
+    :tracking-number="$trackingNumber" 
+    :shipment="$trackedShipment" 
+    :error="$trackingError" 
+    :lookup-unavailable="$trackingLookupUnavailable" 
+/>
 @endsection

@@ -84,6 +84,7 @@
         .fade-up-3 { animation-delay: 0.4s; }
     </style>
     @stack('head')
+    @include('partials.meta-pixel')
 </head>
 <body class="bg-white text-slate-900 antialiased">
 

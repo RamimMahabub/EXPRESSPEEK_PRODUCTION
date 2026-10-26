@@ -23,13 +23,13 @@
         .header-info {
             font-size: 12px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         .header-info span {
             margin-right: 20px;
         }
         
-        .parties-table { margin-bottom: 20px; }
+        .parties-table { margin-bottom: 10px; }
         .parties-table td { width: 50%; padding-right: 15px; }
         .party-title { font-weight: bold; font-size: 10px; margin-bottom: 3px; }
         .party-details { font-size: 10px; line-height: 1.4; }
@@ -42,14 +42,14 @@
         .remarks {
             font-size: 11px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         .remarks span {
             margin-left: 20px;
             font-weight: normal;
         }
 
-        .items-table { margin-bottom: 20px; border: 1px solid #000; }
+        .items-table { margin-bottom: 10px; border: 1px solid #000; }
         .items-table th, .items-table td {
             border: 1px solid #000;
             padding: 5px;
@@ -64,7 +64,7 @@
             display: table;
             width: 100%;
             font-size: 10px;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
         .totals-left {
             display: table-cell;
@@ -81,7 +81,7 @@
         
         .certification {
             font-size: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
         }
         
         .signature-section {
@@ -126,6 +126,7 @@
             'quantity' => max(1, (int) ($item['quantity'] ?? 1)),
             'unit_value' => max(0, (float) ($item['value_per_item'] ?? 0)),
             'weight' => $item['weight'] ?? null,
+            'hs_code' => $item['hs_code'] ?? null,
         ]);
     } else {
         $invoiceLines = collect([[
@@ -217,7 +218,7 @@
 </div>
 
 <div class="remarks">
-    Remarks: <span>SAMPLE OF NO COMMERCIAL VALUE, THIS VALUE CUSTOMS PURPOSE ONLY.</span>
+    Remarks: <span>{{ $shipment->remarks ?? '' }}</span>
 </div>
 
 <table class="items-table">
@@ -240,7 +241,7 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $charge['description'] }}</td>
-                <td></td>
+                <td>{{ $charge['hs_code'] ?? '' }}</td>
                 <td></td>
                 <td>
                     {{ isset($charge['weight']) ? $charge['weight'] . ' kg' : '' }}<br>
@@ -264,8 +265,8 @@
             <tr><td class="label">Terms of Payment:</td><td></td></tr>
             <tr><td class="label">Terms of Trade:</td><td>Delivered at Place (DAP)</td></tr>
             <tr><td class="label">Place of Incoterm:</td><td>{{ $shipment->receiver_country }}</td></tr>
-            <tr><td class="label">Reason for Export:</td><td>Sample</td></tr>
-            <tr><td class="label">Type of Export:</td><td>Sample</td></tr>
+            <tr><td class="label">Reason for Export:</td><td>{{ $shipment->shipment_purpose ?? '' }}</td></tr>
+            <tr><td class="label">Type of Export:</td><td>{{ $shipment->shipment_purpose ?? '' }}</td></tr>
             <tr><td class="label">Total Net Weight:</td><td>{{ $grossWeight }} kg</td></tr>
             <tr><td class="label">Total Gross Weight:</td><td>{{ $grossWeight }} kg</td></tr>
         </table>
@@ -274,7 +275,7 @@
         <table class="totals-table">
             <tr><td class="label">Total line items:</td><td>{{ max(count($invoiceLines), 1) }}</td></tr>
             <tr><td class="label">Number of Pallets:</td><td></td></tr>
-            <tr><td class="label">Total units:</td><td>{{ $packageCount }}</td></tr>
+            <tr><td class="label">Total units:</td><td>{{ $totalQuantity }}</td></tr>
             <tr><td class="label">Package Marks / Other Info:</td><td></td></tr>
         </table>
         
@@ -282,10 +283,11 @@
         
         <table class="totals-table">
             <tr><td class="label">Payer of GST / VAT:</td><td></td></tr>
-            <tr><td class="label">Duty / taxes acct:</td><td>Receiver Will Pay</td></tr>
+            <tr><td class="label">Duty / taxes acct:</td><td style="white-space: nowrap;"><span style="border: 1px solid #000; display: inline-block; width: 10px; height: 10px; margin-right: 4px; position: relative; top: 1px;"></span> Shipper Will Pay &nbsp;&nbsp;&nbsp; <span style="border: 1px solid #000; display: inline-block; width: 10px; height: 10px; margin-right: 4px; position: relative; top: 1px;"></span> Receiver Will Pay</td></tr>
             <tr><td class="label">Requiere Pedimento:</td><td>No</td></tr>
             <tr><td class="label">Duty / tax billing service:</td><td></td></tr>
             <tr><td class="label">Carrier:</td><td>{{ $shipment->carrier_name ?? 'DHL' }}</td></tr>
+            <tr><td class="label">{{ $shipment->carrier_name ?? 'DHL' }} Tracking Number:</td><td>{{ $shipment->tracking_number ?? '' }}</td></tr>
             <tr><td class="label">Ultimate Consignee:</td><td></td></tr>
             <tr><td class="label">Exemption Citation:</td><td></td></tr>
         </table>
@@ -301,10 +303,6 @@
         <div class="sig-row">
             <div class="sig-label">Name:</div>
             <div class="sig-value">{{ $shipment->sender_name ?? 'MR.MITHU / MR. ANISUR / MR. ANTO' }}</div>
-        </div>
-        <div class="sig-row">
-            <div class="sig-label">Position:</div>
-            <div class="sig-value">Merchandising Department. / Technical Department.</div>
         </div>
         <div class="sig-row">
             <div class="sig-label">Date of Signature:</div>

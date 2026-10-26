@@ -40,9 +40,13 @@
                         <p class="mt-2 text-sm text-slate-500">{{ $shipment->carrier_name ?: 'Express Peek network' }} · {{ $shipment->shipment_type ? ucfirst($shipment->shipment_type) : 'International shipment' }}</p>
                     </div>
                     @if($shipment->carrier_tracking_number)
-                        <a href="{{ $shipment->carrier_tracking_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-5 text-sm font-bold text-violet-700 transition hover:bg-violet-100">
+                        <a href="{{ $shipment->carrier_tracking_url }}" target="_blank" rel="noopener noreferrer" class="group relative inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-8 text-base font-black text-slate-900 shadow-xl shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50">
+                            <span class="absolute -right-1.5 -top-1.5 flex h-4 w-4">
+                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
+                                <span class="relative inline-flex h-4 w-4 rounded-full bg-orange-500"></span>
+                            </span>
                             View live carrier tracking
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7v7m0-7L10 14M5 7v12h12v-5"/></svg>
+                            <svg class="h-5 w-5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 3h7v7m0-7L10 14M5 7v12h12v-5"/></svg>
                         </a>
                     @endif
                 </div>

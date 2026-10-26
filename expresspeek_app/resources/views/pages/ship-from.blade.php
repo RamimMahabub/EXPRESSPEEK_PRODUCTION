@@ -22,7 +22,7 @@
             <div class="flex flex-wrap gap-4">
                 <a href="{{ route('quote') }}"
                    class="inline-flex items-center gap-2 px-7 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/30">
-                    Get a Shipping Quote
+                    Get a Shipping Check Delivery Cost
                 </a>
                 <a href="{{ route('sourcing.create') }}"
                    class="inline-flex items-center gap-2 px-7 py-4 rounded-2xl border-2 border-white/20 text-white font-bold text-sm hover:border-white/40 transition-colors">
@@ -90,9 +90,9 @@
     <section class="max-w-5xl mx-auto px-6 pb-16">
         <div class="bg-gradient-to-r from-violet-600 to-blue-700 rounded-3xl p-8 md:p-12 text-center">
             <h2 class="text-2xl md:text-3xl font-black text-white mb-4">Ready to Ship from {{ $data['name'] }}?</h2>
-            <p class="text-violet-200 max-w-lg mx-auto mb-6 text-sm leading-relaxed">Get an instant quote, compare carriers, and book your international shipment in minutes.</p>
+            <p class="text-violet-200 max-w-lg mx-auto mb-6 text-sm leading-relaxed">Get an instant check delivery cost, compare carriers, and book your international shipment in minutes.</p>
             <a href="{{ route('quote') }}" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-violet-700 font-bold text-sm hover:bg-violet-50 transition-colors shadow-xl">
-                Get a Quote Now →
+                Get a Check Delivery Cost Now →
             </a>
         </div>
     </section>

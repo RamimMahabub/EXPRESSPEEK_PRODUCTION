@@ -64,26 +64,25 @@
                         <svg class="h-4 w-4 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.5 7.5 4 7.5-4M12 11.5V21M7 4v4M17 4v4"/></svg>
                         Weight Calculator
                     </a>
-                    <a href="{{ route('customer-service') }}#schedule-pickup" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors">Schedule Pickup</a>
                 </div>
             </div>
 
             <a href="{{ route('quote') }}"
-               class="px-4 py-2 text-sm font-semibold {{ request()->routeIs('quote') ? 'text-violet-700' : 'text-gray-700' }} hover:text-violet-700 transition-colors rounded-lg hover:bg-violet-50">
-                Quote
+               class="px-4 py-2 text-sm font-semibold {{ request()->routeIs('quote') ? 'text-violet-700' : 'text-gray-700' }} hover:text-violet-700 transition-colors rounded-lg hover:bg-violet-50 whitespace-nowrap">
+                Check Delivery Cost
             </a>
 
             <a href="{{ route('customer-service') }}"
                class="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-violet-700 transition-colors rounded-lg hover:bg-violet-50">
                 Customer Service
             </a>
-            <a href="{{ route('blog.index') }}"
+            {{-- <a href="{{ route('blog.index') }}"
                class="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-violet-700 transition-colors rounded-lg hover:bg-violet-50">
                 Resources
-            </a>
+            </a> --}}
             <a href="{{ route('sourcing.create') }}"
-               class="px-4 py-2 text-sm font-bold text-amber-700 hover:text-amber-900 transition-colors rounded-lg hover:bg-amber-50 flex items-center gap-1.5">
-                🛒 Sourcing
+               class="px-4 py-2 text-sm font-bold text-amber-700 hover:text-amber-900 transition-colors rounded-lg hover:bg-amber-50 flex items-center gap-1.5 whitespace-nowrap">
+                🛒 Shop From Bangladesh
             </a>
         </nav>
 
@@ -115,6 +114,11 @@
                     <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="12" fill="#25D366"/>
                         <path d="M9.198 6.486c-.276-.613-.564-.625-.828-.636-.216-.009-.462-.01-.708-.01a1.353 1.353 0 00-.985.45c-.339.366-1.293 1.252-1.293 3.053 0 1.801 1.324 3.541 1.509 3.784.185.244 2.585 3.91 6.262 5.48.874.373 1.556.596 2.087.763.878.276 1.678.237 2.308.144.706-.104 2.155-.872 2.463-1.716.308-.845.308-1.567.215-1.717-.092-.15-.338-.244-.708-.426-.369-.183-2.155-1.054-2.493-1.176-.338-.122-.585-.183-.831.183-.246.366-.954 1.176-1.169 1.42-.215.244-.431.275-.8.092-.369-.183-1.538-.561-2.932-1.796-1.085-.96-1.817-2.146-2.032-2.512-.215-.366-.023-.565.161-.747.166-.164.369-.427.554-.64.185-.213.246-.366.369-.61.123-.244.062-.457-.031-.64-.092-.183-.831-1.986-1.139-2.716z" fill="#ffffff"/>
+                    </svg>
+                </a>
+                <a href="https://www.linkedin.com/company/143213970/" target="_blank" rel="noopener noreferrer" class="hover:scale-110 hover:-translate-y-0.5 transition-all duration-300 drop-shadow-sm hover:drop-shadow-md" title="LinkedIn">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" fill="#0A66C2"/>
                     </svg>
                 </a>
             </div>
@@ -196,11 +200,22 @@
         <div class="px-4 py-3 space-y-1">
             <a href="{{ route('home') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Home</a>
             <a href="{{ route('track') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Track</a>
+            @auth
+                @if(auth()->user()->primaryRoleName() === 'customer')
+                    <a href="{{ route('customer.shipments.create') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Create Shipment</a>
+                @elseif(auth()->user()->primaryRoleName() === 'agent')
+                    <a href="{{ route('agent.shipments.create') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Create Shipment</a>
+                @elseif(auth()->user()->primaryRoleName() === 'admin')
+                    <a href="{{ route('admin.shipments.create') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Create Shipment</a>
+                @endif
+            @else
+                <a href="{{ route('shipment.guest.create') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Create Shipment</a>
+            @endauth
             <a href="{{ route('volumetric-weight-calculator') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Weight Calculator</a>
-            <a href="{{ route('quote') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Quote</a>
+            <a href="{{ route('quote') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Check Delivery Cost</a>
             <a href="{{ route('customer-service') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Customer Service</a>
-            <a href="{{ route('blog.index') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Resources</a>
-            <a href="{{ route('sourcing.create') }}" class="block px-4 py-2.5 text-base font-bold text-amber-700 hover:text-amber-900 hover:bg-amber-50 rounded-lg">🛒 Sourcing</a>
+            {{-- <a href="{{ route('blog.index') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Resources</a> --}}
+            <a href="{{ route('sourcing.create') }}" class="block px-4 py-2.5 text-base font-bold text-amber-700 hover:text-amber-900 hover:bg-amber-50 rounded-lg">🛒 Shop From Bangladesh</a>
             
             @auth
             <div class="border-t border-gray-100 mt-2 pt-2 pb-1 space-y-1">
@@ -214,9 +229,11 @@
                 @endif
                 @if(auth()->user()->primaryRoleName() === 'admin')
                     <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Admin Panel</a>
+                    <a href="{{ route('admin.shipments.index') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">All Shipments</a>
                 @endif
                 @if(auth()->user()->primaryRoleName() === 'agent')
                     <a href="{{ route('agent.dashboard') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Agent Panel</a>
+                    <a href="{{ route('agent.shipments.index') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">My Shipments</a>
                 @endif
                 <a href="{{ route('profile.edit') }}" class="block px-4 py-2.5 text-base font-semibold text-gray-700 hover:text-violet-700 hover:bg-violet-50 rounded-lg">Profile Settings</a>
                 <form method="POST" action="{{ route('logout') }}">
@@ -256,6 +273,11 @@
                     <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="12" fill="#25D366"/>
                         <path d="M9.198 6.486c-.276-.613-.564-.625-.828-.636-.216-.009-.462-.01-.708-.01a1.353 1.353 0 00-.985.45c-.339.366-1.293 1.252-1.293 3.053 0 1.801 1.324 3.541 1.509 3.784.185.244 2.585 3.91 6.262 5.48.874.373 1.556.596 2.087.763.878.276 1.678.237 2.308.144.706-.104 2.155-.872 2.463-1.716.308-.845.308-1.567.215-1.717-.092-.15-.338-.244-.708-.426-.369-.183-2.155-1.054-2.493-1.176-.338-.122-.585-.183-.831.183-.246.366-.954 1.176-1.169 1.42-.215.244-.431.275-.8.092-.369-.183-1.538-.561-2.932-1.796-1.085-.96-1.817-2.146-2.032-2.512-.215-.366-.023-.565.161-.747.166-.164.369-.427.554-.64.185-.213.246-.366.369-.61.123-.244.062-.457-.031-.64-.092-.183-.831-1.986-1.139-2.716z" fill="#ffffff"/>
+                    </svg>
+                </a>
+                <a href="https://www.linkedin.com/company/143213970/" target="_blank" rel="noopener noreferrer">
+                    <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" fill="#0A66C2"/>
                     </svg>
                 </a>
             </div>

@@ -1,7 +1,7 @@
 <x-guest-layout>
     <span class="auth-kicker">Welcome back</span>
     <h2 class="auth-heading">Access your command center</h2>
-    <p class="auth-subtitle">Sign in securely to manage shipments, quotes, and live delivery updates.</p>
+    <p class="auth-subtitle">Sign in securely to manage shipments, check delivery costs, and live delivery updates.</p>
 
     @if(session('status'))
         <div class="auth-status" role="status">{{ session('status') }}</div>

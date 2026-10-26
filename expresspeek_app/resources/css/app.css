@@ -7,6 +7,12 @@
 @source not "../views/database/**";
 @source not "../views/routes/**";
 
+@layer base {
+  html {
+    zoom: 0.8 !important;
+  }
+}
+
 @theme {
   --color-slate-950: #0f172a;
 }

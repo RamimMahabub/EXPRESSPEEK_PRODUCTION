@@ -33,6 +33,8 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'is_business' => ['boolean'],
+            'company_name' => ['nullable', 'string', 'max:255', 'required_if:is_business,1,true'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'phone_country_code' => ['required', 'string', 'regex:/^\+[1-9]\d{0,3}$/'],
             'phone' => ['required', 'string', 'regex:/^[0-9\s().-]{6,20}$/'],
@@ -60,6 +62,8 @@ class RegisteredUserController extends Controller
         $user = DB::transaction(function () use ($request, $normalizedPhone): User {
             $user = User::create([
                 'name' => $request->name,
+                'is_business' => $request->boolean('is_business'),
+                'company_name' => $request->company_name,
                 'email' => $request->email,
                 'phone_country_code' => $request->phone_country_code,
                 'phone' => $normalizedPhone,

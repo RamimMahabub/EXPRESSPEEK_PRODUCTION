@@ -72,6 +72,7 @@
         .fade-up-2 { animation-delay: 0.2s; }
         .fade-up-3 { animation-delay: 0.35s; }
     </style>
+    @include('partials.meta-pixel')
 </head>
 <body class="bg-white text-slate-900 antialiased">
 
@@ -190,7 +191,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="font-bold text-slate-900 text-base mb-1">Get a Quote</h3>
+                    <h3 class="font-bold text-slate-900 text-base mb-1">Check Delivery Cost</h3>
                     <p class="text-sm text-slate-500 leading-relaxed">No surprises — know your cost before you ship.</p>
                 </div>
                 <span class="text-sm text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
@@ -220,7 +221,7 @@
             </div>
         </a>
 
-        <div class="service-card p-7 hover:bg-emerald-50 cursor-pointer group">
+        <a href="{{ route('business.index') }}" class="service-card p-7 hover:bg-emerald-50 cursor-pointer group block">
             <div class="flex flex-col items-start gap-4">
                 <div class="w-12 h-12 rounded-xl bg-emerald-100 group-hover:bg-emerald-200 flex items-center justify-center transition-colors">
                     <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,7 +236,7 @@
                     Learn more <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </span>
             </div>
-        </div>
+        </a>
     </div>
 </section>
 
@@ -370,7 +371,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
-                        Submit a Sourcing Request
+                        Submit a Shop From Bangladesh
                     </a>
                     <a href="{{ route('sourcing.create') }}"
                        class="inline-flex items-center gap-2 px-7 py-4 rounded-2xl font-bold text-sm text-indigo-200 border border-indigo-400/30 hover:border-white/50 hover:text-white transition-all">

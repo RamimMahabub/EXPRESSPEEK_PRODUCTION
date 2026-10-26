@@ -13,7 +13,9 @@
                class="ap-button light">
                 Print Waybill
             </a>
+            @if($shipment->shipment_type !== 'document')
             <a href="{{ route('customer.shipments.invoice', $shipment) }}" target="_blank" class="ap-button light">{{ $shipment->shipment_purpose === 'Commercial' ? 'Commercial' : 'Proforma' }} Invoice</a>
+            @endif
             <a href="{{ route('customer.shipments.index') }}"
                class="ap-button ghost">
                 Back
@@ -109,7 +111,7 @@
             @if($shipment->invoices->isNotEmpty())
                 <div class="neon-card rounded-2xl p-6">
                     <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-                        Generated Invoices
+                        Generated Receipts
                         <span class="rounded-full bg-gray-800 px-2 py-0.5 text-xs text-slate-300">{{ $shipment->invoices->count() }}</span>
                     </h2>
                     <div class="space-y-3">

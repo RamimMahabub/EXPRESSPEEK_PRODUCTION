@@ -46,7 +46,7 @@
             <p>ExpressPeek reserves the right to refuse, return, or destroy any shipment containing prohibited items, at the sender's expense.</p>
 
             <h2>5. Pricing & Payment</h2>
-            <p>All quotes provided through our website are estimates. Final pricing may vary based on actual weight, volumetric weight, destination-specific surcharges, and customs duties. Fuel surcharges and standard handling fees are included in our quoted prices.</p>
+            <p>All check delivery costs provided through our website are estimates. Final pricing may vary based on actual weight, volumetric weight, destination-specific surcharges, and customs duties. Fuel surcharges and standard handling fees are included in our quoted prices.</p>
             <p>Payment is due before shipment pickup. We accept cash, mobile banking (bKash, Nagad), and bank transfer.</p>
 
             <h2>6. Liability & Insurance</h2>

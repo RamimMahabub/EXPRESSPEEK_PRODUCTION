@@ -44,9 +44,9 @@
         {{-- Share + CTA --}}
         <div class="mt-8 bg-gradient-to-r from-violet-600 to-blue-700 rounded-3xl p-8 text-center">
             <h2 class="text-xl font-black text-white mb-3">Need to Ship from Bangladesh?</h2>
-            <p class="text-violet-200 text-sm mb-5">Get an instant quote and compare carriers for your international shipment.</p>
+            <p class="text-violet-200 text-sm mb-5">Get an instant check delivery cost and compare carriers for your international shipment.</p>
             <div class="flex flex-wrap items-center justify-center gap-4">
-                <a href="{{ route('quote') }}" class="px-6 py-3 rounded-xl bg-white text-violet-700 font-bold text-sm hover:bg-violet-50 transition-colors shadow-lg">Get a Quote →</a>
+                <a href="{{ route('quote') }}" class="px-6 py-3 rounded-xl bg-white text-violet-700 font-bold text-sm hover:bg-violet-50 transition-colors shadow-lg">Get a Check Delivery Cost →</a>
                 <a href="{{ route('sourcing.create') }}" class="px-6 py-3 rounded-xl border-2 border-white/30 text-white font-bold text-sm hover:border-white transition-colors">🛒 Shop from Bangladesh</a>
             </div>
         </div>
